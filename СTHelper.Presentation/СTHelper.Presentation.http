@@ -1,0 +1,6 @@
+@СTHelper.Presentation_HostAddress = http://localhost:5252
+
+GET {{СTHelper.Presentation_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

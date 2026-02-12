@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "СTHelper.Migrations": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
