@@ -1,0 +1,5 @@
+namespace CTHelper.Application.UseCases.FavouriteCollectionsManagment.Command;
+
+public class AddProblemToFavouriteCommand
+{
+}
