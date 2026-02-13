@@ -2,7 +2,9 @@ namespace СTHelper.Domain.Entities
 {
     public class Assignment : BaseEntity
     {
-        public long TeacherStudentId { get; set; }
+        public long? StudentId { get; set; }
+        public long TeacherId { get; set; }
+        public long? GroupId { get; set; }
 
         public long TestId { get; set; }
 
@@ -14,8 +16,9 @@ namespace СTHelper.Domain.Entities
 
         public DateTimeOffset LastUpdateAt { get; set; }
 
-        public TeacherStudent TeacherStudent { get; set; } = default!;
-
+        public User Teacher { get; set; } = default!;
+        public User Student { get; set; } = default!;
+        public Group Group { get; set; } = default!;
         public Test Test { get; set; } = default!;
     }
 }
