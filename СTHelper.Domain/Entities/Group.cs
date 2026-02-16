@@ -1,8 +1,11 @@
+using СTHelper.Domain.Common.Enums;
+
 namespace СTHelper.Domain.Entities
 {
     public class Group : BaseEntity
     {
         public long TeacherId { get; set; }
+        public Subject Subject { get; set; }
 
         public string Name { get; set; } = default!;
 

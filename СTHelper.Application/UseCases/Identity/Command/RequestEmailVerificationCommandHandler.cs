@@ -1,5 +1,5 @@
 namespace СTHelper.Application.UseCases.Identity.Command;
 
-public class RequestEmailVirificationCommand
+public class RequestEmailVerificationCommandHandler
 {
 }
