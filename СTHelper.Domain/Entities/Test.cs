@@ -19,7 +19,8 @@ namespace СTHelper.Domain.Entities
         public bool IsPublic { get; set; }
 
         public bool IsDeleted { get; set; }
-
+        public int? Duration { get; set; }
+        public short? AttemptsCount { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
 
         public DateTimeOffset LastUpdateAt { get; set; }
