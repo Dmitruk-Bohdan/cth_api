@@ -28,7 +28,6 @@
   <ItemGroup>
     <Folder Include="Configurations\" />
     <Folder Include="Interceptors\" />
-    <Folder Include="Events\" />
   </ItemGroup>
 
 </Project>

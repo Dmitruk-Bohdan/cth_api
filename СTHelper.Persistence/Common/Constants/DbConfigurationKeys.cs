@@ -1,4 +1,4 @@
-﻿namespace СTHelper.Persistence.Common
+﻿namespace СTHelper.Persistence.Common.Constants
 {
     public class DbConfigurationKeys
     {

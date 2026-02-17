@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using СTHelper.Persistence.Context;
-using static СTHelper.Persistence.Common.DbConfigurationKeys;
+using static СTHelper.Persistence.Common.Constants.DbConfigurationKeys;
 
 namespace СTHelper.Persistence;
 

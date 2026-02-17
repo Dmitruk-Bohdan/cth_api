@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".env" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="СTHelper.Application/СTHelper.Application.csproj" />
     <Project Path="СTHelper.Domain/СTHelper.Domain.csproj" />

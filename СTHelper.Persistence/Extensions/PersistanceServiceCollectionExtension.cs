@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using СTHelper.Persistence.Context;
-using static СTHelper.Persistence.Common.DbConfigurationKeys;
+using static СTHelper.Persistence.Common.Constants.DbConfigurationKeys;
 
 namespace СTHelper.Persistence.Extensions;
 
