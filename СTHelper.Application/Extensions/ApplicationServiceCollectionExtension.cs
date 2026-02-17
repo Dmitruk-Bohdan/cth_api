@@ -1,15 +1,58 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FluentValidation;
+using Mapster;
+using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+using СTHelper.Application.Behaviors;
 
-namespace СTHelper.Application.Extensions
+namespace СTHelper.Application.Extensions;
+
+public static class ApplicationServiceCollectionExtension
 {
-    public static class ApplicationServiceCollectionExtension
+    public static IServiceCollection AddApplication(
+        this IServiceCollection services)
     {
-        public static IServiceCollection AddApplication(
-            this IServiceCollection services,
-            IConfiguration configuration)
+        var assembly = typeof(ApplicationServiceCollectionExtension).Assembly;
+
+        services
+            .AddValidation(assembly)
+            .AddMediatRServices(assembly)
+            .AddMapping(assembly);
+
+        return services;
+    }
+
+    private static IServiceCollection AddValidation(
+        this IServiceCollection services,
+        Assembly assembly)
+    {
+        services.AddValidatorsFromAssembly(assembly);
+        return services;
+    }
+
+    private static IServiceCollection AddMediatRServices(
+        this IServiceCollection services,
+        Assembly assembly)
+    {
+        services.AddMediatR(cfg =>
         {
-            return services;
-        }
+            cfg.RegisterServicesFromAssembly(assembly);
+            cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection AddMapping(
+        this IServiceCollection services,
+        Assembly assembly)
+    {
+        var config = new TypeAdapterConfig();
+        config.Scan(assembly);
+
+        services.AddSingleton(config);
+        services.AddScoped<IMapper, ServiceMapper>();
+
+        return services;
     }
 }
