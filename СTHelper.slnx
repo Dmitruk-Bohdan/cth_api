@@ -3,7 +3,6 @@
     <Project Path="СTHelper.Application/СTHelper.Application.csproj" />
     <Project Path="СTHelper.Domain/СTHelper.Domain.csproj" />
     <Project Path="СTHelper.Infrastructure/СTHelper.Infrastructure.csproj" />
-    <Project Path="СTHelper.Migrations/СTHelper.Migrations.csproj" />
     <Project Path="СTHelper.Persistence/СTHelper.Persistence.csproj" />
     <Project Path="СTHelper.Presentation/СTHelper.Presentation.csproj" />
   </Folder>

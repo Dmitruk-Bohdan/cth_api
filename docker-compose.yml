@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:14.21-trixie
+    container_name: cthelper-db
+    environment:
+      POSTGRES_USER: cthelper
+      POSTGRES_PASSWORD: secret123
+      POSTGRES_DB: cthelper
+    ports:
+      - "5432:5432"
+    volumes:
+      - cthelper_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./CTHelper.Presentation
+      dockerfile: Dockerfile
+    container_name: cthelper-api
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=cthelper;Username=cthelper;Password=secret123"
+    depends_on:
+      - db
+    ports:
+      - "5000:80" # или порт, на котором приложение слушает
+    restart: unless-stopped
+
+volumes:
+  cthelper_pgdata:

@@ -1,4 +1,5 @@
-﻿using СTHelper.Presentation.Routing;
+﻿using СTHelper.Infrastructure;
+using СTHelper.Presentation.Routing;
 using СTHelper.Presentation.Security;
 using СTHelper.Presentation.Settings;
 
@@ -10,11 +11,12 @@ namespace СTHelper.Presentation.Extensions
             this IServiceCollection services,
             IConfiguration configuration)
         {
+            services.AddInfrastructure(configuration);
+
             services.AddRoutingConfiguration()
                 .AddHttpContextAccessor()
                 .AddCorsPolicy()
-                .AddPresentationSettings()
-                ;
+                .AddPresentationSettings();
 
             return services;
         }

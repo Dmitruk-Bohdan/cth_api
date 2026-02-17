@@ -9,9 +9,10 @@ public class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        var configuration = builder.Configuration;
         var services = builder.Services;
-        services.AddInfrastructure(builder.Configuration);
-        services.AddApplication(builder.Configuration);
+
+        services.AddPresentation(configuration);
 
         var app = builder.Build();
 

@@ -12,7 +12,7 @@ namespace СTHelper.Infrastructure
             IConfiguration configuration)
         {
             services
-                .AddApplication(configuration)
+                .AddApplication()
                 .AddPersistance(configuration);
 
             return services;
