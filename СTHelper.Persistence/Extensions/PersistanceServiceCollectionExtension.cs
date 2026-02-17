@@ -1,15 +1,29 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using СTHelper.Persistence.Context;
+using static СTHelper.Persistence.Common.DbConfigurationKeys;
 
-namespace СTHelper.Persistence.Extensions
+namespace СTHelper.Persistence.Extensions;
+
+public static class PersistanceServiceCollectionExtension
 {
-    public static class PersistanceServiceCollectionExtension
+    public static IServiceCollection AddPersistance(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        public static IServiceCollection AddPersistance(
-            this IServiceCollection services,
-            IConfiguration configuration)
+        var connectionString = configuration.GetConnectionString(DefaultConnection);
+
+        services.AddDbContext<AppDbContext>(options =>
         {
-            return services;
-        }
+            options.UseNpgsql(
+                connectionString,
+                npgsqlOptions =>
+                {
+                    npgsqlOptions.MigrationsAssembly(MigrationsAssembly);
+                });
+        });
+
+        return services;
     }
 }
