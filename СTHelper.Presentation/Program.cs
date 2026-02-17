@@ -1,25 +1,22 @@
-var builder = WebApplication.CreateBuilder(args);
+using СTHelper.Application.Extensions;
+using СTHelper.Infrastructure;
+using СTHelper.Presentation.Extensions;
 
-// Add services to the container.
+namespace CTHelper.Presentation;
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+public class Program
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    public static async Task Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        var services = builder.Services;
+        services.AddInfrastructure(builder.Configuration);
+        services.AddApplication(builder.Configuration);
+
+        var app = builder.Build();
+
+        app.ConfigureMiddleware();
+
+        app.Run();
+    }
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
