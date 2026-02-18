@@ -49,9 +49,16 @@ namespace СTHelper.Persistence.Configurations
             builder.HasOne(g => g.Teacher)
                 .WithMany()
                 .HasForeignKey(g => g.TeacherId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(g => g.Name);
+            builder.HasIndex(g => new { g.TeacherId, g.Name})
+                .IsUnique();
+
+            builder.HasQueryFilter(g => !g.IsDeleted);
+
+            builder.HasIndex(g => g.Subject);
+
+            builder.HasIndex(us => us.TeacherId);
         }
     }
 }

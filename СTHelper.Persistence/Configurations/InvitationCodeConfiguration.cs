@@ -8,7 +8,13 @@ namespace СTHelper.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<InvitationCode> builder)
         {
-            builder.ToTable("invitation_code");
+            builder.ToTable("invitation_code", t =>
+            {
+                t.HasCheckConstraint(
+                    "CK_invitation_code_positive_values",
+                    "uses_left >= 0"
+                );
+            });
 
             builder.HasKey(ic => ic.Id);
 
@@ -21,7 +27,7 @@ namespace СTHelper.Persistence.Configurations
                 .HasColumnType("bigint")
                 .IsRequired();
 
-            builder.Property(ic => ic.Code)
+            builder.Property(ic => ic.Code) //GUID
                 .HasColumnName("code")
                 .HasMaxLength(36)
                 .IsRequired();
@@ -48,7 +54,13 @@ namespace СTHelper.Persistence.Configurations
             builder.HasOne(ic => ic.Teacher)
                 .WithMany()
                 .HasForeignKey(ic => ic.TeacherId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(ic => ic.Code);
+
+            builder.HasQueryFilter(ic => !ic.IsRevoked);
+
+            builder.HasIndex(us => us.TeacherId);
         }
     }
 }

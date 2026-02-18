@@ -29,6 +29,10 @@ namespace СTHelper.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(p => p.TopicId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasQueryFilter(p => !p.IsDeleted);
+
+            builder.HasIndex(us => us.TopicId);
         }
     }
 }

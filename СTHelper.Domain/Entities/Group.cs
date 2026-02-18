@@ -18,5 +18,6 @@ namespace СTHelper.Domain.Entities
         public User Teacher { get; set; } = default!;
 
         public ICollection<User> Students { get; set; } = new List<User>();
+        public List<Assignment> ReceivedAssignments { get; set; } = default!;
     }
 }

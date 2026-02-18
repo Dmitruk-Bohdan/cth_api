@@ -23,6 +23,7 @@ namespace СTHelper.Persistence.Configurations
 
             builder.Property(n => n.PriorityLevel)
                 .HasColumnName("priority_level")
+                .HasConversion<short>()
                 .IsRequired();
 
             builder.Property(n => n.Payload)
@@ -42,7 +43,11 @@ namespace СTHelper.Persistence.Configurations
             builder.HasOne(n => n.Recipient)
                 .WithMany()
                 .HasForeignKey(n => n.RecipientId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(n => new { n.RecipientId, n.IsSeen });
+
+            builder.HasIndex(us => us.RecipientId);
         }
     }
 }

@@ -8,7 +8,13 @@ namespace СTHelper.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<TestAttempt> builder)
         {
-            builder.ToTable("test_attempt");
+            builder.ToTable("test_attempt", t =>
+            {
+                t.HasCheckConstraint(
+                    "CK_test_attempt_positive_values",
+                    "(duration IS NULL OR duration >= 0) AND (raw_score IS NULL OR raw_score >= 0)"
+                );
+            });
 
             builder.HasKey(ta => ta.Id);
 
@@ -28,6 +34,7 @@ namespace СTHelper.Persistence.Configurations
 
             builder.Property(ta => ta.Status)
                 .HasColumnName("status")
+                .HasConversion<short>()
                 .IsRequired();
 
             builder.Property(ta => ta.Duration)
@@ -51,6 +58,10 @@ namespace СTHelper.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(ta => ta.StudentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(ta => new { ta.TestId, ta.StudentId });
+
+            builder.HasIndex(us => us.StudentId);
         }
     }
 }

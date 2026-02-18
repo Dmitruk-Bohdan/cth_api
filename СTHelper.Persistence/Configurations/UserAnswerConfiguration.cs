@@ -48,6 +48,8 @@ namespace СTHelper.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(ua => ua.ProblemVersionId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(us => us.TestAttemptId);
         }
     }
 }

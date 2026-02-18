@@ -8,7 +8,13 @@ namespace СTHelper.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Test> builder)
         {
-            builder.ToTable("test");
+            builder.ToTable("test", t =>
+            {
+                t.HasCheckConstraint(
+                    "CK_test_positive_values",
+                    "attempts_count >= 0 AND (duration IS NULL OR duration >= 0)"
+                );
+            });
 
             builder.HasKey(t => t.Id);
 
@@ -22,6 +28,7 @@ namespace СTHelper.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(t => t.Subject)
+                .HasConversion<short>()
                 .HasColumnName("subject")
                 .IsRequired();
 
@@ -31,6 +38,7 @@ namespace СTHelper.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(t => t.Type)
+                .HasConversion<short>()
                 .HasColumnName("type")
                 .IsRequired();
 
@@ -51,8 +59,7 @@ namespace СTHelper.Persistence.Configurations
                 .HasDefaultValue(false);
 
             builder.Property(t => t.AttemptsCount)
-                .HasColumnName("attempts_count")
-                .HasDefaultValue((short)0);
+                .HasColumnName("attempts_count");
 
             builder.Property(t => t.Duration)
                 .HasColumnName("duration");
@@ -72,6 +79,14 @@ namespace СTHelper.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(t => t.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(t => t.Title);
+
+            builder.HasIndex(t => t.Subject);
+
+            builder.HasQueryFilter(t => !t.IsDeleted);
+
+            builder.HasIndex(us => us.AuthorId);
         }
     }
 }

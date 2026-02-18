@@ -21,7 +21,8 @@ namespace СTHelper.Persistence.Configurations
                 .HasColumnType("bigint")
                 .IsRequired();
 
-            builder.Property(prt => prt.TokenHash)
+            builder.Property(prt => prt.TokenHash) //SHA512
+                .HasColumnType("char(128)")
                 .HasColumnName("token_hash")
                 .IsRequired();
 
@@ -33,6 +34,16 @@ namespace СTHelper.Persistence.Configurations
             builder.Property(prt => prt.UsedAt)
                 .HasColumnName("used_at")
                 .HasColumnType("timestamptz");
+
+
+            builder.HasIndex(e => e.TokenHash)
+                .IsUnique();
+
+            builder.HasIndex(e => e.UserId)
+                .IsUnique()
+                .HasFilter("used_at IS NULL");
+
+            builder.HasIndex(e => e.ExpiresAt);
         }
     }
 }

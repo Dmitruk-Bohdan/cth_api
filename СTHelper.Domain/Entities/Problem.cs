@@ -12,7 +12,6 @@ namespace СTHelper.Domain.Entities
 
         public ICollection<TestProblem> TestProblems { get; set; } = new List<TestProblem>();
 
-        public ICollection<User> FavoriteByStudents { get; set; } = new List<User>();
     }
 }
 

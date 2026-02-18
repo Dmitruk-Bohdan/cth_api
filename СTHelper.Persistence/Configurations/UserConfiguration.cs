@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Reflection.Emit;
 using СTHelper.Domain.Entities;
 
 namespace СTHelper.Persistence.Configurations
@@ -33,6 +34,7 @@ namespace СTHelper.Persistence.Configurations
 
             builder.Property(u => u.Role)
                 .HasColumnName("role")
+                .HasConversion<short>()
                 .IsRequired();
 
             builder.Property(u => u.LastLoginAt)
@@ -58,8 +60,49 @@ namespace СTHelper.Persistence.Configurations
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+            builder
+                .HasMany(u => u.Groups)
+                .WithMany(g => g.Students)
+                .UsingEntity<Dictionary<string, object>>(
+                    "student_group_student",
+                     sgs => sgs.HasOne<Group>()
+                        .WithMany()
+                        .HasForeignKey("group_id"),
+                     sgs => sgs.HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey("student_id"))
+                .HasIndex("group_id");
+
+            builder
+                .HasMany(u => u.FavoriteTests)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "favorite_test",
+                    ft => ft.HasOne<Test>()
+                        .WithMany()
+                        .HasForeignKey("test_id"),
+                    ft => ft.HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey("student_id"))
+                .HasIndex("student_id");
+
+            builder
+                .HasMany(u => u.FavoriteProblems)
+                .WithMany()
+                .UsingEntity<Dictionary<string, object>>(
+                    "favorite_problem",
+                    fp => fp.HasOne<Problem>()
+                        .WithMany()
+                        .HasForeignKey("problem_id"),
+                    fp => fp.HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey("student_id"))
+                    .HasIndex("student_id");
+
             builder.HasIndex(u => u.Email).IsUnique();
             builder.HasIndex(u => u.Username).IsUnique();
+
+            builder.HasQueryFilter(u => !u.IsDeleted);
         }
     }
 }

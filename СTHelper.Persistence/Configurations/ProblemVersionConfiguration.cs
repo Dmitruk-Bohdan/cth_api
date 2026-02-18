@@ -28,10 +28,12 @@ namespace СTHelper.Persistence.Configurations
 
             builder.Property(pv => pv.Type)
                 .HasColumnName("type")
+                .HasConversion<short>()
                 .IsRequired();
 
             builder.Property(pv => pv.Difficulty)
                 .HasColumnName("difficulty")
+                .HasConversion<short>()
                 .IsRequired();
 
             builder.Property(pv => pv.Statement)
@@ -46,7 +48,8 @@ namespace СTHelper.Persistence.Configurations
 
             builder.Property(pv => pv.Explanation)
                 .HasColumnName("explanation")
-                .HasColumnType("jsonb");
+                .HasColumnType("jsonb")
+                .HasDefaultValue("{}");
 
             builder.Property(pv => pv.IsActive)
                 .HasColumnName("is_active")
@@ -67,6 +70,10 @@ namespace СTHelper.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(pv => pv.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasQueryFilter(p => !p.IsActive);
+
+            builder.HasIndex(us => us.ProblemId);
         }
     }
 }

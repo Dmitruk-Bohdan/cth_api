@@ -26,9 +26,11 @@ namespace СTHelper.Persistence.Configurations
 
             builder.Property(us => us.ClientType)
                 .HasColumnName("client_type")
+                .HasConversion<short>()
                 .IsRequired();
 
             builder.Property(us => us.IpAddress)
+                .HasColumnType("inet")
                 .HasColumnName("ip_address");
 
             builder.Property(us => us.DeviceInfo)
@@ -58,6 +60,11 @@ namespace СTHelper.Persistence.Configurations
                 .WithMany(u => u.Sessions)
                 .HasForeignKey(us => us.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(us => us.UserId);
+            builder.HasIndex(us => us.Jti).IsUnique();
+
+            builder.HasQueryFilter(us => us.RevokedAt == null);
         }
     }
 }

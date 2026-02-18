@@ -26,7 +26,6 @@ namespace СTHelper.Domain.Entities
 
         public User Author { get; set; } = default!;
 
-        public ICollection<UserAnswer> UserAnswers { get; set; } = new List<UserAnswer>();
     }
 }
 

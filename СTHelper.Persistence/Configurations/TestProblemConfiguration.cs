@@ -30,10 +30,6 @@ namespace СTHelper.Persistence.Configurations
                 .HasColumnName("code")
                 .HasMaxLength(3);
 
-            builder.Property(tp => tp.IsDeleted)
-                .HasColumnName("is_deleted")
-                .HasDefaultValue(false);
-
             builder.Property(tp => tp.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("timestamptz")
@@ -49,6 +45,11 @@ namespace СTHelper.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(tp => tp.ProblemId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(tp => new { tp.TestId, tp.Code })
+                   .IsUnique();
+
+            builder.HasIndex(us => us.TestId);
         }
     }
 }

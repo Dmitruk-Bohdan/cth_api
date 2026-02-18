@@ -22,6 +22,10 @@ namespace СTHelper.Domain.Entities
 
         public DateTimeOffset LastUpdateAt { get; set; }
 
+        public List<Assignment> IssuedAssignments { get; set; } = default!;
+
+        public List<Assignment> RecievedAssignments { get; set; } = default!;
+
         public ICollection<Test> AuthoredTests { get; set; } = new List<Test>();
 
         public ICollection<TestAttempt> TestAttempts { get; set; } = new List<TestAttempt>();

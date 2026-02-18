@@ -18,7 +18,9 @@ namespace СTHelper.Persistence.Configurations
 
             builder.Property(t => t.Subject)
                 .HasColumnName("subject")
+                .HasConversion<short>()
                 .IsRequired();
+
 
             builder.Property(t => t.Name)
                 .HasColumnName("name")
@@ -39,6 +41,10 @@ namespace СTHelper.Persistence.Configurations
                 .HasColumnName("last_update_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
+
+            builder.HasIndex(t => t.Subject);
+
+            builder.HasQueryFilter(t => !t.IsDeleted);
         }
     }
 }

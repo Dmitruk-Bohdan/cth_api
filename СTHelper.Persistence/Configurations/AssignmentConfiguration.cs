@@ -14,6 +14,10 @@ namespace СTHelper.Persistence.Configurations
                     "CK_assignment_target",
                     "(student_id IS NULL) <> (group_id IS NULL)"
                 );
+                t.HasCheckConstraint(
+                    "CK_assignment_positive_values",
+                    "attempts_left >= 0"
+                );
             });
 
 
@@ -63,17 +67,17 @@ namespace СTHelper.Persistence.Configurations
                 .IsRequired();
 
             builder.HasOne(a => a.Student)
-                .WithMany()
+                .WithMany(s => s.RecievedAssignments)
                 .HasForeignKey(a => a.StudentId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasOne(a => a.Teacher)
-                .WithMany()
+                .WithMany(t => t.IssuedAssignments)
                 .HasForeignKey(a => a.TeacherId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(a => a.Group)
-                .WithMany()
+                .WithMany(g => g.ReceivedAssignments)
                 .HasForeignKey(a => a.GroupId)
                 .OnDelete(DeleteBehavior.SetNull);
 
@@ -81,6 +85,10 @@ namespace СTHelper.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(a => a.TestId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(a => a.StudentId); 
+            builder.HasIndex(a => a.GroupId);   
+            builder.HasIndex(a => a.TeacherId); 
         }
     }
 }

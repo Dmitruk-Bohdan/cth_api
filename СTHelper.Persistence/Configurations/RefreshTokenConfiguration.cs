@@ -21,12 +21,10 @@ namespace СTHelper.Persistence.Configurations
                 .HasColumnType("bigint")
                 .IsRequired();
 
-            builder.Property(rt => rt.TokenHash)
+            builder.Property(rt => rt.TokenHash) //SHA512
+                .HasColumnType("char(128)")
                 .HasColumnName("token_hash")
                 .IsRequired();
-
-            builder.Property(rt => rt.DeviceId)
-                .HasColumnName("device_id");
 
             builder.Property(rt => rt.ExpiresAt)
                 .HasColumnName("expires_at")
@@ -42,6 +40,16 @@ namespace СTHelper.Persistence.Configurations
             builder.Property(rt => rt.RevokedAt)
                 .HasColumnName("revoked_at")
                 .HasColumnType("timestamptz");
+
+            builder.HasIndex(rt => rt.TokenHash)
+                .IsUnique();
+
+            builder.HasIndex(rt => rt.SessionId)
+                .IsUnique()
+                .HasFilter("revoked_at IS NULL");
+
+            builder.HasIndex(rt => rt.ExpiresAt);
+
         }
     }
 }

@@ -28,11 +28,5 @@ namespace СTHelper.Domain.Entities
         public User Author { get; set; } = default!;
 
         public ICollection<TestProblem> TestProblems { get; set; } = new List<TestProblem>();
-
-        public ICollection<TestAttempt> Attempts { get; set; } = new List<TestAttempt>();
-
-        public ICollection<User> FavoriteByStudents { get; set; } = new List<User>();
-
-        public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
     }
 }

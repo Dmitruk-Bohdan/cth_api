@@ -6,6 +6,7 @@ namespace СTHelper.Persistence.Configurations
 {
     public class UserEventConfiguration : IEntityTypeConfiguration<UserEvent>
     {
+
         public void Configure(EntityTypeBuilder<UserEvent> builder)
         {
             builder.ToTable("user_event");
@@ -22,6 +23,7 @@ namespace СTHelper.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(ue => ue.EventType)
+                .HasConversion<short>()
                 .HasColumnName("event_type")
                 .IsRequired();
 
@@ -30,9 +32,11 @@ namespace СTHelper.Persistence.Configurations
                 .HasColumnType("bigint");
 
             builder.Property(ue => ue.IpAddress)
+                .HasColumnType("inet")
                 .HasColumnName("ip_address");
 
             builder.Property(ue => ue.DeviceInfo)
+                .HasColumnType("jsonb")
                 .HasColumnName("device_info");
 
             builder.Property(ue => ue.CreatedAt)
@@ -45,6 +49,8 @@ namespace СTHelper.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(ue => ue.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(us => us.UserId);
         }
     }
 }

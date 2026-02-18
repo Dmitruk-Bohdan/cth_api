@@ -21,8 +21,8 @@ namespace СTHelper.Persistence.Configurations
                 .HasColumnType("bigint")
                 .IsRequired();
 
-            builder.Property(e => e.TokenHash)
-                .HasColumnType("varchar(128)")
+            builder.Property(e => e.TokenHash) //SHA512
+                .HasColumnType("char(128)")
                 .HasColumnName("token_hash")
                 .IsRequired();
 
@@ -42,6 +42,12 @@ namespace СTHelper.Persistence.Configurations
 
             builder.HasIndex(e => e.TokenHash)
                 .IsUnique();
+
+            builder.HasIndex(e => e.UserId)
+                .IsUnique()
+                .HasFilter("verified_at IS NULL");
+
+            builder.HasIndex(e => e.ExpiresAt);
         }
     }
 }

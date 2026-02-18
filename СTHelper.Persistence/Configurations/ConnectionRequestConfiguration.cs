@@ -46,6 +46,8 @@ namespace СTHelper.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(cr => cr.StudentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(us => us.CodeId);
         }
     }
 }

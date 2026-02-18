@@ -20,7 +20,6 @@ namespace СTHelper.Domain.Entities
 
         public User Student { get; set; } = default!;
 
-        public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
     }
 }
 

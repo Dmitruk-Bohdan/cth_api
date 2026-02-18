@@ -27,6 +27,7 @@ namespace СTHelper.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(ts => ts.Status)
+                .HasConversion<short>()
                 .HasColumnName("status")
                 .IsRequired();
 
@@ -54,6 +55,13 @@ namespace СTHelper.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(ts => ts.StudentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(ts => new { ts.TeacherId, ts.StudentId })
+                   .IsUnique();
+
+            builder.HasIndex(us => us.StudentId);
+
+            builder.HasQueryFilter(ts => !ts.IsDeleted);
         }
     }
 }
