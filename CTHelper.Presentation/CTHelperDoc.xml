@@ -4,5 +4,58 @@
         <name>CTHelper.Presentation</name>
     </assembly>
     <members>
+        <member name="M:CTHelper.Presentation.Controllers.AssignmentsController.GetAll(System.Int64,System.Nullable{System.Boolean},System.String,System.Nullable{System.DateTimeOffset})">
+            <summary>
+            Get all assignments for teacher or student
+            </summary>
+            <param name="subjectId">ID of the subject</param>
+            <param name="notCompleted">Optional filter for incomplete assignments</param>
+            <param name="searchTextFragment">Optional search by text</param>
+            <param name="expiringDate">Optional filter by expiring date</param>
+            <returns>List of assignments for teacher or student</returns>    
+        </member>
+        <member name="M:CTHelper.Presentation.Controllers.AssignmentsController.GetById(System.Int64)">
+            <summary>
+            Get details of a single assignment by its ID.
+            </summary>
+            <param name="id">ID of the assignment.</param>
+            <returns>Assignment details. Response type depends on the role: teacher or student.</returns>
+        </member>
+        <member name="M:CTHelper.Presentation.Controllers.AssignmentsController.Create(CTHelper.Application.Models.Dtos.AssignmentDtos.CreateAssignmentRequestDto)">
+            <summary>
+            Create a new assignment.
+            </summary>
+            <param name="dto">Assignment creation data.</param>
+            <returns>Returns 201 Created with the ID of the newly created assignment.</returns>
+        </member>
+        <member name="M:CTHelper.Presentation.Controllers.AssignmentsController.Delete(System.Int64)">
+            <summary>
+            Delete an assignment by its ID.
+            </summary>
+            <param name="id">ID of the assignment to delete.</param>
+            <returns>No content (204) on successful deletion.</returns>
+        </member>
+        <member name="M:CTHelper.Presentation.Controllers.AssignmentsController.ChangeDeadline(System.Int64,CTHelper.Application.Models.Dtos.AssignmentDtos.PatchAssignmentDeadlineRequestDto)">
+            <summary>
+            Change the deadline of an assignment.
+            </summary>
+            <param name="id">ID of the assignment to update.</param>
+            <param name="dto">New deadline data.</param>
+            <returns>No content (204) on successful update.</returns>
+        </member>
+        <member name="M:CTHelper.Presentation.Controllers.AssignmentsController.GetByGroup(System.Int64)">
+            <summary>
+            Get assignment scores grouped by student group.
+            </summary>
+            <param name="assignmentId">ID of the assignment.</param>
+            <returns>Group scores for the specified assignment.</returns>
+        </member>
+        <member name="M:CTHelper.Presentation.Controllers.AssignmentsController.GetByStudent(System.Int64)">
+            <summary>
+            Get assignment scores for a specific student.
+            </summary>
+            <param name="studentId">ID of the student.</param>
+            <returns>List of assignments with scores for the student (teacher view).</returns>
+        </member>
     </members>
 </doc>

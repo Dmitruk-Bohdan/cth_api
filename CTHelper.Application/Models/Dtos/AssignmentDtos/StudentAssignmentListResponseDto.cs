@@ -12,5 +12,8 @@ namespace CTHelper.Application.Models.Dtos.AssignmentDtos
     {
         [JsonPropertyName("teacherName")]
         public string TeacherName { get; set; } = default!;
+
+        [JsonPropertyName("isPassed")]
+        public bool isPassed { get; set; } = default!;        
     }
 }
