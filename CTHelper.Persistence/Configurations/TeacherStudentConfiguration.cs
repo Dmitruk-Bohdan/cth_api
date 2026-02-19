@@ -1,0 +1,67 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using CTHelper.Domain.Entities;
+
+namespace CTHelper.Persistence.Configurations
+{
+    public class TeacherStudentConfiguration : IEntityTypeConfiguration<TeacherStudent>
+    {
+        public void Configure(EntityTypeBuilder<TeacherStudent> builder)
+        {
+            builder.ToTable("teacher_student");
+
+            builder.HasKey(ts => ts.Id);
+
+            builder.Property(ts => ts.Id)
+                .HasColumnName("id")
+                .HasColumnType("bigint");
+
+            builder.Property(ts => ts.TeacherId)
+                .HasColumnName("teacher_id")
+                .HasColumnType("bigint")
+                .IsRequired();
+
+            builder.Property(ts => ts.StudentId)
+                .HasColumnName("student_id")
+                .HasColumnType("bigint")
+                .IsRequired();
+
+            builder.Property(ts => ts.Status)
+                .HasConversion<short>()
+                .HasColumnName("status")
+                .IsRequired();
+
+            builder.Property(ts => ts.IsDeleted)
+                .HasColumnName("is_deleted")
+                .HasDefaultValue(false);
+
+            builder.Property(ts => ts.CreatedAt)
+                .HasColumnName("created_at")
+                .HasColumnType("timestamptz")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+
+            builder.Property(ts => ts.LastUpdateAt)
+                .HasColumnName("last_update_at")
+                .HasColumnType("timestamptz")
+                .IsRequired();
+
+            builder.HasOne(ts => ts.Teacher)
+                .WithMany(t => t.Students)
+                .HasForeignKey(ts => ts.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasPrincipalKey(u => u.Id);
+
+            builder.HasOne(ts => ts.Student)
+                .WithMany(s => s.Teachers)
+                .HasForeignKey(ts => ts.StudentId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasPrincipalKey(u => u.Id);
+
+            builder.HasIndex(ts => new { ts.TeacherId, ts.StudentId })
+                   .IsUnique();
+
+            builder.HasIndex(us => us.StudentId);
+        }
+    }
+}

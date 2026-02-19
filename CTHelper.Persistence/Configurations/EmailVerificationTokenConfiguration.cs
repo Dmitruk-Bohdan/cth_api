@@ -1,0 +1,54 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using CTHelper.Domain.Entities;
+
+namespace CTHelper.Persistence.Configurations
+{
+    public class EmailVerificationTokenConfiguration : IEntityTypeConfiguration<EmailVerificationToken>
+    {
+        public void Configure(EntityTypeBuilder<EmailVerificationToken> builder)
+        {
+            builder.ToTable("email_verification_code");
+
+            builder.HasKey(e => e.Id);
+
+            builder.Property(e => e.Id)
+                .HasColumnName("id")
+                .HasColumnType("bigint");
+
+            builder.Property(e => e.UserId)
+                .HasColumnName("user_id")
+                .HasColumnType("bigint")
+                .IsRequired();
+
+            builder.Property(e => e.TokenHash) //SHA512
+                .HasColumnType("char(128)")
+                .HasColumnName("token_hash")
+                .IsRequired();
+
+            builder.Property(e => e.ExpiresAt)
+                .HasColumnName("expires_at")
+                .HasColumnType("timestamptz")
+                .IsRequired();
+
+            builder.Property(e => e.VerifiedAt)
+                .HasColumnName("verified_at")
+                .HasColumnType("timestamptz");
+
+            builder.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasPrincipalKey(u => u.Id);
+
+            builder.HasIndex(e => e.TokenHash)
+                .IsUnique();
+
+            builder.HasIndex(e => e.UserId)
+                .IsUnique()
+                .HasFilter("verified_at IS NULL");
+
+            builder.HasIndex(e => e.ExpiresAt);
+        }
+    }
+}

@@ -1,0 +1,65 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using CTHelper.Domain.Entities;
+
+namespace CTHelper.Persistence.Configurations
+{
+    public class InvitationCodeConfiguration : IEntityTypeConfiguration<InvitationCode>
+    {
+        public void Configure(EntityTypeBuilder<InvitationCode> builder)
+        {
+            builder.ToTable("invitation_code", t =>
+            {
+                t.HasCheckConstraint(
+                    "CK_invitation_code_positive_values",
+                    "uses_left >= 0"
+                );
+            });
+
+            builder.HasKey(ic => ic.Id);
+
+            builder.Property(ic => ic.Id)
+                .HasColumnName("id")
+                .HasColumnType("bigint");
+
+            builder.Property(ic => ic.TeacherId)
+                .HasColumnName("teacher_id")
+                .HasColumnType("bigint")
+                .IsRequired();
+
+            builder.Property(ic => ic.Code) //GUID
+                .HasColumnName("code")
+                .HasMaxLength(36)
+                .IsRequired();
+
+            builder.Property(ic => ic.UsesLeft)
+                .HasColumnName("uses_left")
+                .IsRequired();
+
+            builder.Property(ic => ic.IsRevoked)
+                .HasColumnName("is_revoked")
+                .HasDefaultValue(false);
+
+            builder.Property(ic => ic.CreatedAt)
+                .HasColumnName("created_at")
+                .HasColumnType("timestamptz")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+
+            builder.Property(ic => ic.LastUpdateAt)
+                .HasColumnName("last_update_at")
+                .HasColumnType("timestamptz")
+                .IsRequired();
+
+            builder.HasOne(ic => ic.Teacher)
+                .WithMany()
+                .HasForeignKey(ic => ic.TeacherId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasPrincipalKey(u => u.Id);
+
+            builder.HasIndex(ic => ic.Code);
+
+            builder.HasIndex(us => us.TeacherId);
+        }
+    }
+}
