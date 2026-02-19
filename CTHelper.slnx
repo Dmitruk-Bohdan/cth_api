@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".env" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="CTHelper.Application/CTHelper.Application.csproj" />
+    <Project Path="CTHelper.Domain/CTHelper.Domain.csproj" />
+    <Project Path="CTHelper.Infrastructure/CTHelper.Infrastructure.csproj" />
+    <Project Path="CTHelper.Persistence/CTHelper.Persistence.csproj" />
+    <Project Path="CTHelper.Presentation/CTHelper.Presentation.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="CTHelper.IntegrationTests/CTHelper.IntegrationTests.csproj" />
+    <Project Path="CTHelper.UnitTests/CTHelper.UnitTests.csproj" />
+  </Folder>
+</Solution>

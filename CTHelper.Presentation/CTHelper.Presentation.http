@@ -1,0 +1,6 @@
+@CTHelper.Presentation_HostAddress = http://localhost:5252
+
+GET {{CTHelper.Presentation_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
