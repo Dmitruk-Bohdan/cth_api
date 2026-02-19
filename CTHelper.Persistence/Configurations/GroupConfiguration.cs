@@ -8,7 +8,7 @@ namespace CTHelper.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Group> builder)
         {
-            builder.ToTable("app_group");
+            builder.ToTable("group");
 
             builder.HasKey(g => g.Id);
 
