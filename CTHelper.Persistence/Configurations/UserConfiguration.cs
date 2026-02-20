@@ -19,12 +19,12 @@ namespace CTHelper.Persistence.Configurations
 
             builder.Property(u => u.Username)
                 .HasColumnName("username")
-                .HasMaxLength(48)
+                .HasMaxLength(100)
                 .IsRequired();
 
-            builder.Property(u => u.PasswordHash)
+            builder.Property(u => u.PasswordHash) //SHA512
                 .HasColumnName("password_hash")
-                .HasMaxLength(256)
+                .HasColumnType("char(128)")
                 .IsRequired();
 
             builder.Property(u => u.Email)

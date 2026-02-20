@@ -2,15 +2,19 @@
 
 namespace CTHelper.Domain.Abstractions
 {
-    public interface IUnitOdWork : IAsyncDisposable
+    public interface IUnitOfWork : IAsyncDisposable
     {
-        IRepository<TEntity> Repository<TEntity>() where TEntity : class;
+        IRepository<TEntity> Repository<TEntity>() where TEntity : BaseEntity;
 
         IRepository<Assignment> Assignments { get; }
+        IRepository<ConnectionRequest> ConnectionRequests { get; }
+        IRepository<EmailVerificationToken> EmailVerificationTokens { get; }
         IRepository<Group> Groups { get; }
         IRepository<InvitationCode> InvitationCodes { get; }
         IRepository<Notification> Notifications { get; }
+        IRepository<PasswordResetToken> PasswordResetTokens { get; }
         IRepository<Problem> Problems { get; }
+        IRepository<RefreshToken> RefreshTokens { get; }
         IRepository<ProblemVersion> ProblemVersions { get; }
         IRepository<TeacherStudent> TeacherStudents { get; }
         IRepository<Test> Tests { get; }

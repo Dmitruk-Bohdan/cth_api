@@ -68,6 +68,7 @@ public class AssignmentsController : ControllerBase
     public IActionResult Create([FromBody] CreateAssignmentRequestDto dto)
     {
         var createdAssignment = new StudentAssignmentItemResponseModel();
+
         return CreatedAtAction(
             nameof(GetById),
             new IdDto(createdAssignment.Id));

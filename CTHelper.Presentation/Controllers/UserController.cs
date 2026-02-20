@@ -7,11 +7,6 @@ namespace CTHelper.Presentation.Controllers;
 [Route("users")]
 public class UsersController : ControllerBase
 {
-    [HttpPost]
-    public IActionResult Register([FromBody] RegisterUserRequestDto request)
-    {
-        throw new NotImplementedException();
-    }
 
     [HttpGet("{id}")]
     public IActionResult GetById(long id)

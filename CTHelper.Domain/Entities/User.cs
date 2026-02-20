@@ -10,7 +10,7 @@ namespace CTHelper.Domain.Entities
 
         public string Email { get; set; } = default!;
 
-        public Role Role { get; set; }
+        public UserRole Role { get; set; }
 
         public DateTimeOffset? LastLoginAt { get; set; }
 

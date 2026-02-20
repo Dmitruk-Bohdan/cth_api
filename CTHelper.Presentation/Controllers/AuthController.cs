@@ -1,5 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
+using CTHelper.Application.Models.Dtos;
 using CTHelper.Application.Models.Dtos.AuthDtos;
+using MapsterMapper;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CTHelper.Presentation.Controllers;
 
@@ -7,6 +10,28 @@ namespace CTHelper.Presentation.Controllers;
 [Route("auth")]
 public class AuthController : ControllerBase
 {
+    private IMediator _mediator;
+    private IMapper _mapper;
+    public AuthController(
+        IMediator mediator,
+        IMapper mapper)
+    {
+        _mediator = mediator;
+        _mapper = mapper;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Register([FromBody] RegisterUserRequestDto dto)
+    {
+        var createUserCommand = _mapper.Map<CreateUserCommand>(dto);
+        var createdUserId = await _mediator.Send(createUserCommand);
+
+        return CreatedAtAction(
+            nameof(UsersController.GetById),
+            nameof(UsersController),
+            new IdDto(createdUserId));
+    }
+
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequestDto request)
     {

@@ -1,6 +1,6 @@
 namespace CTHelper.Domain.Common.Enums
 {
-    public enum Role : short
+    public enum UserRole : short
     {
         Student = 1,
         Teacher = 2,

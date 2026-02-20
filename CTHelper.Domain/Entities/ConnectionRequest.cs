@@ -1,8 +1,7 @@
 ﻿namespace CTHelper.Domain.Entities
 {
-    public class ConnectionRequest
+    public class ConnectionRequest : BaseEntity
     {
-        public long Id { get; set; }
         public long CodeId { get; set; }
         public long StudentId { get; set; }
         public DateTimeOffset CreatedAt { get; set; }

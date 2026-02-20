@@ -7,15 +7,52 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Mappings\RefreshToken\**" />
+    <Compile Remove="Mappings\TaskVersion\**" />
+    <Compile Remove="Mappings\TeacherStudent\**" />
+    <Compile Remove="Mappings\TestAttempt\**" />
+    <Compile Remove="Mappings\TestProblem\**" />
+    <Compile Remove="Mappings\Test\**" />
+    <Compile Remove="Mappings\Topic\**" />
+    <Compile Remove="Mappings\UserAnswer\**" />
+    <Compile Remove="Mappings\User\**" />
+    <EmbeddedResource Remove="Mappings\RefreshToken\**" />
+    <EmbeddedResource Remove="Mappings\TaskVersion\**" />
+    <EmbeddedResource Remove="Mappings\TeacherStudent\**" />
+    <EmbeddedResource Remove="Mappings\TestAttempt\**" />
+    <EmbeddedResource Remove="Mappings\TestProblem\**" />
+    <EmbeddedResource Remove="Mappings\Test\**" />
+    <EmbeddedResource Remove="Mappings\Topic\**" />
+    <EmbeddedResource Remove="Mappings\UserAnswer\**" />
+    <EmbeddedResource Remove="Mappings\User\**" />
+    <None Remove="Mappings\RefreshToken\**" />
+    <None Remove="Mappings\TaskVersion\**" />
+    <None Remove="Mappings\TeacherStudent\**" />
+    <None Remove="Mappings\TestAttempt\**" />
+    <None Remove="Mappings\TestProblem\**" />
+    <None Remove="Mappings\Test\**" />
+    <None Remove="Mappings\Topic\**" />
+    <None Remove="Mappings\UserAnswer\**" />
+    <None Remove="Mappings\User\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CTHelper.Domain\CTHelper.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Common\" />
-    <Folder Include="Mappings\" />
+    <Folder Include="UseCases\AssignmentManagment\Validation\" />
+    <Folder Include="UseCases\FavouriteCollectionsManagment\Validation\" />
+    <Folder Include="UseCases\GroupManagment\Validation\" />
+    <Folder Include="UseCases\NotificationsManagment\Validation\" />
+    <Folder Include="UseCases\ProblemManagment\Validation\" />
+    <Folder Include="UseCases\StatisticsManagment\Validation\" />
+    <Folder Include="UseCases\TeacherStudentRelationship\Validation\" />
+    <Folder Include="UseCases\TestManagment\Validation\" />
+    <Folder Include="UseCases\TestTaking\Validation\" />
     <Folder Include="Services\Interfaces\" />
     <Folder Include="Services\Implementations\" />
-    <Folder Include="UseCases\" />
   </ItemGroup>
 
   <ItemGroup>

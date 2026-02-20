@@ -22,27 +22,28 @@ namespace CTHelper.Domain.Abstractions
         public bool IsPagingEnabled { get; protected set; }
 
         public bool AsNoTracking { get; protected set; }
+        public bool AsNoTrackingWithIdentityResolution { get; protected set; }
         public bool AsSplitQuery { get; protected set; }
         public bool IgnoreQueryFilters { get; protected set; }
 
-        protected void ApplyCriteria(Expression<Func<T, bool>> criteria)
+        protected void AddCriteria(Expression<Func<T, bool>> criteria)
         {
             Criteria = Criteria == null
                 ? criteria
                 : Criteria.And(criteria);
         }
 
-        protected void ApplyOrderBy(Expression<Func<T, object>> orderBy)
+        protected void AddOrderBy(Expression<Func<T, object>> orderBy)
             => _orderBy.Add(orderBy);
 
-        protected void ApplyOrderBy(IReadOnlyCollection<Expression<Func<T, object>>> orderByCollection)
+        protected void AddOrderBy(IReadOnlyCollection<Expression<Func<T, object>>> orderByCollection)
             => _orderBy.AddRange(orderByCollection);
-        protected void ApplyOrderByDescending(Expression<Func<T, object>> orderByDesc)
+        protected void AddOrderByDescending(Expression<Func<T, object>> orderByDesc)
             => _orderByDescending.Add(orderByDesc);
-        protected void ApplyOrderByDescending(IReadOnlyCollection<Expression<Func<T, object>>> orderByDescCollection)
+        protected void AddOrderByDescending(IReadOnlyCollection<Expression<Func<T, object>>> orderByDescCollection)
             => _orderByDescending.AddRange(orderByDescCollection);
 
-        protected void ApplyPaging(int skip, int take)
+        protected void AddPaging(int skip, int take)
         {
             Skip = skip;
             Take = take;
@@ -51,6 +52,9 @@ namespace CTHelper.Domain.Abstractions
 
         protected void EnableAsNoTracking()
             => AsNoTracking = true;
+
+        protected void EnableAsNoTrackingWithIdentityResolution()
+            => AsNoTrackingWithIdentityResolution = true;
 
         protected void EnableAsSplitQuery()
             => AsSplitQuery = true;

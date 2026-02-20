@@ -6,5 +6,5 @@ namespace CTHelper.Application.Models.Dtos.UserDtos;
 public class UpdateUserRoleRequestDto
 {
     [JsonPropertyName("role")]
-    public Role Role { get; set; }
+    public UserRole Role { get; set; }
 }

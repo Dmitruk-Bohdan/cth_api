@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using CTHelper.Application.Extensions;
 using CTHelper.Persistence.Extensions;
 using CTHelper.Infrastructure.Startup;
+using CTHelper.Application.ServiceInterfaces;
+using CTHelper.Infrastructure.ServiceImplementations;
 
 namespace CTHelper.Infrastructure
 {
@@ -14,10 +16,18 @@ namespace CTHelper.Infrastructure
         {
             services
                 .AddApplication()
-                .AddPersistance(configuration);
+                .AddPersistance(configuration)
+                .AddInfrastructureServices();
+
 
             return services;
         }
-        
+
+        private static IServiceCollection AddInfrastructureServices(
+                    this IServiceCollection services)
+        {
+            services.AddTransient<IPasswordHasher, PasswordHasher>();
+            return services;
+        }
     }
 }

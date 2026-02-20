@@ -19,6 +19,7 @@ namespace CTHelper.Domain.Abstractions
         bool IsPagingEnabled { get; }
 
         bool AsNoTracking { get; }
+        bool AsNoTrackingWithIdentityResolution { get; }
         bool AsSplitQuery { get; }
         bool IgnoreQueryFilters { get; }
     }

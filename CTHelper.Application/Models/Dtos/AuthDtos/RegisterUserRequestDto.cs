@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace CTHelper.Application.Models.Dtos.UserDtos;
+namespace CTHelper.Application.Models.Dtos.AuthDtos;
 
 public class RegisterUserRequestDto
 {
@@ -12,4 +12,7 @@ public class RegisterUserRequestDto
 
     [JsonPropertyName("password")]
     public string Password { get; set; } = string.Empty;
+
+    [JsonPropertyName("role")]
+    public short Role { get; set; }
 }
