@@ -17,6 +17,7 @@ namespace CTHelper.Domain.Entities
         public string? AvatarUrl { get; set; }
 
         public bool IsDeleted { get; set; }
+        public bool IsEmailVerified { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
 

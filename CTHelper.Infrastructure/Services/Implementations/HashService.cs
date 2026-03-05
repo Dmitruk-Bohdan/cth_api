@@ -1,11 +1,11 @@
-﻿using CTHelper.Application.ServiceInterfaces;
+﻿using CTHelper.Application.Services.Interfaces;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CTHelper.Infrastructure.ServiceImplementations;
-public class PasswordHasher : IPasswordHasher
+namespace CTHelper.Infrastructure.Services.Implementations;
+public class HashService : IHashService
 {
-    public string Hash(string password)
+    public string Get128Hash(string password)
     {
         if (password == null) throw new ArgumentNullException(nameof(password));
 

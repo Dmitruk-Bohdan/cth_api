@@ -1,5 +1,6 @@
-namespace CTHelper.Application.UseCases.Identity.Command;
+using MediatR;
 
-public class RequestEmailVerificationCommand
-{
-}
+namespace CTHelper.Application.UseCases.Identity.Command;
+public record RequestEmailVerificationCommand(
+    long UserId,
+    string UserEmail) : IRequest<Unit>;

@@ -32,6 +32,11 @@ namespace CTHelper.Persistence.Configurations
                 .HasMaxLength(254)
                 .IsRequired();
 
+            builder.Property(u => u.IsEmailVerified)
+                .HasColumnName("is_email_verified")
+                .HasDefaultValue(false)
+                .IsRequired();
+
             builder.Property(u => u.Role)
                 .HasColumnName("role")
                 .HasConversion<short>()

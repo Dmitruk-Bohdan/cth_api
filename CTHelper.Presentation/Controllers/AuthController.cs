@@ -1,5 +1,6 @@
 using CTHelper.Application.Models.Dtos;
 using CTHelper.Application.Models.Dtos.AuthDtos;
+using CTHelper.Application.UseCases.Identity.Command;
 using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -21,15 +22,16 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost]
+    [Route("register")]
     public async Task<IActionResult> Register([FromBody] RegisterUserRequestDto dto)
     {
-        var createUserCommand = _mapper.Map<CreateUserCommand>(dto);
-        var createdUserId = await _mediator.Send(createUserCommand);
+        var createUserCommand = _mapper.Map<RegisterUserCommand>(dto);
+        var createdUser = await _mediator.Send(createUserCommand);
 
-        return CreatedAtAction(
-            nameof(UsersController.GetById),
-            nameof(UsersController),
-            new IdDto(createdUserId));
+        var requestEmailVerificationCommand = _mapper.Map<RequestEmailVerificationCommand>(createdUser);
+        await _mediator.Send(requestEmailVerificationCommand);
+
+        return Created();
     }
 
     [HttpPost("login")]

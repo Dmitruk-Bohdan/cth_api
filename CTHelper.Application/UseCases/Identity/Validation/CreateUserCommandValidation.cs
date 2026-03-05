@@ -1,11 +1,12 @@
-﻿using CTHelper.Domain.Abstractions;
+﻿using CTHelper.Application.UseCases.Identity.Command;
+using CTHelper.Domain.Abstractions;
 using CTHelper.Domain.Common.Enums;
 using CTHelper.Domain.Specification;
 using FluentValidation;
 
 namespace CTHelper.Application.UseCases.Identity.Validation
 {
-    public class CreateUserCommandValidation : AbstractValidator<CreateUserCommand>
+    public class CreateUserCommandValidation : AbstractValidator<RegisterUserCommand>
     {
         public CreateUserCommandValidation(IUnitOfWork unitOfWork)
         {
@@ -28,7 +29,7 @@ namespace CTHelper.Application.UseCases.Identity.Validation
             RuleFor(cuc => cuc.Role)
                 .NotEmpty()
                 .IsInEnum()
-                .Must(role => role == UserRole.Student || role == UserRole.Student);
+                .Must(role => role == UserRole.Student || role == UserRole.Teacher);
         }
     }
 }

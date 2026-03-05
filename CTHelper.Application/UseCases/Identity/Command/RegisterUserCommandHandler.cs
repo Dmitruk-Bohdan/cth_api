@@ -1,4 +1,5 @@
-using CTHelper.Application.ServiceInterfaces;
+using CTHelper.Application.Services.Interfaces;
+using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Domain.Abstractions;
 using CTHelper.Domain.Entities;
 using MapsterMapper;
@@ -6,15 +7,15 @@ using MediatR;
 
 namespace Library.Application.AuthorUseCases.Commands;
 
-public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, long>
+public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, User>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IPasswordHasher _passwordHasher;
+    private readonly IHashService _passwordHasher;
     private readonly IMapper _mapper;
 
-    public CreateUserCommandHandler(
+    public RegisterUserCommandHandler(
         IUnitOfWork unitOfWork,
-        IPasswordHasher passwordHasher,
+        IHashService passwordHasher,
         IMapper mapper)
     {
         _unitOfWork = unitOfWork;
@@ -22,14 +23,14 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, long>
         _mapper = mapper;
     }
 
-    public async Task<long> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+    public async Task<User> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
         var newUser = _mapper.Map<User>(request);
-        newUser.PasswordHash = _passwordHasher.Hash(request.Password);
+        newUser.PasswordHash = _passwordHasher.Get128Hash(request.Password);
         
         await _unitOfWork.Users.AddAsync(newUser, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return newUser.Id;
+        return newUser;
     }
 }

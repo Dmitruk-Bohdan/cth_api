@@ -2,9 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using CTHelper.Application.Extensions;
 using CTHelper.Persistence.Extensions;
-using CTHelper.Infrastructure.Startup;
-using CTHelper.Application.ServiceInterfaces;
-using CTHelper.Infrastructure.ServiceImplementations;
+using CTHelper.Infrastructure.Services.Implementations;
+using CTHelper.Infrastructure.Settings;
+using CTHelper.Application.Services.Interfaces;
 
 namespace CTHelper.Infrastructure
 {
@@ -17,7 +17,9 @@ namespace CTHelper.Infrastructure
             services
                 .AddApplication()
                 .AddPersistance(configuration)
+                .AddInfrastructureSettings(configuration)
                 .AddInfrastructureServices();
+
 
 
             return services;
@@ -26,7 +28,16 @@ namespace CTHelper.Infrastructure
         private static IServiceCollection AddInfrastructureServices(
                     this IServiceCollection services)
         {
-            services.AddTransient<IPasswordHasher, PasswordHasher>();
+            services.AddTransient<IHashService, HashService>();
+            return services;
+        }
+
+        private static IServiceCollection AddInfrastructureSettings(
+                    this IServiceCollection services,
+                    IConfiguration configuration)
+        {
+            services.Configure<EmailSettings>(configuration.GetSection(nameof(EmailSettings)));
+            services.Configure<MobileAppSettings>(configuration.GetSection(nameof(MobileAppSettings)));
             return services;
         }
     }
