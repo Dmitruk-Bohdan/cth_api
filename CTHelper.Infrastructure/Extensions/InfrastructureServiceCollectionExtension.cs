@@ -28,7 +28,8 @@ namespace CTHelper.Infrastructure
         private static IServiceCollection AddInfrastructureServices(
                     this IServiceCollection services)
         {
-            services.AddTransient<IHashService, HashService>();
+            services.AddTransient<IEmailService, EmailService>();
+
             return services;
         }
 

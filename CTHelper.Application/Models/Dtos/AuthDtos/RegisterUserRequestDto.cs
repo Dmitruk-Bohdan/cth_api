@@ -1,3 +1,4 @@
+using CTHelper.Domain.Common.Enums;
 using System.Text.Json.Serialization;
 
 namespace CTHelper.Application.Models.Dtos.AuthDtos;
@@ -14,5 +15,5 @@ public class RegisterUserRequestDto
     public string Password { get; set; } = string.Empty;
 
     [JsonPropertyName("role")]
-    public short Role { get; set; }
+    public UserRole Role { get; set; }
 }

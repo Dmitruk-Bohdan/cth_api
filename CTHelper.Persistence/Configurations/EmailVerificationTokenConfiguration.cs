@@ -21,6 +21,12 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnType("bigint")
                 .IsRequired();
 
+            builder.Property(e => e.AttemptsLeft)
+                .HasColumnName("attempt_left")
+                .HasColumnType("smallint")
+                .HasDefaultValue(5)
+                .IsRequired();
+
             builder.Property(e => e.TokenHash) //SHA512
                 .HasColumnType("char(128)")
                 .HasColumnName("token_hash")

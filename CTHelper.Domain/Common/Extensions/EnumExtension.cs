@@ -4,9 +4,9 @@
     {
         public static TEnum ToEnum<TEnum>(this short value) where TEnum : struct, Enum
         {
-            if (Enum.IsDefined(typeof(TEnum), (int)value))
+            if (Enum.IsDefined(typeof(TEnum), value))
             {
-                return (TEnum)(object)value;
+                return (TEnum)Enum.ToObject(typeof(TEnum), value);
             }
 
             throw new ArgumentOutOfRangeException(

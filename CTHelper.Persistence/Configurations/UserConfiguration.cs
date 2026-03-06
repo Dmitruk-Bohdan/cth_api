@@ -9,7 +9,7 @@ namespace CTHelper.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.ToTable("users");
+            builder.ToTable("user");
 
             builder.HasKey(u => u.Id);
 
@@ -104,8 +104,8 @@ namespace CTHelper.Persistence.Configurations
                         .HasForeignKey("student_id"))
                     .HasIndex("student_id");
 
+            builder.HasIndex(u => u.Username).IsUnique(false);
             builder.HasIndex(u => u.Email).IsUnique();
-            builder.HasIndex(u => u.Username).IsUnique();
         }
     }
 }

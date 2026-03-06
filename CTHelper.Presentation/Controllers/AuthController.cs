@@ -23,9 +23,9 @@ public class AuthController : ControllerBase
 
     [HttpPost]
     [Route("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterUserRequestDto dto)
+    public async Task<IActionResult> Register([FromBody] RegisterUserRequestDto request)
     {
-        var createUserCommand = _mapper.Map<RegisterUserCommand>(dto);
+        var createUserCommand = _mapper.Map<RegisterUserCommand>(request);
         var createdUser = await _mediator.Send(createUserCommand);
 
         var requestEmailVerificationCommand = _mapper.Map<RequestEmailVerificationCommand>(createdUser);
@@ -77,9 +77,23 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("confirm-email-verification")]
-    public IActionResult ConfirmEmailVerification([FromBody] ConfirmEmailVerificationRequestDto request)
+    public async Task<IActionResult> ConfirmEmailVerification([FromBody] ConfirmEmailVerificationDto request)
     {
-        throw new NotImplementedException();
+        var confirmEmailCommand = _mapper.Map<ConfirmEmailVerificationCommand>(request);
+        var result = await _mediator.Send(confirmEmailCommand);
+        
+        if(result.ErrorCode == null)
+        {
+            return Created();
+
+        }
+        else
+        {
+            return StatusCode(
+                result.ErrorCode.Value,
+                new { Error = result.ErrorMessage });
+        }
+
     }
 
     [HttpGet("me/sessions")]

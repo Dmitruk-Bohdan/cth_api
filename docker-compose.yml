@@ -21,18 +21,27 @@ services:
       - minio_data:/data
     restart: unless-stopped
 
-  api:
-    env_file:
-      - .env
-    build:
-      context: .
-      dockerfile: CTHelper.Presentation/Dockerfile
-    depends_on:
-      - db
-      - minio
+#  api:
+#    env_file:
+#      - .env
+#    build:
+#      context: .
+#      dockerfile: CTHelper.Presentation/Dockerfile
+#    depends_on:
+#      - db
+#      - minio
+#    ports:
+#      - "5003:8080"
+#    restart: unless-stopped
+    
+  mailhog:    
+    image: mailhog/mailhog:latest
+    container_name: mailhog
     ports:
-      - "5003:8080"
-    restart: unless-stopped
+      - "1025:1025"   
+      - "8025:8025"   
+    environment:
+      - MH_UI_BIND_ADDR=0.0.0.0:8025    
 
 volumes:
   cthelper_pgdata:

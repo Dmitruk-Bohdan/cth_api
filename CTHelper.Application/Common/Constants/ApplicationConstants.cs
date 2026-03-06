@@ -7,5 +7,7 @@
 
         public static double EmailVerificationTokenLifetimeSeconds = 300;
 
+        public static short AttemptsLimitToValidateByOneToken = 5;
+
     }
 }

@@ -3,12 +3,13 @@ using CTHelper.Domain.Abstractions;
 using CTHelper.Domain.Common.Enums;
 using CTHelper.Domain.Specification;
 using FluentValidation;
+using Mapster.Utils;
 
 namespace CTHelper.Application.UseCases.Identity.Validation
 {
-    public class CreateUserCommandValidation : AbstractValidator<RegisterUserCommand>
+    public class RegisterUserCommandValidation : AbstractValidator<RegisterUserCommand>
     {
-        public CreateUserCommandValidation(IUnitOfWork unitOfWork)
+        public RegisterUserCommandValidation(IUnitOfWork unitOfWork)
         {
             RuleFor(cuc => cuc.Username)
                 .NotEmpty()
@@ -18,7 +19,7 @@ namespace CTHelper.Application.UseCases.Identity.Validation
                 .EmailAddress()
                 .MustAsync(async (email,cancellationToken) =>
                     !await unitOfWork.Users.ExistsAsync(
-                        new UserByEmailSpecification(email), cancellationToken))
+                        new UserByEmailAsNoTrackingSpecification(email), cancellationToken))
                     .WithMessage("User with this email already exists");
 
             RuleFor(cuc => cuc.Password)

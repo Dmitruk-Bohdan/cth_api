@@ -15,7 +15,7 @@ public class UserMappingConfig : IRegister
             .Map(dest => dest.Username, src => src.Username)
             .Map(dest => dest.Email, src => src.Email)
             .Map(dest => dest.Password, src => src.Password)
-            .Map(dest => dest.Role, src => src.Role.ToEnum<UserRole>());
+            .Map(dest => dest.Role, src => src.Role);
 
         config.NewConfig<RegisterUserCommand, User>()
             .Map(dest => dest.Username, src => src.Username)

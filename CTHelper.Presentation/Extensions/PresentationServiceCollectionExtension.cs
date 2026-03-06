@@ -18,6 +18,7 @@ namespace CTHelper.Presentation.Extensions
                 .AddHttpContextAccessor()
                 .AddCorsPolicy()
                 .AddPresentationSettings()
+                .AddPolicies()
                 .AddSwaggerConfiguration();
 
             return services;

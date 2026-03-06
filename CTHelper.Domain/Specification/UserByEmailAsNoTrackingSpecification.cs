@@ -3,11 +3,12 @@ using CTHelper.Domain.Entities;
 
 namespace CTHelper.Domain.Specification
 {
-    public class UserByEmailSpecification : BaseSpecification<User>
+    public class UserByEmailAsNoTrackingSpecification : BaseSpecification<User>
     {
-        public UserByEmailSpecification(string email)
+        public UserByEmailAsNoTrackingSpecification(string email)
         {
             AddCriteria(u => u.Email == email);
+            AsNoTracking = true;
         }
     }
 }
