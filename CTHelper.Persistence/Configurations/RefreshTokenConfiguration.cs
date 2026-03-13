@@ -21,6 +21,11 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnType("bigint")
                 .IsRequired();
 
+            builder.Property(rt => rt.DeviceId)
+                .HasColumnType("varchar(255)")
+                .HasColumnName("device_id")
+                .IsRequired();
+
             builder.Property(rt => rt.TokenHash) //SHA512
                 .HasColumnType("char(128)")
                 .HasColumnName("token_hash")

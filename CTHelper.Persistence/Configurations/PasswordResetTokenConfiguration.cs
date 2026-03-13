@@ -26,6 +26,12 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnName("token_hash")
                 .IsRequired();
 
+            builder.Property(e => e.AttemptsLeft)
+                .HasColumnName("attempt_left")
+                .HasColumnType("smallint")
+                .HasDefaultValue(5)
+                .IsRequired();
+
             builder.Property(prt => prt.ExpiresAt)
                 .HasColumnName("expires_at")
                 .HasColumnType("timestamptz")
