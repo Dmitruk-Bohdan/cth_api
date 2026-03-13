@@ -11,7 +11,8 @@ public class UserTokenByEmailAsNoTrackingSpecification : BaseSpecification<User,
         AddCriteria(u => u.Email == email);
         ApplySelector(u => new UserTokenModel
         {
-            Id = u.Id,
+            UserId = u.Id,
+            PasswordHash = u.PasswordHash,
             Username = u.Username,
             Email = u.Email,
             Role = u.Role

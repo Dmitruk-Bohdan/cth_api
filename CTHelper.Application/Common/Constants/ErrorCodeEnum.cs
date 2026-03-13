@@ -3,9 +3,8 @@
     public static class ErrorCodeConstants
     {
         //User error codes
-        public const string UserDoesntExist = "00001000";
+        public const string UserNotFound = "00001000";
         public const string WrongPassword = "00001001";
-        public const string UserNotFound = "00001002";
 
         //Email verification error codes
         public const string EmailIsAlreadyVerified = "00002000";
@@ -21,5 +20,6 @@
         public const string InvalidRefreshToken = "00003000";
         public const string RefreshTokenExpired = "00003001";
         public const string DeviceAlreadyHasActiveSession = "00003002";
+        public const string InvalidSessionJti = "00003003";
     }
 }

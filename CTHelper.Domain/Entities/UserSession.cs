@@ -23,5 +23,6 @@ namespace CTHelper.Domain.Entities
         public DateTimeOffset? RevokedAt { get; set; }
 
         public User User { get; set; } = default!;
+        public RefreshToken RefreshToken { get; set; } = default!;
     }
 }

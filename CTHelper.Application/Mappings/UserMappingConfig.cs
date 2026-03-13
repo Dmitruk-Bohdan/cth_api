@@ -35,7 +35,6 @@ public class UserMappingConfig : IRegister
             .Map(dest => dest.RefreshToken, src => src.RefreshToken);
 
         config.NewConfig<LogoutRequestDto, LogoutCommand>()
-            .Map(dest => dest.UserId, src => src.UserId)
             .Map(dest => dest.SessionJti, src => src.SessionJti);
     }
 }

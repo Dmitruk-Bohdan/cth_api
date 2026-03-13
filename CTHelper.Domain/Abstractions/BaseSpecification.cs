@@ -43,6 +43,12 @@ namespace CTHelper.Domain.Abstractions
         protected void AddOrderByDescending(IReadOnlyCollection<Expression<Func<T, object>>> orderByDescCollection)
             => _orderByDescending.AddRange(orderByDescCollection);
 
+        protected void AddInclude(Expression<Func<T, object>> includeExpression)
+            => _includes.Add(includeExpression);
+        
+        protected void AddIncludeRange(IReadOnlyCollection<Expression<Func<T, object>>> includeExpressions)
+            => _includes.AddRange(includeExpressions);
+
         protected void AddPaging(int skip, int take)
         {
             Skip = skip;

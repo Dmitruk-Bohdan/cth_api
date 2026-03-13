@@ -1,13 +1,15 @@
+using CTHelper.Application.Models;
 using CTHelper.Application.Models.Dtos.AuthDtos;
-using CTHelper.Application.Models.User;
-using CTHelper.Application.Specification.RefreshToken;
 using CTHelper.Application.Specification.UserSession;
 using CTHelper.Domain.Abstractions;
+using CTHelper.Domain.Common.Extensions;
+using Mapster;
 using MediatR;
+using System.Net;
 
 namespace CTHelper.Application.UseCases.Identity.Query;
 
-public class GetMySessionListQueryHandler : IRequestHandler<GetMySessionListQuery, List<UserSessionDto>>
+public class GetMySessionListQueryHandler : IRequestHandler<GetMySessionListQuery, OperationResult<List<UserSessionDto>>>
 {
     private readonly IUnitOfWork _unitOfWork;
 
@@ -16,44 +18,29 @@ public class GetMySessionListQueryHandler : IRequestHandler<GetMySessionListQuer
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<List<UserSessionDto>> Handle(GetMySessionListQuery request, CancellationToken cancellationToken)
+    public async Task<OperationResult<List<UserSessionDto>>> Handle(GetMySessionListQuery request, CancellationToken cancellationToken)
     {
-        // Получить все сессии пользователя
-        var sessions = await _unitOfWork.UserSessions.GetListAsync<UserSessionWithDeviceIdModel>(
-            new UserSessionsByUserIdSpecification(request.UserId),
+        var sessions = await _unitOfWork.UserSessions.GetListAsync(
+            new ActiveUserSessionsByUserIdAsNotrackingSpecification(request.UserId),
             cancellationToken);
 
-        if (!sessions.Any())
+        if (sessions.IsNullOrEmpty())
         {
-            return new List<UserSessionDto>();
+            return new OperationResult<List<UserSessionDto>>()
+            {
+                Payload = new List<UserSessionDto>(),
+                HttpStatusCode = HttpStatusCode.OK,
+            };
         }
-
-        // Получить ID сессий
-        var sessionIds = sessions.Select(s => s.SessionId).ToList();
-
-        // Получить активные refresh токены для этих сессий
-        var activeRefreshTokens = await _unitOfWork.RefreshTokens.GetListAsync(
-            new ActiveRefreshTokensBySessionIdsSpecification(sessionIds),
-            cancellationToken);
-
-        var activeSessionIds = activeRefreshTokens.Select(rt => rt.SessionId).ToHashSet();
-
-        // Создать словарь для быстрого поиска DeviceId по SessionId
-        var refreshTokenDict = activeRefreshTokens.ToDictionary(rt => rt.SessionId, rt => rt.DeviceId);
-
-        // Маппинг в DTO
-        var sessionDtos = sessions.Select(s => new UserSessionDto
+        else
         {
-            Jti = s.Jti,
-            ClientType = s.ClientType,
-            IpAddress = s.IpAddress,
-            DeviceInfo = s.DeviceInfo,
-            DeviceId = refreshTokenDict.TryGetValue(s.SessionId, out var deviceId) ? deviceId : null,
-            LastActivityAt = s.LastActivityAt,
-            CreatedAt = s.CreatedAt,
-            IsActive = activeSessionIds.Contains(s.SessionId)
-        }).ToList();
-
-        return sessionDtos;
+            var sessionDtos = sessions.Adapt<List<UserSessionDto>>();
+            var response = new OperationResult<List<UserSessionDto>>()
+            {
+                Payload = sessionDtos,
+                HttpStatusCode = HttpStatusCode.OK,
+            };
+            return response;
+        }
     }
 }

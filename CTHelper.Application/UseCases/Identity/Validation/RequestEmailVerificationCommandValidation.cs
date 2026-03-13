@@ -23,7 +23,7 @@ namespace CTHelper.Application.UseCases.Identity.Validation
                         var error = new OperationResult()
                         {
                             ErrorMessage = $"User {email} doesn't exist",
-                            ErrorCode = ErrorCodeConstants.UserDoesntExist
+                            ErrorCode = ErrorCodeConstants.UserNotFound
                         };
                         throw new CustomValidationException(error);
                     }

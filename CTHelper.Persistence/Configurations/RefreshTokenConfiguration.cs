@@ -23,8 +23,7 @@ namespace CTHelper.Persistence.Configurations
 
             builder.Property(rt => rt.DeviceId)
                 .HasColumnType("varchar(255)")
-                .HasColumnName("device_id")
-                .IsRequired();
+                .HasColumnName("device_id");
 
             builder.Property(rt => rt.TokenHash) //SHA512
                 .HasColumnType("char(128)")
@@ -49,9 +48,14 @@ namespace CTHelper.Persistence.Configurations
             builder.HasIndex(rt => rt.TokenHash)
                 .IsUnique();
 
+            builder.HasOne(rt => rt.Session)
+             .WithOne(s => s.RefreshToken)
+             .HasForeignKey<RefreshToken>(rt => rt.SessionId)
+             .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasIndex(rt => rt.SessionId)
-                .IsUnique()
-                .HasFilter("revoked_at IS NULL");
+             .IsUnique()
+             .HasFilter("revoked_at IS NULL");
 
             builder.HasIndex(rt => rt.ExpiresAt);
 

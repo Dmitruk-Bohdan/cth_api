@@ -1,48 +1,20 @@
 using CTHelper.Application.Models;
-using CTHelper.Application.Specification.RefreshToken;
-using CTHelper.Application.Specification.UserSession;
-using CTHelper.Domain.Abstractions;
+using CTHelper.Application.Services.Interfaces;
 using MediatR;
-using System.Net;
 
 namespace CTHelper.Application.UseCases.Identity.Command;
 
 public class LogoutFromAllDeviCommandHandler : IRequestHandler<LogoutFromAllDeviCommand, OperationResult>
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuthService _authService;
 
-    public LogoutFromAllDeviCommandHandler(IUnitOfWork unitOfWork)
+    public LogoutFromAllDeviCommandHandler(IAuthService authService)
     {
-        _unitOfWork = unitOfWork;
+        _authService = authService;
     }
 
     public async Task<OperationResult> Handle(LogoutFromAllDeviCommand request, CancellationToken cancellationToken)
     {
-        // Выход из всех сессий пользователя
-        var sessions = await _unitOfWork.UserSessions.GetListAsync(
-            new ActiveUserSessionsByUserIdSpecification(request.UserId),
-            cancellationToken);
-
-        foreach (var session in sessions)
-        {
-            // Отозвать все refresh token'ы для каждой сессии
-            var refreshTokens = await _unitOfWork.RefreshTokens.GetListAsync(
-                new RefreshTokensBySessionIdSpecification(session.Id),
-                cancellationToken);
-
-            foreach (var token in refreshTokens.Where(t => t.RevokedAt == null))
-            {
-                token.RevokedAt = DateTimeOffset.UtcNow;
-                await _unitOfWork.RefreshTokens.UpdateAsync(token, cancellationToken);
-            }
-
-            // Отозвать сессию
-            session.RevokedAt = DateTimeOffset.UtcNow;
-            await _unitOfWork.UserSessions.UpdateAsync(session, cancellationToken);
-        }
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return new OperationResult { HttpStatusCode = HttpStatusCode.NoContent };
+        return await _authService.LogoutFromAllDevicesAsync(request.UserId, cancellationToken);
     }
 }

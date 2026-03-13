@@ -5,8 +5,8 @@ public class StringToInetConverter : ValueConverter<string?, NpgsqlInet?>
 {
     public StringToInetConverter()
         : base(
-            v => string.IsNullOrEmpty(v) ? null : new NpgsqlInet(v), 
-            v => v == null ? null : v.ToString()                     
+            v => string.IsNullOrEmpty(v) ? (NpgsqlInet?)null : new NpgsqlInet(v),
+            v => v == null ? null : v.ToString()
         )
     { }
 }

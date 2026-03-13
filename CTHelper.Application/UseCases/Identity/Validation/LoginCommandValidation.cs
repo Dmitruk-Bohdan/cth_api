@@ -32,54 +32,40 @@ public class LoginCommandValidation : AbstractValidator<LoginCommand>
 
         RuleFor(x => x.IpAddress)
             .Must(ip => IPAddress.TryParse(ip, out _))
-            .WithMessage("Invalid IP address");
+            .WithMessage("Invalid IP address format")
+            .When(x => x.IpAddress != null); 
 
         RuleFor(x => x.DeviceInfo)
             .Must(BeValidJson)
             .WithMessage("DeviceInfo must be valid JSON")
             .MaximumLength(500)
-            .WithMessage("Device info is too long");
+            .WithMessage("Device info is too long")
+            .When(x => x.DeviceInfo != null);
 
         RuleFor(x => x.DeviceId)
             .MaximumLength(255)
-            .WithMessage("Device ID is too long");
+            .WithMessage("Device ID is too long")
+            .When(x => x.DeviceId != null);
 
         RuleFor(x => x)
             .CustomAsync(async (command, context, ct) =>
             {
-                var userIdModel = await unitOfWork.Users.GetAsync(
+                var userExists = await unitOfWork.Users.ExistsAsync(
                     new UserIdByEmailAsNoTrackingSpecification(command.Email),
                     ct);
 
-                if (userIdModel == null)
+                if (!userExists)
                 {
                     var error = new OperationResult()
                     {
                         ErrorMessage = $"User with email {command.Email} doesn't exist",
-                        ErrorCode = ErrorCodeConstants.UserDoesntExist
+                        ErrorCode = ErrorCodeConstants.UserNotFound
                     };
                     throw new CustomValidationException(error);
                 }
-
-                if (!string.IsNullOrEmpty(command.DeviceId))
-                {
-                    var existingSessions = await unitOfWork.UserSessions.GetListAsync(
-                        new ActiveUserSessionByUserIdAndDeviceIdSpecification(userIdModel.UserId, command.DeviceId),
-                        ct);
-
-                    if (existingSessions.Any())
-                    {
-                        var error = new OperationResult()
-                        {
-                            ErrorMessage = "This device already has an active session",
-                            ErrorCode = ErrorCodeConstants.DeviceAlreadyHasActiveSession
-                        };
-                        throw new CustomValidationException(error);
-                    }
-                }
             });
     }
-    private bool BeValidJson(string json)
+    private bool BeValidJson(string? json)
     {
         if (string.IsNullOrWhiteSpace(json))
             return false;

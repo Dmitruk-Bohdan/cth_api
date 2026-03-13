@@ -3,4 +3,4 @@ using MediatR;
 
 namespace CTHelper.Application.UseCases.Identity.Command;
 
-public record LogoutCommand(long UserId, Guid SessionJti) : IRequest<OperationResult>;
+public record LogoutCommand(Guid SessionJti) : IRequest<OperationResult>;

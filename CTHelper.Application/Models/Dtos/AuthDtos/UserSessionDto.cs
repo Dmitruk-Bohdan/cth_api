@@ -8,8 +8,6 @@ public class UserSessionDto
     public ClientType ClientType { get; set; }
     public string? IpAddress { get; set; }
     public string? DeviceInfo { get; set; }
-    public string? DeviceId { get; set; }
     public DateTimeOffset LastActivityAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
-    public bool IsActive { get; set; }
 }

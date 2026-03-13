@@ -1,50 +1,22 @@
 using CTHelper.Application.Models;
-using CTHelper.Application.Specification.RefreshToken;
-using CTHelper.Application.Specification.UserSession;
-using CTHelper.Domain.Abstractions;
+using CTHelper.Application.Services.Interfaces;
 using MediatR;
-using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CTHelper.Application.UseCases.Identity.Command;
 
 public class LogoutCommandHandler : IRequestHandler<LogoutCommand, OperationResult>
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuthService _authService;
 
-    public LogoutCommandHandler(IUnitOfWork unitOfWork)
+    public LogoutCommandHandler(IAuthService authService)
     {
-        _unitOfWork = unitOfWork;
+        _authService = authService;
     }
 
     public async Task<OperationResult> Handle(LogoutCommand request, CancellationToken cancellationToken)
     {
-        // Найти сессию по Jti и UserId
-        var sessions = await _unitOfWork.UserSessions.GetListAsync(
-            new ActiveUserSessionByJtiAndUserIdSpecification(request.UserId, request.SessionJti),
-            cancellationToken);
-
-        var session = sessions.FirstOrDefault();
-
-        if (session != null)
-        {
-            // Отозвать все refresh token'ы для этой сессии
-            var refreshTokens = await _unitOfWork.RefreshTokens.GetListAsync(
-                new RefreshTokensBySessionIdSpecification(session.Id),
-                cancellationToken);
-
-            foreach (var token in refreshTokens.Where(t => t.RevokedAt == null))
-            {
-                token.RevokedAt = DateTimeOffset.UtcNow;
-                await _unitOfWork.RefreshTokens.UpdateAsync(token, cancellationToken);
-            }
-
-            // Отозвать сессию
-            session.RevokedAt = DateTimeOffset.UtcNow;
-            await _unitOfWork.UserSessions.UpdateAsync(session, cancellationToken);
-        }
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        return new OperationResult { HttpStatusCode = HttpStatusCode.NoContent };
+        return await _authService.LogoutAsync(request, cancellationToken);
     }
 }

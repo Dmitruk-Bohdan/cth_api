@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CTHelper.Domain.Abstractions
 {
-    public interface ISpecification<T>
+    public interface    ISpecification<T>
     {
         Expression<Func<T, bool>>? Criteria { get; }
         IReadOnlyList<Expression<Func<T, object>>>? Includes { get; }

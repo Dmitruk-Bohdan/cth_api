@@ -5,5 +5,10 @@ namespace CTHelper.Application.UseCases.Identity.Command;
 
 public record RefreshTokenCommand(
     string RefreshToken,
-    long? UserId,
-    string? DeviceId) : IRequest<OperationResult<LoginResponse>>;
+    Guid SessionJti) : IRequest<OperationResult<RefreshTokenResponse>>;
+
+public class RefreshTokenResponse
+{
+    public string AccessToken { get; set; } = default!;    
+}
+    

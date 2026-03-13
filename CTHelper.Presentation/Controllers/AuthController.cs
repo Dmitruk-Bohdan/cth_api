@@ -65,16 +65,14 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Logout()
     {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var sessionJtiClaim = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
 
-        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId) ||
-            sessionJtiClaim == null || !Guid.TryParse(sessionJtiClaim, out var sessionJti))
+        if (sessionJtiClaim == null || !Guid.TryParse(sessionJtiClaim, out var sessionJti))
         {
             return Unauthorized();
         }
 
-        var logoutCommand = new LogoutCommand(userId, sessionJti);
+        var logoutCommand = new LogoutCommand(sessionJti);
         await _mediator.Send(logoutCommand);
 
         return NoContent();
@@ -100,7 +98,17 @@ public class AuthController : ControllerBase
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
     {
-        var refreshTokenCommand = _mapper.Map<RefreshTokenCommand>(request);
+        var sessionsJwt = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
+        if(string.IsNullOrWhiteSpace(sessionsJwt))
+        {
+            return Unauthorized();
+        }
+
+        var refreshTokenCommand = new RefreshTokenCommand(
+            request.RefreshToken,
+            Guid.Parse(sessionsJwt)
+        );
+
         var result = await _mediator.Send(refreshTokenCommand);
 
         if (result.ErrorCode == null)
@@ -208,7 +216,7 @@ public class AuthController : ControllerBase
             return Unauthorized();
         }
 
-        var query = new GetMySessionListQuery { UserId = userId };
+        var query = new GetMySessionListQuery(userId);
         var sessions = await _mediator.Send(query);
 
         return Ok(sessions);

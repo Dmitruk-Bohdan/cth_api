@@ -5,6 +5,9 @@ using CTHelper.Persistence.Extensions;
 using CTHelper.Infrastructure.Services.Implementations;
 using CTHelper.Infrastructure.Settings;
 using CTHelper.Application.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using CTHelper.Domain.Entities;
+using CTHelper.Application.Services.Implementations;
 
 namespace CTHelper.Infrastructure
 {
@@ -29,7 +32,11 @@ namespace CTHelper.Infrastructure
                     this IServiceCollection services)
         {
             services.AddTransient<IEmailService, MailHogService>();
-            services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<IIdentityTokenService, IdentityTokenService>();
+            services.AddTransient<IPasswordHashingService, PasswordHasherAdapter>();
+            services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<IIdentityTokenService, IdentityTokenService>();
+            services.AddTransient<IShortTokenService, ShortTokenService>();
 
             return services;
         }
@@ -38,8 +45,10 @@ namespace CTHelper.Infrastructure
                     this IServiceCollection services,
                     IConfiguration configuration)
         {
-            services.Configure<EmailSettings>(configuration.GetSection(nameof(EmailSettings)));
+            //ervices.Configure<EmailSettings>(configuration.GetSection(nameof(EmailSettings)));
+            services.Configure<EmailSettings>(configuration.GetSection("MailhogSettings"));
             services.Configure<MobileAppSettings>(configuration.GetSection(nameof(MobileAppSettings)));
+            services.Configure<TokenSettings>(configuration.GetSection(nameof(TokenSettings)));
             services.Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)));
             return services;
         }
