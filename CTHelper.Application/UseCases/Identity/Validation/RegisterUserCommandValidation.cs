@@ -1,9 +1,8 @@
-﻿using CTHelper.Application.UseCases.Identity.Command;
+﻿using CTHelper.Application.Specification.UserSpecifications;
+using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Domain.Abstractions;
 using CTHelper.Domain.Common.Enums;
-using CTHelper.Domain.Specification;
 using FluentValidation;
-using Mapster.Utils;
 
 namespace CTHelper.Application.UseCases.Identity.Validation
 {

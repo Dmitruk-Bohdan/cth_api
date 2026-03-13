@@ -10,11 +10,13 @@ public class EmailVerificationTokenMappingConfig : IRegister
     public void Register(TypeAdapterConfig config)
     {
         config.NewConfig<User, RequestEmailVerificationCommand>()
-            .Map(dest => dest.UserId, src => src.Id)
             .Map(dest => dest.UserEmail, src => src.Email);
 
+        config.NewConfig<RequestEmailVerificationRequestDto, RequestEmailVerificationCommand>()
+                    .Map(dest => dest.UserEmail, src => src.UserEmail);
+
         config.NewConfig<ConfirmEmailVerificationDto, ConfirmEmailVerificationCommand>()
-            .Map(dest => dest.UserId, src => src.UserId)
+            .Map(dest => dest.Email, src => src.Email)
             .Map(dest => dest.TokenAsString, src => src.Token);
     }
 }

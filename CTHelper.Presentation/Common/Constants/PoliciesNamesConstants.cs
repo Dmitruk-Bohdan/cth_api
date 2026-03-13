@@ -2,7 +2,7 @@
 {
     public static class PoliciesNamesConstants
     {
-        public static string EmailVerificationPolicy = "emailVerification";
-        public static string ResendEmailPolicy = "resendEmail";
+        public const string OtpDeliveryPolicy = "otpDelivery";
+        public const string ResendEmailPolicy = "resendEmail";
     }
 }

@@ -6,6 +6,6 @@ namespace CTHelper.Application.UseCases.Identity.Command;
 
 public record ConfirmEmailVerificationCommand
 (
-    long UserId,
+    string Email,
     string TokenAsString
 ) : IRequest<OperationResult>;

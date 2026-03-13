@@ -1,9 +1,17 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using CTHelper.Application.Models.Dtos;
 using CTHelper.Application.Models.Dtos.AuthDtos;
 using CTHelper.Application.UseCases.Identity.Command;
+using CTHelper.Application.UseCases.Identity.Query;
+using CTHelper.Domain.Common.Extensions;
+using CTHelper.Presentation.Common.Constants;
+using CTHelper.Presentation.Policies;
 using MapsterMapper;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CTHelper.Presentation.Controllers;
 
@@ -11,8 +19,8 @@ namespace CTHelper.Presentation.Controllers;
 [Route("auth")]
 public class AuthController : ControllerBase
 {
-    private IMediator _mediator;
-    private IMapper _mapper;
+    private readonly IMediator _mediator;
+    private readonly IMapper _mapper;
     public AuthController(
         IMediator mediator,
         IMapper mapper)
@@ -35,48 +43,141 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequestDto request)
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
     {
-        throw new NotImplementedException();
+        var loginCommand = _mapper.Map<LoginCommand>(request);
+        var result = await _mediator.Send(loginCommand);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpPost("logout")]
-    public IActionResult Logout()
+    [Authorize]
+    public async Task<IActionResult> Logout()
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var sessionJtiClaim = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
+
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId) ||
+            sessionJtiClaim == null || !Guid.TryParse(sessionJtiClaim, out var sessionJti))
+        {
+            return Unauthorized();
+        }
+
+        var logoutCommand = new LogoutCommand(userId, sessionJti);
+        await _mediator.Send(logoutCommand);
+
+        return NoContent();
     }
 
     [HttpPost("logout-all")]
-    public IActionResult LogoutAll()
+    [Authorize]
+    public async Task<IActionResult> LogoutAll()
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var logoutCommand = new LogoutFromAllDeviCommand(userId);
+        await _mediator.Send(logoutCommand);
+
+        return NoContent();
     }
 
     [HttpPost("refresh-token")]
-    public IActionResult RefreshToken([FromBody] RefreshTokenRequestDto request)
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
     {
-        throw new NotImplementedException();
+        var refreshTokenCommand = _mapper.Map<RefreshTokenCommand>(request);
+        var result = await _mediator.Send(refreshTokenCommand);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpPost("request-password-reset")]
-    public IActionResult RequestPasswordReset([FromBody] RequestPasswordResetRequestDto request)
+    [EnableRateLimiting(PoliciesNamesConstants.OtpDeliveryPolicy)]
+    public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetRequestDto request)
     {
-        throw new NotImplementedException();
+        var command = _mapper.Map<RequestPasswordResetCommand>(request);
+        var result = await _mediator.Send(command);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpPost("confirm-password-reset")]
-    public IActionResult ConfirmPasswordReset([FromBody] ConfirmPasswordResetRequestDto request)
+    [EnableRateLimiting(PoliciesNamesConstants.OtpDeliveryPolicy)]
+    public async Task<IActionResult> ConfirmPasswordReset([FromBody] ConfirmPasswordResetRequestDto request)
     {
-        throw new NotImplementedException();
+        var command = _mapper.Map<ConfirmPasswordResetCommand>(request);
+        var result = await _mediator.Send(command);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpPost("request-email-verification")]
-    public IActionResult RequestEmailVerification([FromBody] RequestEmailVerificationRequestDto request)
+    [EnableRateLimiting(PoliciesNamesConstants.ResendEmailPolicy)]
+    public async Task<IActionResult> RequestEmailVerification([FromBody] RequestEmailVerificationRequestDto request)
     {
-        throw new NotImplementedException();
+        var requestEmailVerificationCommand = _mapper.Map<RequestEmailVerificationCommand>(request);
+        var result = await _mediator.Send(requestEmailVerificationCommand);
+
+        if (result.ErrorCode == null)
+        {
+            return Created();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpPost("confirm-email-verification")]
+    [EnableRateLimiting(PoliciesNamesConstants.ResendEmailPolicy)]
     public async Task<IActionResult> ConfirmEmailVerification([FromBody] ConfirmEmailVerificationDto request)
     {
         var confirmEmailCommand = _mapper.Map<ConfirmEmailVerificationCommand>(request);
@@ -89,16 +190,27 @@ public class AuthController : ControllerBase
         }
         else
         {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
             return StatusCode(
-                result.ErrorCode.Value,
-                new { Error = result.ErrorMessage });
+                result.HttpStatusCode.ToInt(),
+                errorDto);
         }
-
     }
 
     [HttpGet("me/sessions")]
-    public IActionResult GetMySessions()
+    [Authorize]
+    public async Task<IActionResult> GetMySessions()
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var query = new GetMySessionListQuery { UserId = userId };
+        var sessions = await _mediator.Send(query);
+
+        return Ok(sessions);
     }
 }

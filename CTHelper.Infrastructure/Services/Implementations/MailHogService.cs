@@ -8,12 +8,12 @@ using CTHelper.Infrastructure.Common.Constants;
 
 namespace CTHelper.Infrastructure.Services.Implementations
 {
-    public class EmailService : IEmailService
+    public class MailHogService : IEmailService
     {
         private EmailSettings _emailSettings;
         private MobileAppSettings _mobileSettings;
 
-        public EmailService(
+        public MailHogService(
             IOptions<EmailSettings> emailSettings,
             IOptions<MobileAppSettings> mobileSettings)
         {
@@ -34,7 +34,25 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             using var client = new SmtpClient();
             await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, SecureSocketOptions.StartTlsWhenAvailable);
-            
+
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+        }
+
+        public async Task SendPasswordResetEmailAsync(string to, string token)
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(_emailSettings.FromName, _emailSettings.FromEmail));
+            message.To.Add(MailboxAddress.Parse(to));
+            message.Subject = EmailTemplates.PasswordResetSubject;
+            message.Body = new TextPart("html")
+            {
+                Text = EmailTemplates.PasswordResetBody(token, _mobileSettings.ResetPasswordUrlScheme)
+            };
+
+            using var client = new SmtpClient();
+            await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, SecureSocketOptions.StartTlsWhenAvailable);
+
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
         }

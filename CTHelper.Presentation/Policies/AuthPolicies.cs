@@ -11,16 +11,16 @@ namespace CTHelper.Presentation.Policies
         {
             services.AddRateLimiter(options =>
             {
-                options.AddFixedWindowLimiter(EmailVerificationPolicy, limiterOptions =>
+                options.AddFixedWindowLimiter(OtpDeliveryPolicy, limiterOptions =>
                 {
-                    limiterOptions.PermitLimit = EmailVerificationPermitLimit;
-                    limiterOptions.Window = TimeSpan.FromSeconds(EmailVerificationWindowTimespanSeconds);
+                    limiterOptions.PermitLimit = OtpDeliveryPermitLimit;
+                    limiterOptions.Window = TimeSpan.FromSeconds(OtpDeliveryWindowTimespanSeconds);
                 });
 
-                options.AddFixedWindowLimiter("resendEmail", limiterOptions =>
+                options.AddFixedWindowLimiter(ResendEmailPolicy, limiterOptions =>
                 {
-                    limiterOptions.PermitLimit = 3;
-                    limiterOptions.Window = TimeSpan.FromHours(1);
+                    limiterOptions.PermitLimit = ResendEmailPermitLimit;
+                    limiterOptions.Window = TimeSpan.FromHours(ResendEmailWindowTimespanHours);
                 });
             });
 

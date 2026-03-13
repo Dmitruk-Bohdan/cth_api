@@ -22,5 +22,20 @@ public class UserMappingConfig : IRegister
             .Map(dest => dest.Email, src => src.Email)
             .Map(dest => dest.IsEmailVerified, src => false)
             .Map(dest => dest.Role, src => src.Role);
+
+        config.NewConfig<LoginRequestDto, LoginCommand>()
+            .Map(dest => dest.Email, src => src.Email)
+            .Map(dest => dest.Password, src => src.Password)
+            .Map(dest => dest.ClientType, src => src.ClientType)
+            .Map(dest => dest.IpAddress, src => src.IpAddress)
+            .Map(dest => dest.DeviceInfo, src => src.DeviceInfo)
+            .Map(dest => dest.DeviceId, src => src.DeviceId);
+
+        config.NewConfig<RefreshTokenRequestDto, RefreshTokenCommand>()
+            .Map(dest => dest.RefreshToken, src => src.RefreshToken);
+
+        config.NewConfig<LogoutRequestDto, LogoutCommand>()
+            .Map(dest => dest.UserId, src => src.UserId)
+            .Map(dest => dest.SessionJti, src => src.SessionJti);
     }
 }

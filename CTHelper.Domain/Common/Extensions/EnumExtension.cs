@@ -14,5 +14,10 @@
                 value,
                 $"Value {value} is not defined in enum {typeof(TEnum).Name}");
         }
+
+        public static int ToInt<TEnum>(this TEnum value) where TEnum : struct, Enum
+        {
+            return (int)(object)value;
+        }
     }
 }

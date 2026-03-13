@@ -10,8 +10,8 @@
                 {
                     policy
                         .WithOrigins(
-                            "<some-localhost>",
-                            "<our-frontend>"
+                            "",
+                            ""
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()

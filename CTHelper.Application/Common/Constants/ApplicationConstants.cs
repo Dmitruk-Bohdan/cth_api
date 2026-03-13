@@ -6,8 +6,10 @@
         public static int EmailVerificationTokenBottomBound = 0;
 
         public static double EmailVerificationTokenLifetimeSeconds = 300;
+        public static short AttemptsLimitToValidateEmailVerificationByOneToken = 5;
 
-        public static short AttemptsLimitToValidateByOneToken = 5;
+        public static double PasswordResetTokenLifetimeSeconds = 300;
+        public static short AttemptsLimitToValidatePasswordResetByOneToken = 3;
 
     }
 }

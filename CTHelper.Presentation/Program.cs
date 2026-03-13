@@ -1,5 +1,6 @@
 using CTHelper.Infrastructure.Extensions;
 using CTHelper.Presentation.Extensions;
+using Microsoft.IdentityModel.Logging;
 
 namespace CTHelper.Presentation;
 
@@ -16,6 +17,7 @@ public class Program
 
         services.AddPresentation(configuration);
 
+        IdentityModelEventSource.ShowPII = true;
         var app = builder.Build();
 
         app.ConfigureMiddleware();

@@ -27,8 +27,9 @@ namespace CTHelper.Infrastructure.Startup
                     Description = "JWT Authorization header using the Bearer scheme",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT"
                 });
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement

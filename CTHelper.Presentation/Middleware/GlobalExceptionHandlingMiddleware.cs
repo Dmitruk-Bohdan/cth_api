@@ -36,13 +36,13 @@ public class GlobalExceptionHandlingMiddleware
         {
             await HandleValidationExceptionAsync(context, ex);
         }
+        catch (CustomValidationException ex)
+        {
+            await HandleCustomValidationExceptionAsync(context, ex);
+        }
         catch (NotFoundException ex)
         {
             await HandleNotFoundExceptionAsync(context, ex);
-        }
-        catch(ConflictException ex)
-        {
-            await HandleConflictExceptionAsync(context, ex);
         }
         catch (Exception ex)
         {
@@ -74,6 +74,28 @@ public class GlobalExceptionHandlingMiddleware
         return context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, _serializerOptions));
     }
 
+    private Task HandleCustomValidationExceptionAsync(HttpContext context, CustomValidationException ex)
+    {
+        _logger.LogWarning(ex, "Validation error occurred");
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+        var problemDetails = new ValidationProblemDetails()
+        {
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+            Title = "Validation Error",
+            Status = StatusCodes.Status400BadRequest,
+            Detail = ex.ValidationResult.ErrorMessage,
+            Instance = context.Request.Path
+        };
+
+        problemDetails.Extensions["errorCode"] = ex.ValidationResult.ErrorCode;
+
+
+        return context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, _serializerOptions));
+    }
+
     private Task HandleNotFoundExceptionAsync(HttpContext context, NotFoundException ex)
     {
         _logger.LogWarning(ex, "Not found error occurred");
@@ -86,25 +108,6 @@ public class GlobalExceptionHandlingMiddleware
             Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4",
             Title = "Not Found",
             Status = StatusCodes.Status404NotFound,
-            Detail = ex.Message,
-            Instance = context.Request.Path
-        };
-
-        return context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, _serializerOptions));
-    }
-
-    private Task HandleConflictExceptionAsync(HttpContext context, Exception ex)
-    {
-        _logger.LogWarning(ex, "Conflict error occurred");
-
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = StatusCodes.Status409Conflict;
-
-        var problemDetails = new ProblemDetails
-        {
-            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.8",
-            Title = "Conflict",
-            Status = StatusCodes.Status409Conflict,
             Detail = ex.Message,
             Instance = context.Request.Path
         };

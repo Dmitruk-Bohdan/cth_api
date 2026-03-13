@@ -28,7 +28,8 @@ namespace CTHelper.Infrastructure
         private static IServiceCollection AddInfrastructureServices(
                     this IServiceCollection services)
         {
-            services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<IEmailService, MailHogService>();
+            services.AddTransient<ITokenService, TokenService>();
 
             return services;
         }
@@ -39,6 +40,7 @@ namespace CTHelper.Infrastructure
         {
             services.Configure<EmailSettings>(configuration.GetSection(nameof(EmailSettings)));
             services.Configure<MobileAppSettings>(configuration.GetSection(nameof(MobileAppSettings)));
+            services.Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)));
             return services;
         }
     }

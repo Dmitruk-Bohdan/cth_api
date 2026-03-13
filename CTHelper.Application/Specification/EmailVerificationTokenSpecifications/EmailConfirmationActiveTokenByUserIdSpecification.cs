@@ -1,7 +1,7 @@
 ﻿using CTHelper.Domain.Abstractions;
 using CTHelper.Domain.Entities;
 
-namespace CTHelper.Domain.Specification
+namespace CTHelper.Application.Specification.EmailVerificationTokenSpecifications
 {
     public class EmailConfirmationActiveTokenByUserIdSpecification : BaseSpecification<EmailVerificationToken>
     {

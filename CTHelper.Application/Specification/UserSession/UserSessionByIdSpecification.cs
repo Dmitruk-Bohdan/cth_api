@@ -1,0 +1,12 @@
+using CTHelper.Domain.Abstractions;
+using CTHelper.Domain.Entities;
+
+namespace CTHelper.Application.Specification.UserSession;
+
+public class UserSessionByIdSpecification : BaseSpecification<Domain.Entities.UserSession>
+{
+    public UserSessionByIdSpecification(long id)
+    {
+        AddCriteria(s => s.Id == id);
+    }
+}

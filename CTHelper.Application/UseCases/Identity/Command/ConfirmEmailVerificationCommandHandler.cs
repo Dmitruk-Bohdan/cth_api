@@ -1,10 +1,12 @@
+using CTHelper.Application.Common.Constants;
 using CTHelper.Application.Common.Helpers;
 using CTHelper.Application.Models;
+using CTHelper.Application.Specification.EmailVerificationTokenSpecifications;
+using CTHelper.Application.Specification.UserSpecifications;
 using CTHelper.Domain.Abstractions;
 using CTHelper.Domain.Entities;
-using CTHelper.Domain.Specification;
 using MediatR;
-using System.Numerics;
+using System.Net;
 
 namespace CTHelper.Application.UseCases.Identity.Command;
 
@@ -19,14 +21,37 @@ public class ConfirmEmailVerificationCommandHandler : IRequestHandler<ConfirmEma
 
     public async Task<OperationResult> Handle(ConfirmEmailVerificationCommand request, CancellationToken cancellationToken)
     {
-        var token = await _unitOfWork.EmailVerificationTokens.GetAsync(new EmailConfirmationActiveTokenByUserIdSpecification(request.UserId));
-        
-        if(token!.ExpiresAt < DateTimeOffset.UtcNow)
+        var user = await _unitOfWork.Users.GetAsync(new UserByEmaiSpecification(request.Email));
+
+        if (user == null)
+        {
+            return new OperationResult
+            {
+                ErrorMessage = "User not found",
+                ErrorCode = ErrorCodeConstants.UserDoesntExist,
+                HttpStatusCode = HttpStatusCode.NotFound
+            };
+        }
+
+        var token = await _unitOfWork.EmailVerificationTokens.GetAsync(new EmailConfirmationActiveTokenByUserEmailSpecification(request.Email, user.Id));
+
+        if (token == null)
+        {
+            return new OperationResult
+            {
+                ErrorMessage = "No active tokens were found for this user.",
+                ErrorCode = ErrorCodeConstants.WrongEmailVerificationToken,
+                HttpStatusCode = HttpStatusCode.BadRequest
+            };
+        }
+
+        if (token.ExpiresAt < DateTimeOffset.UtcNow)
         {
             var response = new OperationResult<User>()
             {
                 ErrorMessage = "Token is expired, request a new one",
-                ErrorCode = 400,
+                ErrorCode = ErrorCodeConstants.EmailVerificationTokenIsExpired,
+                HttpStatusCode = HttpStatusCode.BadRequest
             };
             await _unitOfWork.EmailVerificationTokens.DeleteAsync(token);
             await _unitOfWork.SaveChangesAsync();
@@ -36,15 +61,16 @@ public class ConfirmEmailVerificationCommandHandler : IRequestHandler<ConfirmEma
 
         var requestTokenHash = HashHelper.Get128Hash(request.TokenAsString);
 
-        if(token.TokenHash != requestTokenHash)
+        if (token.TokenHash != requestTokenHash)
         {
             var response = new OperationResult<User>()
             {
                 ErrorMessage = $"Token doesn't match!, {--token.AttemptsLeft} attempts left!",
-                ErrorCode = 400,
+                ErrorCode = ErrorCodeConstants.WrongEmailVerificationToken,
+                HttpStatusCode = HttpStatusCode.BadRequest
             };
 
-            if(token.AttemptsLeft == 0 )
+            if (token.AttemptsLeft == 0)
             {
                 await _unitOfWork.EmailVerificationTokens.DeleteAsync(token);
             }
@@ -54,14 +80,13 @@ public class ConfirmEmailVerificationCommandHandler : IRequestHandler<ConfirmEma
         }
         else
         {
-            var tokenOwner = await _unitOfWork.Users.GetAsync(new UserByIdSpecification(request.UserId));
-            tokenOwner!.IsEmailVerified = true;
+            user.IsEmailVerified = true;
 
             await _unitOfWork.EmailVerificationTokens.DeleteAsync(token);
 
             await _unitOfWork.SaveChangesAsync();
 
-            return new OperationResult();
+            return new OperationResult { HttpStatusCode = HttpStatusCode.Created };
         }
     }
 }
