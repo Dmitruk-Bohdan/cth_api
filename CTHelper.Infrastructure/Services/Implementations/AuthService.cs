@@ -1,7 +1,5 @@
 ﻿using CTHelper.Application.Common.Constants;
-using CTHelper.Application.Exceptions;
 using CTHelper.Application.Models;
-using CTHelper.Application.Models.User;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Application.Specification.EmailVerificationTokenSpecifications;
 using CTHelper.Application.Specification.PasswordResetToken;
@@ -9,15 +7,14 @@ using CTHelper.Application.Specification.RefreshToken;
 using CTHelper.Application.Specification.UserSession;
 using CTHelper.Application.Specification.UserSpecifications;
 using CTHelper.Application.UseCases.Identity.Command;
+using CTHelper.Application.UseCases.Identity.Command.ResponseModels;
 using CTHelper.Domain.Abstractions;
 using CTHelper.Domain.Common.Extensions;
 using CTHelper.Domain.Entities;
 using CTHelper.Infrastructure.Settings;
-using CTHelper.Persistence.Repositories;
 using MapsterMapper;
 using Microsoft.Extensions.Options;
 using System.Net;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CTHelper.Application.Services.Implementations;
 
@@ -46,7 +43,7 @@ public class AuthService : IAuthService
         _tokenSettings = tokenSettings.Value;
     }
 
-    public async Task<OperationResult<LoginResponse>> LoginAsync(LoginCommand request, CancellationToken cancellationToken)
+    public async Task<OperationResult<LoginResponseModel>> LoginAsync(LoginCommand request, CancellationToken cancellationToken)
     {
         var userToken = await _unitOfWork.Users.GetAsync(
             new UserTokenByEmailAsNoTrackingSpecification(request.Email),
@@ -54,7 +51,7 @@ public class AuthService : IAuthService
 
         if (userToken == null)
         {
-            return new OperationResult<LoginResponse>
+            return new OperationResult<LoginResponseModel>
             {
                 ErrorMessage = "User doesn't exist",
                 ErrorCode = ErrorCodeConstants.UserNotFound,
@@ -64,7 +61,7 @@ public class AuthService : IAuthService
 
         if (!_passwordHashingService.Verify(request.Password, userToken.PasswordHash))
         {
-            return new OperationResult<LoginResponse>
+            return new OperationResult<LoginResponseModel>
             {
                 ErrorMessage = "Wrong password",
                 ErrorCode = ErrorCodeConstants.WrongPassword,
@@ -116,18 +113,13 @@ public class AuthService : IAuthService
         await _unitOfWork.RefreshTokens.AddAsync(refreshToken, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new OperationResult<LoginResponse>
+        return new OperationResult<LoginResponseModel>
         {
             HttpStatusCode = HttpStatusCode.OK,
-            Payload = new LoginResponse
+            Payload = new LoginResponseModel
             {
-                UserId = userToken.UserId,
-                Username = userToken.Username,
-                Email = userToken.Email,
-                Role = userToken.Role,
                 AccessToken = accessToken,
                 RefreshToken = refreshTokenString,
-                SessionJti = sessionJti
             }
         };
     }
@@ -275,7 +267,7 @@ public class AuthService : IAuthService
 
             if (refreshToken == null)
             {
-                return new OperationResult<LoginResponse>
+                return new OperationResult
                 {
                     ErrorMessage = $"Refresh token not found for session {session.Id}",
                     ErrorCode = ErrorCodeConstants.UserNotFound,

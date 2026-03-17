@@ -14,7 +14,7 @@ namespace CTHelper.Domain.Entities
 
         public DateTimeOffset? LastLoginAt { get; set; }
 
-        public string? AvatarUrl { get; set; }
+        public long? AvatarImageId { get; set; }
 
         public bool IsDeleted { get; set; }
         public bool IsEmailVerified { get; set; }
@@ -22,6 +22,7 @@ namespace CTHelper.Domain.Entities
         public DateTimeOffset CreatedAt { get; set; }
 
         public DateTimeOffset LastUpdateAt { get; set; }
+        public Image? Avatar { get; set; }
 
         public ICollection<Assignment> IssuedAssignments { get; set; } = new List<Assignment>();
 
@@ -39,6 +40,8 @@ namespace CTHelper.Domain.Entities
         public ICollection<TeacherStudent> Teachers { get; set; } = new List<TeacherStudent>();
 
         public ICollection<TeacherStudent> Students { get; set; } = new List<TeacherStudent>();
+        
+        public ICollection<Image> UserImages { get; set; } = new List<Image>();
 
         public ICollection<Group> Groups { get; set; } = new List<Group>();
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using CTHelper.Application.Models.Dtos.UserDtos;
+using CTHelper.Application.Services.Interfaces;
 
 namespace CTHelper.Presentation.Controllers;
 
@@ -7,11 +8,18 @@ namespace CTHelper.Presentation.Controllers;
 [Route("users")]
 public class UsersController : ControllerBase
 {
+    private IFileStorageService _fileStorageService;
+
+    public UsersController(IFileStorageService fileStorageService)
+    {
+        _fileStorageService = fileStorageService;
+    }
 
     [HttpGet("{id}")]
-    public IActionResult GetById(long id)
+    public async Task<IActionResult> GetById(long id)
     {
-        throw new NotImplementedException();
+        var list = await _fileStorageService.GetFileNamesAsync();
+        return Ok(list);
     }
 
     [HttpPut("{id}")]

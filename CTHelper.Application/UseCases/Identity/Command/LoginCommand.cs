@@ -1,4 +1,5 @@
 using CTHelper.Application.Models;
+using CTHelper.Application.UseCases.Identity.Command.ResponseModels;
 using CTHelper.Domain.Common.Enums;
 using MediatR;
 
@@ -10,15 +11,6 @@ public record LoginCommand(
     ClientType ClientType,
     string? IpAddress,
     string? DeviceInfo,
-    string? DeviceId) : IRequest<OperationResult<LoginResponse>>;
+    string? DeviceId) : IRequest<OperationResult<LoginResponseModel>>;
 
-public class LoginResponse
-{
-    public long UserId { get; set; }
-    public string Username { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public UserRole Role { get; set; }
-    public string AccessToken { get; set; } = string.Empty;
-    public string RefreshToken { get; set; } = string.Empty;
-    public Guid SessionJti { get; set; }
-}
+

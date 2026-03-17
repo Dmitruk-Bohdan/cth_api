@@ -1,5 +1,6 @@
 using CTHelper.Application.Models.Dtos.AuthDtos;
 using CTHelper.Application.UseCases.Identity.Command;
+using CTHelper.Application.UseCases.Identity.Command.ResponseModels;
 using CTHelper.Domain.Common.Enums;
 using CTHelper.Domain.Common.Extensions;
 using CTHelper.Domain.Entities;
@@ -31,8 +32,8 @@ public class UserMappingConfig : IRegister
             .Map(dest => dest.DeviceInfo, src => src.DeviceInfo)
             .Map(dest => dest.DeviceId, src => src.DeviceId);
 
-        config.NewConfig<RefreshTokenRequestDto, RefreshTokenCommand>()
-            .Map(dest => dest.RefreshToken, src => src.RefreshToken);
+        config.NewConfig<LoginResponseModel, LoginResponseDto>()
+            .Map(dest => dest.AccessToken, src => src.AccessToken);
 
         config.NewConfig<LogoutRequestDto, LogoutCommand>()
             .Map(dest => dest.SessionJti, src => src.SessionJti);

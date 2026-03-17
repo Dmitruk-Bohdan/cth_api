@@ -1,13 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Amazon.S3;
 using CTHelper.Application.Extensions;
-using CTHelper.Persistence.Extensions;
+using CTHelper.Application.Services.Implementations;
+using CTHelper.Application.Services.Interfaces;
 using CTHelper.Infrastructure.Services.Implementations;
 using CTHelper.Infrastructure.Settings;
-using CTHelper.Application.Services.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using CTHelper.Domain.Entities;
-using CTHelper.Application.Services.Implementations;
+using CTHelper.Persistence.Extensions;
+using CTHelper.Presentation.Settings;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CTHelper.Infrastructure
 {
@@ -21,7 +21,8 @@ namespace CTHelper.Infrastructure
                 .AddApplication()
                 .AddPersistance(configuration)
                 .AddInfrastructureSettings(configuration)
-                .AddInfrastructureServices();
+                .AddInfrastructureServices()
+                .AddS3Storage(configuration);
 
 
 
@@ -31,12 +32,13 @@ namespace CTHelper.Infrastructure
         private static IServiceCollection AddInfrastructureServices(
                     this IServiceCollection services)
         {
-            services.AddTransient<IEmailService, MailHogService>();
-            services.AddTransient<IIdentityTokenService, IdentityTokenService>();
+            services.AddScoped<IEmailService, MailHogService>();
+            services.AddScoped<IIdentityTokenService, IdentityTokenService>();
             services.AddTransient<IPasswordHashingService, PasswordHasherAdapter>();
-            services.AddTransient<IAuthService, AuthService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.AddTransient<IIdentityTokenService, IdentityTokenService>();
             services.AddTransient<IShortTokenService, ShortTokenService>();
+            services.AddScoped<IFileStorageService, MinioFileStorageService>();
 
             return services;
         }
@@ -50,6 +52,28 @@ namespace CTHelper.Infrastructure
             services.Configure<MobileAppSettings>(configuration.GetSection(nameof(MobileAppSettings)));
             services.Configure<TokenSettings>(configuration.GetSection(nameof(TokenSettings)));
             services.Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)));
+            services.Configure<S3Settings>(configuration.GetSection(nameof(S3Settings)));
+            return services;
+        }
+
+        private static IServiceCollection AddS3Storage(
+                    this IServiceCollection services,
+                    IConfiguration configuration)
+        {
+            var s3Settings = configuration.GetSection(nameof(S3Settings)).Get<S3Settings>();
+
+            services.AddSingleton<IAmazonS3>(_ =>
+            {
+                var config = new AmazonS3Config
+                {
+                    ServiceURL = s3Settings!.Endpoint,
+                    ForcePathStyle = s3Settings.ForcePathStyle,
+                    UseHttp = !s3Settings.UseSsl
+                };
+
+                return new AmazonS3Client(s3Settings.AccessKey, s3Settings.SecretKey, config);
+            });
+
             return services;
         }
     }

@@ -5,13 +5,14 @@ using CTHelper.Application.Models.Dtos.AuthDtos;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Application.UseCases.Identity.Query;
 using CTHelper.Domain.Common.Extensions;
+using CTHelper.Infrastructure.Settings;
 using CTHelper.Presentation.Common.Constants;
-using CTHelper.Presentation.Policies;
 using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace CTHelper.Presentation.Controllers;
 
@@ -20,13 +21,16 @@ namespace CTHelper.Presentation.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly JwtSettings _jwtSettings;
     private readonly IMapper _mapper;
     public AuthController(
         IMediator mediator,
-        IMapper mapper)
+        IMapper mapper,
+        IOptions<JwtSettings> jwtSettings)
     {
         _mediator = mediator;
         _mapper = mapper;
+        _jwtSettings = jwtSettings.Value;
     }
 
     [HttpPost]
@@ -50,7 +54,23 @@ public class AuthController : ControllerBase
 
         if (result.ErrorCode == null)
         {
-            return Ok(result.Payload);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,      
+                Secure = true,        
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays),
+                Path = "/auth"
+            };
+
+            Response.Cookies.Append(
+                CookieConstants.RefreshToken,
+                result.Payload!.RefreshToken,
+                cookieOptions);
+            
+            var responseDto = _mapper.Map<LoginResponseDto>(result.Payload);
+            return Ok(responseDto);
         }
         else
         {
@@ -96,7 +116,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
+    public async Task<IActionResult> RefreshToken()
     {
         var sessionsJwt = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
         if(string.IsNullOrWhiteSpace(sessionsJwt))
@@ -104,8 +124,15 @@ public class AuthController : ControllerBase
             return Unauthorized();
         }
 
+        var refreshToken = Request.Cookies[CookieConstants.RefreshToken];
+
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            return Unauthorized();
+        }
+
         var refreshTokenCommand = new RefreshTokenCommand(
-            request.RefreshToken,
+            refreshToken,
             Guid.Parse(sessionsJwt)
         );
 

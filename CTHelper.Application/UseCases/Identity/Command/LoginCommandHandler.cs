@@ -1,10 +1,11 @@
 using CTHelper.Application.Models;
 using CTHelper.Application.Services.Interfaces;
+using CTHelper.Application.UseCases.Identity.Command.ResponseModels;
 using MediatR;
 
 namespace CTHelper.Application.UseCases.Identity.Command;
 
-public class LoginCommandHandler : IRequestHandler<LoginCommand, OperationResult<LoginResponse>>
+public class LoginCommandHandler : IRequestHandler<LoginCommand, OperationResult<LoginResponseModel>>
 {
     private readonly IAuthService _authService;
 
@@ -13,7 +14,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, OperationResult
         _authService = authService;
     }
 
-    public async Task<OperationResult<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
+    public async Task<OperationResult<LoginResponseModel>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         return await _authService.LoginAsync(request, cancellationToken);
     }

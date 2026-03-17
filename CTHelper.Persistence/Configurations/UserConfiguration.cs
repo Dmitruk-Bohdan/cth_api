@@ -46,9 +46,9 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnName("last_login_at")
                 .HasColumnType("timestamptz");
 
-            builder.Property(u => u.AvatarUrl)
-                .HasColumnName("avatar_url")
-                .HasMaxLength(2048);
+            builder.Property(u => u.AvatarImageId)
+                .HasColumnName("avatar_id")
+                .HasColumnType("bigint");
 
             builder.Property(u => u.IsDeleted)
                 .HasColumnName("is_deleted")
@@ -64,6 +64,18 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnName("last_update_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
+
+            builder.HasMany(u => u.UserImages)
+                .WithOne(i => i.Owner)
+                .HasForeignKey(i => i.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasPrincipalKey(u => u.Id);
+
+            builder.HasOne(u => u.Avatar)
+                .WithMany()
+                .HasForeignKey(u => u.AvatarImageId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasPrincipalKey(u => u.Id);
 
             builder
                 .HasMany(u => u.Groups)
