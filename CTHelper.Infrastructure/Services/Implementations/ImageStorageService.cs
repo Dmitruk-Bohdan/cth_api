@@ -3,6 +3,7 @@ using Amazon.S3.Model;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Presentation.Settings;
 using Microsoft.Extensions.Options;
+using System.Net;
 
 namespace CTHelper.Infrastructure.Services.Implementations
 {
@@ -17,28 +18,63 @@ namespace CTHelper.Infrastructure.Services.Implementations
             _settings = settings.Value;
         }
 
-        public async Task<List<string>> GetFileNamesAsync(string? prefix = null)
+
+        public async Task UploadAsync(
+            Stream stream,
+            string key,
+            string contentType,
+            string bucketName)
         {
-            var fileNames = new List<string>();
-            string continuationToken = null!;
-
-            do
+            var request = new PutObjectRequest
             {
-                var request = new ListObjectsV2Request
-                {
-                    BucketName = _settings.AvatarBucket,
-                    ContinuationToken = continuationToken,
-                    MaxKeys = 10          
-                };
+                BucketName = bucketName,
+                Key = key,
+                InputStream = stream,
+                ContentType = contentType
+            };
 
-                var response = await _s3.ListObjectsV2Async(request);
+            await _s3.PutObjectAsync(request);
+        }
 
-                fileNames.AddRange(response.S3Objects.Select(o => o.Key));
+        public async Task<Stream> DownloadAsync(string key, string bucket)
+        {
+            var response = await _s3.GetObjectAsync(bucket, key);
+            return response.ResponseStream;
+        }
 
-                continuationToken = (response.IsTruncated ?? false) ? response.NextContinuationToken : null;
-            } while (continuationToken != null);
+        public async Task DeleteAsync(string key, string bucket)
+        {
+            var response = await _s3.DeleteObjectAsync(bucket, key);
+        }
 
-            return fileNames;
+        public async Task<bool> Exists(string key, string bucket)
+        {
+            try
+            {
+                await _s3.GetObjectMetadataAsync(bucket, key);
+                return true;
+            }
+            catch (AmazonS3Exception e)
+            {
+                return e.StatusCode != HttpStatusCode.NotFound;
+            }
+        }
+
+        public string GetDownloadUrl(string key, string bucket)
+            => CreateFileUrl(key, HttpVerb.GET, _settings.GetFileLinkExpirationSeconds, bucket);
+
+        public string GetUploadUrl(string key, int expiresSeconds, string bucket)
+            => CreateFileUrl(key, HttpVerb.PUT, _settings.PutFileLinkExpirationSeconds, bucket);
+
+        private string CreateFileUrl(string key, HttpVerb verb, int seconds, string bucket)
+        {
+            return _s3.GetPreSignedURL(new GetPreSignedUrlRequest
+            {
+                BucketName = bucket,
+                Key = key,
+                Verb = verb,
+                Expires = DateTime.UtcNow.AddSeconds(seconds)
+            });
         }
     }
 }

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using CTHelper.Application.Models.Dtos.TestAttemptDtos;
+using CTHelper.Presentation.Dtos.TestAttemptDtos;
 
 namespace CTHelper.Presentation.Controllers;
 

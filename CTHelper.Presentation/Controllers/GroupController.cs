@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using CTHelper.Application.Models.Dtos.GroupDtos;
+using CTHelper.Presentation.Dtos.GroupDtos;
 
 namespace CTHelper.Presentation.Controllers;
 

@@ -18,7 +18,7 @@ namespace CTHelper.Application.UseCases.Identity.Validation
                 .EmailAddress()
                 .MustAsync(async (email,cancellationToken) =>
                     !await unitOfWork.Users.ExistsAsync(
-                        new UserByEmailAsNoTrackingSpecification(email), cancellationToken))
+                        new ActiveUserByEmailAsNoTrackingSpecification(email), cancellationToken))
                     .WithMessage("User with this email already exists");
 
             RuleFor(cuc => cuc.Password)

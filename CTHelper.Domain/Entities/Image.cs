@@ -11,6 +11,7 @@
         public long Size { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
+        public bool IsDeleted { get; set; }
 
         public User Owner { get; set; } = default!;
     }

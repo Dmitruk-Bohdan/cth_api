@@ -1,4 +1,5 @@
 ﻿using CTHelper.Application.Models;
+using CTHelper.Application.Models.Session;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Application.UseCases.Identity.Command.ResponseModels;
 using CTHelper.Domain.Entities;
@@ -19,5 +20,6 @@ namespace CTHelper.Application.Services.Interfaces
         Task<User> RegisterUserAsync(RegisterUserCommand command, CancellationToken cancellationToken);
         Task<string> GenerateAndSaveEmailVerificationTokenAsync(string userEmail, CancellationToken cancellationToken);
         Task<string> GenerateAndSavePasswordResetTokenAsync(string userEmail, CancellationToken cancellationToken);
+        Task<OperationResult<List<UserSessionListResponseModel>>> GetUserSessionsList(long userId);
     }
 }

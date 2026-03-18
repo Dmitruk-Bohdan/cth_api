@@ -1,5 +1,7 @@
 ﻿using CTHelper.Application.Common.Constants;
+using CTHelper.Application.Common.Helpers;
 using CTHelper.Application.Models;
+using CTHelper.Application.Models.Session;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Application.Specification.EmailVerificationTokenSpecifications;
 using CTHelper.Application.Specification.PasswordResetToken;
@@ -12,6 +14,7 @@ using CTHelper.Domain.Abstractions;
 using CTHelper.Domain.Common.Extensions;
 using CTHelper.Domain.Entities;
 using CTHelper.Infrastructure.Settings;
+using Mapster;
 using MapsterMapper;
 using Microsoft.Extensions.Options;
 using System.Net;
@@ -51,12 +54,7 @@ public class AuthService : IAuthService
 
         if (userToken == null)
         {
-            return new OperationResult<LoginResponseModel>
-            {
-                ErrorMessage = "User doesn't exist",
-                ErrorCode = ErrorCodeConstants.UserNotFound,
-                HttpStatusCode = HttpStatusCode.NotFound
-            };
+            return OperationResultHelper.UserNotFoundTemplate<LoginResponseModel>(email: request.Email);
         }
 
         if (!_passwordHashingService.Verify(request.Password, userToken.PasswordHash))
@@ -127,12 +125,9 @@ public class AuthService : IAuthService
     {
         var user = await _unitOfWork.Users.GetAsync(new UserByEmaiSpecification(email), cancellationToken);
         if (user == null)
-            return new OperationResult
-            {
-                ErrorMessage = "User not found",
-                ErrorCode = ErrorCodeConstants.UserNotFound,
-                HttpStatusCode = HttpStatusCode.NotFound
-            };
+        {
+            return OperationResultHelper.UserNotFoundTemplate(email: email);
+        }
 
         var token = await _unitOfWork.EmailVerificationTokens.GetAsync(
             new EmailConfirmationActiveTokenByUserEmailSpecification(email, user.Id),
@@ -161,7 +156,7 @@ public class AuthService : IAuthService
             return response;
         }
 
-        if (!_shortTokenService.Verify(tokenAsString,token.TokenHash))
+        if (!_shortTokenService.Verify(tokenAsString, token.TokenHash))
         {
             token.AttemptsLeft--;
 
@@ -191,12 +186,7 @@ public class AuthService : IAuthService
 
         if (user == null)
         {
-            return new OperationResult
-            {
-                ErrorMessage = "User not found",
-                ErrorCode = ErrorCodeConstants.UserNotFound,
-                HttpStatusCode = HttpStatusCode.NotFound
-            };
+            return OperationResultHelper.UserNotFoundTemplate(email: email);
         }
 
         var token = await _unitOfWork.PasswordResetTokens.GetAsync(
@@ -294,8 +284,8 @@ public class AuthService : IAuthService
 
         foreach (var session in sessions)
         {
-                session.RefreshToken.RevokedAt = DateTimeOffset.UtcNow;
-                session.RevokedAt = DateTimeOffset.UtcNow;
+            session.RefreshToken.RevokedAt = DateTimeOffset.UtcNow;
+            session.RevokedAt = DateTimeOffset.UtcNow;
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -427,5 +417,30 @@ public class AuthService : IAuthService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return tokenAsString;
+    }
+
+    public async Task<OperationResult<List<UserSessionListResponseModel>>> GetUserSessionsList(long userId)
+    {
+        var sessions = await _unitOfWork.UserSessions.GetListAsync(
+            new ActiveUserSessionsByUserIdAsNotrackingSpecification(userId));
+
+        if (sessions.IsNullOrEmpty())
+        {
+            return new OperationResult<List<UserSessionListResponseModel>>()
+            {
+                Payload = new List<UserSessionListResponseModel>(),
+                HttpStatusCode = HttpStatusCode.OK,
+            };
+        }
+        else
+        {
+            var sessionResponseModels = sessions.Adapt<List<UserSessionListResponseModel>>();
+            var response = new OperationResult<List<UserSessionListResponseModel>>()
+            {
+                Payload = sessionResponseModels,
+                HttpStatusCode = HttpStatusCode.OK,
+            };
+            return response;
+        }
     }
 }

@@ -1,6 +1,4 @@
-﻿using CTHelper.Domain.Common.Enums;
-
-namespace CTHelper.Application.UseCases.Identity.Command.ResponseModels
+﻿namespace CTHelper.Application.UseCases.Identity.Command.ResponseModels
 {
     public class LoginResponseModel
     {

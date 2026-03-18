@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Reflection.Emit;
 using CTHelper.Domain.Entities;
 
 namespace CTHelper.Persistence.Configurations

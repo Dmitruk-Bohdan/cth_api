@@ -1,8 +1,6 @@
 using CTHelper.Application.Models;
 using CTHelper.Application.Services.Interfaces;
 using MediatR;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CTHelper.Application.UseCases.Identity.Command;
 

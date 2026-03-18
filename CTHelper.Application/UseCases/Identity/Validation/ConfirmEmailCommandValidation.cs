@@ -1,5 +1,4 @@
-﻿using CTHelper.Application.Specification.EmailVerificationTokenSpecifications;
-using CTHelper.Application.Specification.UserSpecifications;
+﻿using CTHelper.Application.Specification.UserSpecifications;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Domain.Abstractions;
 using FluentValidation;

@@ -1,46 +1,21 @@
 using CTHelper.Application.Models;
-using CTHelper.Application.Models.Dtos.AuthDtos;
-using CTHelper.Application.Specification.UserSession;
-using CTHelper.Domain.Abstractions;
-using CTHelper.Domain.Common.Extensions;
-using Mapster;
+using CTHelper.Application.Models.Session;
+using CTHelper.Application.Services.Interfaces;
 using MediatR;
-using System.Net;
 
 namespace CTHelper.Application.UseCases.Identity.Query;
 
-public class GetMySessionListQueryHandler : IRequestHandler<GetMySessionListQuery, OperationResult<List<UserSessionDto>>>
+public class GetMySessionListQueryHandler : IRequestHandler<GetMySessionListQuery, OperationResult<List<UserSessionListResponseModel>>>
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private IAuthService _authService;
 
-    public GetMySessionListQueryHandler(IUnitOfWork unitOfWork)
+    public GetMySessionListQueryHandler(IAuthService authService)
     {
-        _unitOfWork = unitOfWork;
+        _authService = authService;
     }
 
-    public async Task<OperationResult<List<UserSessionDto>>> Handle(GetMySessionListQuery request, CancellationToken cancellationToken)
+    public async Task<OperationResult<List<UserSessionListResponseModel>>> Handle(GetMySessionListQuery request, CancellationToken cancellationToken)
     {
-        var sessions = await _unitOfWork.UserSessions.GetListAsync(
-            new ActiveUserSessionsByUserIdAsNotrackingSpecification(request.UserId),
-            cancellationToken);
-
-        if (sessions.IsNullOrEmpty())
-        {
-            return new OperationResult<List<UserSessionDto>>()
-            {
-                Payload = new List<UserSessionDto>(),
-                HttpStatusCode = HttpStatusCode.OK,
-            };
-        }
-        else
-        {
-            var sessionDtos = sessions.Adapt<List<UserSessionDto>>();
-            var response = new OperationResult<List<UserSessionDto>>()
-            {
-                Payload = sessionDtos,
-                HttpStatusCode = HttpStatusCode.OK,
-            };
-            return response;
-        }
+        return await _authService.GetUserSessionsList(request.UserId);
     }
 }

@@ -1,8 +1,6 @@
 using CTHelper.Application.Common.Constants;
 using CTHelper.Application.Exceptions;
 using CTHelper.Application.Models;
-using CTHelper.Application.Models.User;
-using CTHelper.Application.Specification.UserSession;
 using CTHelper.Application.Specification.UserSpecifications;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Domain.Abstractions;

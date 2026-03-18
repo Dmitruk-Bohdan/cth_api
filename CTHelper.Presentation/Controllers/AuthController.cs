@@ -1,12 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using CTHelper.Application.Models.Dtos;
-using CTHelper.Application.Models.Dtos.AuthDtos;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Application.UseCases.Identity.Query;
 using CTHelper.Domain.Common.Extensions;
 using CTHelper.Infrastructure.Settings;
 using CTHelper.Presentation.Common.Constants;
+using CTHelper.Presentation.Dtos;
+using CTHelper.Presentation.Dtos.AuthDtos;
 using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -109,7 +109,7 @@ public class AuthController : ControllerBase
             return Unauthorized();
         }
 
-        var logoutCommand = new LogoutFromAllDeviCommand(userId);
+        var logoutCommand = new LogoutFromAllDevicesCommand(userId);
         await _mediator.Send(logoutCommand);
 
         return NoContent();

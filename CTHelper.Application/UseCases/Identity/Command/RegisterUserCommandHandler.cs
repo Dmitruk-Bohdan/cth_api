@@ -1,19 +1,21 @@
 using CTHelper.Application.Services.Interfaces;
-using CTHelper.Application.UseCases.Identity.Command;
-using CTHelper.Domain.Entities;
 using MediatR;
+using User = CTHelper.Domain.Entities.User;
 
-public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, User>
+namespace CTHelper.Application.UseCases.Identity.Command
 {
-    private readonly IAuthService _authService;
-
-    public RegisterUserCommandHandler(IAuthService authService)
+    public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, User>
     {
-        _authService = authService;
-    }
+        private readonly IAuthService _authService;
 
-    public Task<User> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
-    {
-        return _authService.RegisterUserAsync(request, cancellationToken);
+        public RegisterUserCommandHandler(IAuthService authService)
+        {
+            _authService = authService;
+        }
+
+        public Task<User> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+        {
+            return _authService.RegisterUserAsync(request, cancellationToken);
+        }
     }
 }

@@ -1,7 +1,6 @@
 using CTHelper.Application.Models;
 using CTHelper.Application.Services.Interfaces;
 using MediatR;
-using System.Net;
 
 namespace CTHelper.Application.UseCases.Identity.Command;
 

@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace CTHelper.Presentation.Routing;
+﻿namespace CTHelper.Presentation.Routing;
 
 public static class RoutingSetup
 {

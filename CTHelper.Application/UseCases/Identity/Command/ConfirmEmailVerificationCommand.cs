@@ -1,5 +1,4 @@
 using CTHelper.Application.Models;
-using CTHelper.Domain.Entities;
 using MediatR;
 
 namespace CTHelper.Application.UseCases.Identity.Command;

@@ -42,7 +42,6 @@
 
   <ItemGroup>
     <Folder Include="Common\Enums\" />
-    <Folder Include="Common\Helpers\" />
     <Folder Include="UseCases\AssignmentManagment\Validation\" />
     <Folder Include="UseCases\FavouriteCollectionsManagment\Validation\" />
     <Folder Include="UseCases\GroupManagment\Validation\" />

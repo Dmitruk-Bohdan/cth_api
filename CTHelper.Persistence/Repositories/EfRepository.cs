@@ -3,7 +3,9 @@ using CTHelper.Domain.Common.Extensions;
 using CTHelper.Domain.Entities;
 using CTHelper.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Collections.ObjectModel;
+using System.Linq.Expressions;
 
 namespace CTHelper.Persistence.Repositories
 {
@@ -73,6 +75,30 @@ namespace CTHelper.Persistence.Repositories
         public async Task UpdateAsync(T entity, CancellationToken cancellationToken = default)
         {
             _entities.Update(entity);
+        }
+
+        /// <summary>
+        /// Partially updates entities matching the specification.
+        /// <para>
+        /// Note: This method uses EF Core 8+ ExecuteUpdateAsync, which executes immediately in the database
+        /// and bypasses DbContext change tracking (Unit of Work). Changes are applied directly; 
+        /// calling SaveChangesAsync is not required.
+        /// </para>
+        /// <para>
+        /// Use only for bulk or simple updates without aggregate/business logic.
+        /// For regular tracked updates, use UpdateAsync + SaveChangesAsync.
+        /// </para>
+        /// </summary>
+        /// <param name="spec">Specification to filter entities</param>
+        /// <param name="setProperties">Expression to set properties using SetProperty</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        public async Task UpdatePropertiesAsync(
+            ISpecification<T> spec,
+            Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>> setProperties,
+            CancellationToken cancellationToken = default)
+        {
+            var query = ApplySpecification(spec);
+            await query.ExecuteUpdateAsync(setProperties, cancellationToken);
         }
 
         private IQueryable<T> ApplySpecification(ISpecification<T> spec)

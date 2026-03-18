@@ -43,6 +43,10 @@ namespace CTHelper.Persistence.Configurations
                 .HasDefaultValueSql("now()")
                 .IsRequired();
 
+            builder.Property(u => u.IsDeleted)
+                .HasColumnName("is_deleted")
+                .HasDefaultValue(false);
+
             builder.HasIndex(i => i.ObjectKey)
                 .IsUnique();
 

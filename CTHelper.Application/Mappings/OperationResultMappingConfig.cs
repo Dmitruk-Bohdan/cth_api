@@ -1,6 +1,4 @@
-﻿using CTHelper.Application.Models;
-using CTHelper.Application.Models.Dtos;
-using Mapster;
+﻿using Mapster;
 
 namespace CTHelper.Application.Mappings
 {
@@ -8,9 +6,6 @@ namespace CTHelper.Application.Mappings
     {
         public void Register(TypeAdapterConfig config)
         {
-            config.NewConfig<OperationResult, ErrorResponseDto>()
-                .Map(dest => dest.ErrorCode, src => src.ErrorCode)
-                .Map(dest => dest.ErrorMessage, src => src.ErrorMessage);
         }
     }
 }

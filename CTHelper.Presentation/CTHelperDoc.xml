@@ -21,7 +21,7 @@
             <param name="id">ID of the assignment.</param>
             <returns>Assignment details. Response type depends on the role: teacher or student.</returns>
         </member>
-        <member name="M:CTHelper.Presentation.Controllers.AssignmentsController.Create(CTHelper.Application.Models.Dtos.AssignmentDtos.CreateAssignmentRequestDto)">
+        <member name="M:CTHelper.Presentation.Controllers.AssignmentsController.Create(CTHelper.Presentation.Dtos.AssignmentDtos.CreateAssignmentRequestDto)">
             <summary>
             Create a new assignment.
             </summary>
@@ -35,7 +35,7 @@
             <param name="id">ID of the assignment to delete.</param>
             <returns>No content (204) on successful deletion.</returns>
         </member>
-        <member name="M:CTHelper.Presentation.Controllers.AssignmentsController.ChangeDeadline(System.Int64,CTHelper.Application.Models.Dtos.AssignmentDtos.PatchAssignmentDeadlineRequestDto)">
+        <member name="M:CTHelper.Presentation.Controllers.AssignmentsController.ChangeDeadline(System.Int64,CTHelper.Presentation.Dtos.AssignmentDtos.PatchAssignmentDeadlineRequestDto)">
             <summary>
             Change the deadline of an assignment.
             </summary>

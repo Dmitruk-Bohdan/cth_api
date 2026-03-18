@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using CTHelper.Domain.Entities;
 using CTHelper.Persistence.Audit;
 using CTHelper.Persistence.Entities;

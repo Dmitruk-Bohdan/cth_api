@@ -1,5 +1,5 @@
-using CTHelper.Application.Models.Dtos;
-using CTHelper.Application.Models.Dtos.AssignmentDtos;
+using CTHelper.Presentation.Dtos;
+using CTHelper.Presentation.Dtos.AssignmentDtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CTHelper.Presentation.Controllers;
