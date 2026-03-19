@@ -6,8 +6,7 @@ namespace CTHelper.Domain.Entities
     {
         public string Title { get; set; } = default!;
 
-        public Subject Subject { get; set; }
-
+        public long SubjectId { get; set; }
         public long AuthorId { get; set; }
 
         public TestType Type { get; set; }
@@ -21,6 +20,7 @@ namespace CTHelper.Domain.Entities
         public bool IsDeleted { get; set; }
         public int? Duration { get; set; }
         public short? AttemptsCount { get; set; }
+        public Subject Subject { get; set; } = default!;
         public DateTimeOffset CreatedAt { get; set; }
 
         public DateTimeOffset LastUpdateAt { get; set; }

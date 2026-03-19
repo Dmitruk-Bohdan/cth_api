@@ -27,9 +27,9 @@ namespace CTHelper.Persistence.Configurations
                 .HasMaxLength(200)
                 .IsRequired();
 
-            builder.Property(t => t.Subject)
-                .HasConversion<short>()
-                .HasColumnName("subject")
+            builder.Property(t => t.SubjectId)
+                .HasColumnName("subject_id")
+                .HasColumnType("bigint")
                 .IsRequired();
 
             builder.Property(t => t.AuthorId)
@@ -81,9 +81,15 @@ namespace CTHelper.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasPrincipalKey(u => u.Id);
 
+            builder.HasOne(g => g.Subject)
+                .WithMany()
+                .HasForeignKey(g => g.SubjectId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasPrincipalKey(u => u.Id);
+
             builder.HasIndex(t => t.Title);
 
-            builder.HasIndex(t => t.Subject);
+            builder.HasIndex(t => t.SubjectId);
 
             builder.HasIndex(us => us.AuthorId);
         }

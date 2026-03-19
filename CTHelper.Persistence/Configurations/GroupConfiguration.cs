@@ -21,9 +21,9 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnType("bigint")
                 .IsRequired();
 
-            builder.Property(g => g.Subject)
-                .HasColumnName("subject")
-                .HasConversion<short>()
+            builder.Property(g => g.SubjectId)
+                .HasColumnName("subject_id")
+                .HasColumnType("bigint")
                 .IsRequired();
 
             builder.Property(g => g.Name)
@@ -52,10 +52,16 @@ namespace CTHelper.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasPrincipalKey(u => u.Id);
 
+            builder.HasOne(g => g.Subject)
+                .WithMany()
+                .HasForeignKey(g => g.SubjectId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasPrincipalKey(u => u.Id);
+
             builder.HasIndex(g => new { g.TeacherId, g.Name})
                 .IsUnique();
 
-            builder.HasIndex(g => g.Subject);
+            builder.HasIndex(g => g.SubjectId);
 
             builder.HasIndex(us => us.TeacherId);
         }

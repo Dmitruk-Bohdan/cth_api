@@ -26,6 +26,8 @@ namespace CTHelper.Persistence.Repositories
         private readonly Lazy<IRepository<UserAnswer>> _userAnswerRepository;
         private readonly Lazy<IRepository<UserSession>> _userSessionRepository;
         private readonly Lazy<IRepository<Image>> _imageRepository;
+        private readonly Lazy<IRepository<Section>> _sectionRepository;
+        private readonly Lazy<IRepository<Subject>> _subjectRepository;
 
         public EfUnitOfWork(AppDbContext context)
         {
@@ -87,6 +89,12 @@ namespace CTHelper.Persistence.Repositories
 
             _imageRepository = new Lazy<IRepository<Image>>(() =>
                 new EfRepository<Image>(context));
+
+            _sectionRepository = new Lazy<IRepository<Section>>(() =>
+                new EfRepository<Section>(context));
+
+            _subjectRepository = new Lazy<IRepository<Subject>>(() =>
+                new EfRepository<Subject>(context));
         }
 
         public IRepository<Assignment> Assignments => _assignmentRepository.Value;
@@ -108,6 +116,8 @@ namespace CTHelper.Persistence.Repositories
         public IRepository<UserAnswer> UserAnswers => _userAnswerRepository.Value;
         public IRepository<UserSession> UserSessions => _userSessionRepository.Value;
         public IRepository<Image> Images => _imageRepository.Value;
+        public IRepository<Section> Sections => _sectionRepository.Value;
+        public IRepository<Subject> Subjects => _subjectRepository.Value;
 
         public IRepository<TEntity> Repository<TEntity>() where TEntity : BaseEntity
             => new EfRepository<TEntity>(_context);

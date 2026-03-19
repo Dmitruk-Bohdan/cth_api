@@ -4,22 +4,17 @@ using CTHelper.Domain.Entities;
 
 namespace CTHelper.Persistence.Configurations
 {
-    public class TopicConfiguration : IEntityTypeConfiguration<Topic>
+    public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
     {
-        public void Configure(EntityTypeBuilder<Topic> builder)
+        public void Configure(EntityTypeBuilder<Subject> builder)
         {
-            builder.ToTable("topic");
+            builder.ToTable("subject");
 
             builder.HasKey(t => t.Id);
 
             builder.Property(t => t.Id)
                 .HasColumnName("id")
                 .HasColumnType("bigint");
-
-            builder.Property(t => t.SectionId)
-                .HasColumnName("section_id")
-                .HasColumnType("bigint")
-                .IsRequired();
 
             builder.Property(t => t.Name)
                 .HasColumnName("name")
@@ -40,14 +35,6 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnName("last_update_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
-
-            builder.HasOne(t => t.Section)
-                .WithMany(s => s.Topics)
-                .HasForeignKey(t => t.SectionId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasPrincipalKey(u => u.Id);
-
-            builder.HasIndex(t => t.SectionId);
         }
     }
 }

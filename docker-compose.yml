@@ -21,6 +21,15 @@ services:
       - minio_data:/data
     restart: unless-stopped
 
+  mailhog:    
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    ports:
+      - "1025:1025"   
+      - "8025:8025"   
+    environment:
+      - MH_UI_BIND_ADDR=0.0.0.0:8025   
+
 #  api:
 #    env_file:
 #      - .env
@@ -33,15 +42,7 @@ services:
 #    ports:
 #      - "5003:8080"
 #    restart: unless-stopped
-    
-  mailhog:    
-    image: mailhog/mailhog:latest
-    container_name: mailhog
-    ports:
-      - "1025:1025"   
-      - "8025:8025"   
-    environment:
-      - MH_UI_BIND_ADDR=0.0.0.0:8025    
+ 
 
 volumes:
   cthelper_pgdata:
