@@ -5,4 +5,5 @@ namespace CTHelper.Application.UseCases.UserManagment.Command;
 
 public record UpdateAvatarCommand(
     long UserId,
-    Stream UserAvatarStream) : IRequest<OperationResult>;
+    Stream UserAvatarStream,
+    string ContentType) : IRequest<OperationResult>;

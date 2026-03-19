@@ -2,7 +2,8 @@
 {
     public class Image : BaseEntity
     {
-        public string ObjectKey { get; set; } = null!; 
+        public string ObjectKey { get; set; } = null!;
+        public string Bucket { get; set; } = null!;
 
         public long OwnerId { get; set; }
 

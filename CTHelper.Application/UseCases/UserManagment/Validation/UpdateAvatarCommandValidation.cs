@@ -13,6 +13,9 @@ namespace CTHelper.Application.UseCases.UserManagment.Validation
 
             RuleFor(da => da.UserAvatarStream)
                 .NotEmpty().WithMessage("New avatar file is required");
+
+            RuleFor(da => da.ContentType)
+                .NotEmpty().WithMessage("Content type is required");
         }
     }
 }

@@ -22,6 +22,11 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnType("text")
                 .IsRequired();
 
+            builder.Property(i => i.Bucket)
+                .HasColumnName("bucket")
+                .HasColumnType("text")
+                .IsRequired();
+
             builder.Property(i => i.OwnerId)
                 .HasColumnName("owner_id")
                 .HasColumnType("bigint")

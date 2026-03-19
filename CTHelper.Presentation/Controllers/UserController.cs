@@ -5,10 +5,8 @@ using CTHelper.Presentation.Dtos.UserDtos;
 using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace CTHelper.Presentation.Controllers;
 
@@ -25,7 +23,7 @@ public class UsersController : ControllerBase
         _mediator = mediator;
     }
 
-    [HttpGet("/")]
+    [HttpGet("me/")]
     [Authorize]
     public async Task<IActionResult> GetMyInfo()
     {
@@ -40,7 +38,7 @@ public class UsersController : ControllerBase
 
         if (result.ErrorCode == null)
         {
-            return Ok();
+            return Ok(result);
         }
         else
         {
@@ -49,13 +47,11 @@ public class UsersController : ControllerBase
                 result.HttpStatusCode.ToInt(),
                 errorDto);
         }
-
-        throw new NotImplementedException();
     }
 
-    [HttpPut("/")]
+    [HttpPut("me/")]
     [Authorize]
-    public async Task<IActionResult> UpdateUserInfoAsync([FromBody] UpdateUserInfoRequestDto request)
+    public async Task<IActionResult> UpdateUserProfileAsync([FromForm] UpdateUserProfileRequestDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -63,14 +59,13 @@ public class UsersController : ControllerBase
             return Unauthorized();
         }
 
-        using var stream = request.AvatarFile?.OpenReadStream();
+        var updateUserProfileCommand = _mapper.Map<UpdateUserProfileCommand>(request);
+        updateUserProfileCommand = updateUserProfileCommand with
+        {
+            UserId = userId
+        };
 
-        var command = new UpdateUserInfoCommand(
-            userId,
-            request.Username,
-            stream);
-
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(updateUserProfileCommand);
 
         if (result.ErrorCode == null)
         {
@@ -85,7 +80,7 @@ public class UsersController : ControllerBase
         }
     }
 
-    [HttpDelete("/")]
+    [HttpDelete("me/")]
     [Authorize]
     public async Task<IActionResult> DeleteUserAsync()
     {
@@ -111,9 +106,9 @@ public class UsersController : ControllerBase
         }
     }
 
-    [HttpPost("/avatar")]
+    [HttpPost("avatar/")]
     [Authorize]
-    public async Task<IActionResult> UploadAvatar([FromBody] UploadAvatarDto request)
+    public async Task<IActionResult> UploadAvatar([FromForm] UploadAvatarDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -122,8 +117,12 @@ public class UsersController : ControllerBase
         }
 
         using var stream = request.AvatarFile.OpenReadStream();
-        var command = new UpdateAvatarCommand(userId, stream);
-        
+        var command = new UpdateAvatarCommand(
+            userId,
+            request.AvatarFile.OpenReadStream(),
+            request.AvatarFile.ContentType
+        );
+
         var result = await _mediator.Send(command);
 
         if (result.ErrorCode == null)
@@ -139,7 +138,7 @@ public class UsersController : ControllerBase
         }
     }
 
-    [HttpDelete("/avatar")]
+    [HttpDelete("avatar/")]
     [Authorize]
     public async Task<IActionResult> DeleteAvatar()
     {

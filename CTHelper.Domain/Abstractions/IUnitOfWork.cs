@@ -10,6 +10,7 @@ namespace CTHelper.Domain.Abstractions
         IRepository<ConnectionRequest> ConnectionRequests { get; }
         IRepository<EmailVerificationToken> EmailVerificationTokens { get; }
         IRepository<Group> Groups { get; }
+        IRepository<Image> Images { get; }
         IRepository<InvitationCode> InvitationCodes { get; }
         IRepository<Notification> Notifications { get; }
         IRepository<PasswordResetToken> PasswordResetTokens { get; }

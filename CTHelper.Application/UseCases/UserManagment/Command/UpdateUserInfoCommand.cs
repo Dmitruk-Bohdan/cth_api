@@ -3,8 +3,7 @@ using MediatR;
 
 namespace CTHelper.Application.UseCases.UserManagment.Command
 {
-    public record UpdateUserInfoCommand(
+    public record UpdateUserProfileCommand(
         long UserId,
-        string? Username,
-        Stream? UserAvatarStream) : IRequest<OperationResult>;
+        string? Username) : IRequest<OperationResult>;
 }

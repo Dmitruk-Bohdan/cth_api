@@ -1,3 +1,4 @@
+using CTHelper.Application.Models.User;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Application.UseCases.Identity.Command.ResponseModels;
 using CTHelper.Application.UseCases.UserManagment.Command;
@@ -30,5 +31,11 @@ public class UserDtoMappingConfig : IRegister
 
         config.NewConfig<LogoutRequestDto, LogoutCommand>()
             .Map(dest => dest.SessionJti, src => src.SessionJti);
+
+        config.NewConfig<UpdateUserProfileRequestDto, UpdateUserProfileCommand>()
+                    .Map(dest => dest.Username, src => src.Username);
+
+        config.NewConfig<UpdateUserProfileCommand, UpdateUserProfileModel>()
+                            .Map(dest => dest.Username, src => src.Username);
     }
 }

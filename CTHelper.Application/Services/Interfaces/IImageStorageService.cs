@@ -5,8 +5,8 @@
         Task DeleteAsync(string key, string bucket);
         Task<Stream> DownloadAsync(string key, string bucket);
         Task<bool> Exists(string key, string bucket);
-        string GetDownloadUrl(string key, string bucket);
-        string GetUploadUrl(string key, int expiresSeconds, string bucket);
-        Task UploadAsync(Stream stream, string key, string contentType, string bucketName);
+        Task<string> GetDownloadUrl(long imageId);
+        Task<string> GetUploadUrl(long imageId);
+        Task<string> UploadAsync(Stream stream, string keyprefix, string bucketName, string contentType);
     }
 }

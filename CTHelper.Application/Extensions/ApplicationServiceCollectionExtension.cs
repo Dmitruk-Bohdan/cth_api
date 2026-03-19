@@ -17,7 +17,7 @@ public static class ApplicationServiceCollectionExtension
         services
             .AddValidation(assembly)
             .AddMediatRServices(assembly)
-            .AddMapping(assembly);
+            .AddApplicationMapping(assembly);
 
         return services;
     }
@@ -43,7 +43,7 @@ public static class ApplicationServiceCollectionExtension
         return services;
     }
 
-    private static IServiceCollection AddMapping(
+    private static IServiceCollection AddApplicationMapping(
         this IServiceCollection services,
         Assembly assembly)
     {

@@ -1,11 +1,15 @@
-﻿using CTHelper.Infrastructure;
+﻿using CTHelper.Application.Extensions;
+using CTHelper.Infrastructure;
 using CTHelper.Infrastructure.Settings;
 using CTHelper.Infrastructure.Startup;
 using CTHelper.Presentation.Routing;
 using CTHelper.Presentation.Security;
 using CTHelper.Presentation.Settings;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
 
 namespace CTHelper.Presentation.Extensions
@@ -18,6 +22,9 @@ namespace CTHelper.Presentation.Extensions
         {
             services.AddInfrastructure(configuration);
 
+            var assembly = typeof(PresentationServiceCollectionExtension).Assembly;
+            services.AddPresentationMapping(assembly);
+
             services.AddRoutingConfiguration()
                 .AddHttpContextAccessor()
                 .AddCorsPolicy()
@@ -29,9 +36,7 @@ namespace CTHelper.Presentation.Extensions
             return services;
         }
 
-        public static IServiceCollection AddBearerAuthentication(
-            this IServiceCollection services,
-            IConfiguration configuration)
+        public static IServiceCollection AddBearerAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtSettings = configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>();
 
@@ -91,6 +96,18 @@ namespace CTHelper.Presentation.Extensions
                         Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
             };
         });
+
+            return services;
+        }
+        private static IServiceCollection AddPresentationMapping(
+        this IServiceCollection services,
+        Assembly assembly)
+        {
+            var config = new TypeAdapterConfig();
+            config.Scan(assembly);
+
+            services.AddSingleton(config);
+            services.AddScoped<IMapper, ServiceMapper>();
 
             return services;
         }

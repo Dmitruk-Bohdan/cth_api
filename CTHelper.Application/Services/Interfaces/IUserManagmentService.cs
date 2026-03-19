@@ -7,7 +7,8 @@ namespace CTHelper.Application.Services.Interfaces
     {
         Task<OperationResult> DeleteUserAsync(long UserId);
         Task<OperationResult> DeleteUserAvatarAsync(long UserId);
-        Task<OperationResult> UpdateUserAvatarAsync(long userId, long avatarImageId);
-        Task<OperationResult> UpdateUserInfoAsync(UpdateUserModel updatedUser);
+        Task<OperationResult> UpdateUserAvatarAsync(long userId, long imageId);
+        Task<OperationResult> UpdateUserProfileAsync(UpdateUserProfileModel updatedUser);
+        Task<OperationResult<UserProfileResponseModel>> GetUserInfoById(long userId);
     }
 }
