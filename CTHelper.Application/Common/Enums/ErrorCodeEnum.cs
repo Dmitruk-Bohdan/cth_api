@@ -21,5 +21,6 @@
         public const string RefreshTokenExpired = "00003001";
         public const string DeviceAlreadyHasActiveSession = "00003002";
         public const string InvalidSessionJti = "00003003";
+        public const string EmailIsNotVerified = "00003004";
     }
 }

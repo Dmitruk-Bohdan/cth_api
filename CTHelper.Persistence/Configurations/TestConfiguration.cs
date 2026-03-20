@@ -59,10 +59,12 @@ namespace CTHelper.Persistence.Configurations
                 .HasDefaultValue(false);
 
             builder.Property(t => t.AttemptsCount)
-                .HasColumnName("attempts_count");
+                .HasColumnName("attempts_count")
+                .HasDefaultValue(0);
 
             builder.Property(t => t.Duration)
-                .HasColumnName("duration");
+                .HasColumnName("duration")
+                .HasDefaultValue(0);
 
             builder.Property(t => t.CreatedAt)
                 .HasColumnName("created_at")

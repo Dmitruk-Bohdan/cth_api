@@ -4,11 +4,11 @@ using CTHelper.Domain.Entities;
 
 namespace CTHelper.Persistence.Configurations
 {
-    public class ConnectionRequestConfiguration : IEntityTypeConfiguration<ConnectionRequest>
+    public class BindingRequestConfiguration : IEntityTypeConfiguration<BindingRequest>
     {
-        public void Configure(EntityTypeBuilder<ConnectionRequest> builder)
+        public void Configure(EntityTypeBuilder<BindingRequest> builder)
         {
-            builder.ToTable("connection_request");
+            builder.ToTable("binding_request");
 
             builder.HasKey(cr => cr.Id);
 

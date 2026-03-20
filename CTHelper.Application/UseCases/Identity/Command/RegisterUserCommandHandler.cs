@@ -13,9 +13,9 @@ namespace CTHelper.Application.UseCases.Identity.Command
             _authService = authService;
         }
 
-        public Task<User> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+        public async Task<User> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
         {
-            return _authService.RegisterUserAsync(request, cancellationToken);
+            return await _authService.RegisterUserAsync(request, cancellationToken);
         }
     }
 }

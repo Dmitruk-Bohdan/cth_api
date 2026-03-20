@@ -13,5 +13,8 @@ public class UserMappingConfig : IRegister
             .Map(dest => dest.Email, src => src.Email)
             .Map(dest => dest.IsEmailVerified, src => false)
             .Map(dest => dest.Role, src => src.Role);
+
+        config.NewConfig<User, RequestEmailVerificationCommand>()
+            .Map(dest => dest.UserEmail, src => src.Email);
     }
 }

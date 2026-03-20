@@ -32,9 +32,13 @@ namespace CTHelper.Persistence.Configurations
                 .HasMaxLength(36)
                 .IsRequired();
 
+            builder.Property(ic => ic.ExpiredAt)
+                .HasColumnName("expired_at")
+                .HasColumnType("timestamptz");
+
             builder.Property(ic => ic.UsesLeft)
                 .HasColumnName("uses_left")
-                .IsRequired();
+                .HasColumnType("smallint");
 
             builder.Property(ic => ic.IsRevoked)
                 .HasColumnName("is_revoked")

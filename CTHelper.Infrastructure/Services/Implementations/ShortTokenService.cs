@@ -1,4 +1,5 @@
 ﻿using CTHelper.Application.Services.Interfaces;
+using CTHelper.Infrastructure.Common.Constants;
 using CTHelper.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
@@ -17,6 +18,19 @@ namespace CTHelper.Infrastructure.Services.Implementations
             _secretKey = Convert.FromBase64String(_settings.ShortTokenSecretKey);
         }
 
+        public string Get9SymbolsBindingCode()
+        {
+            string rawCode = RandomNumberGenerator.GetString(
+                BindingCodeConstants.BindingCodeAlphabet,
+                BindingCodeConstants.BindingCodeLength);
+            return rawCode;
+        }
+
+        public string Format9SymbolsBindingCode(string rawCode)
+        {
+            string formatted = string.Join("-", rawCode.Chunk(3).Select(c => new string(c)));
+            return formatted;
+        }
         public string Get6NumbersToken()
         {
             var tokenAsNumber = RandomNumberGenerator.GetInt32(

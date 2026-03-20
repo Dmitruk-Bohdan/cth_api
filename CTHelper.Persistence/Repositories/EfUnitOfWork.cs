@@ -8,7 +8,7 @@ namespace CTHelper.Persistence.Repositories
     {
         private readonly AppDbContext _context;
         private readonly Lazy<IRepository<Assignment>> _assignmentRepository;
-        private readonly Lazy<IRepository<ConnectionRequest>> _connectionRequestRepository;
+        private readonly Lazy<IRepository<BindingRequest>> _bindingRequestRepository;
         private readonly Lazy<IRepository<EmailVerificationToken>> _emailVerificationTokenRepository;
         private readonly Lazy<IRepository<Group>> _groupRepository;
         private readonly Lazy<IRepository<InvitationCode>> _invitationCodeRepository;
@@ -36,8 +36,8 @@ namespace CTHelper.Persistence.Repositories
             _assignmentRepository = new Lazy<IRepository<Assignment>>(() =>
                 new EfRepository<Assignment>(context));
 
-            _connectionRequestRepository = new Lazy<IRepository<ConnectionRequest>>(() =>
-                new EfRepository<ConnectionRequest>(context));
+            _bindingRequestRepository = new Lazy<IRepository<BindingRequest>>(() =>
+                new EfRepository<BindingRequest>(context));
 
             _emailVerificationTokenRepository = new Lazy<IRepository<EmailVerificationToken>>(() =>
                 new EfRepository<EmailVerificationToken>(context));
@@ -98,7 +98,7 @@ namespace CTHelper.Persistence.Repositories
         }
 
         public IRepository<Assignment> Assignments => _assignmentRepository.Value;
-        public IRepository<ConnectionRequest> ConnectionRequests => _connectionRequestRepository.Value;
+        public IRepository<BindingRequest> BindingRequests => _bindingRequestRepository.Value;
         public IRepository<EmailVerificationToken> EmailVerificationTokens => _emailVerificationTokenRepository.Value;
         public IRepository<Group> Groups => _groupRepository.Value;
         public IRepository<InvitationCode> InvitationCodes => _invitationCodeRepository.Value;

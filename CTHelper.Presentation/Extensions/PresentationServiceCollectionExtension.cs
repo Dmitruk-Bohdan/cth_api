@@ -22,10 +22,9 @@ namespace CTHelper.Presentation.Extensions
         {
             services.AddInfrastructure(configuration);
 
-            var assembly = typeof(PresentationServiceCollectionExtension).Assembly;
-            services.AddPresentationMapping(assembly);
-
-            services.AddRoutingConfiguration()
+            services
+                .AddMapping()
+                .AddRoutingConfiguration()
                 .AddHttpContextAccessor()
                 .AddCorsPolicy()
                 .AddPresentationSettings()
@@ -36,6 +35,19 @@ namespace CTHelper.Presentation.Extensions
             return services;
         }
 
+        private static IServiceCollection AddMapping(
+        this IServiceCollection services)
+        {
+            var config = new TypeAdapterConfig();
+
+            config.Scan(typeof(ApplicationServiceCollectionExtension).Assembly);
+            config.Scan(typeof(PresentationServiceCollectionExtension).Assembly);
+
+            services.AddSingleton(config);
+            services.AddScoped<IMapper, ServiceMapper>();
+
+            return services;
+        }
         public static IServiceCollection AddBearerAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtSettings = configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>();
@@ -99,17 +111,6 @@ namespace CTHelper.Presentation.Extensions
 
             return services;
         }
-        private static IServiceCollection AddPresentationMapping(
-        this IServiceCollection services,
-        Assembly assembly)
-        {
-            var config = new TypeAdapterConfig();
-            config.Scan(assembly);
 
-            services.AddSingleton(config);
-            services.AddScoped<IMapper, ServiceMapper>();
-
-            return services;
-        }
     }
 }

@@ -18,8 +18,8 @@ namespace CTHelper.Domain.Entities
         public bool IsPublic { get; set; }
 
         public bool IsDeleted { get; set; }
-        public int? Duration { get; set; }
-        public short? AttemptsCount { get; set; }
+        public int Duration { get; set; }
+        public int AttemptsCount { get; set; }
         public Subject Subject { get; set; } = default!;
         public DateTimeOffset CreatedAt { get; set; }
 

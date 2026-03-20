@@ -3,6 +3,7 @@ using System;
 using CTHelper.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -12,9 +13,11 @@ using NpgsqlTypes;
 namespace CTHelper.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260320112458_TestDefaultValues")]
+    partial class TestDefaultValues
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,7 +87,7 @@ namespace CTHelper.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("CTHelper.Domain.Entities.BindingRequest", b =>
+            modelBuilder.Entity("CTHelper.Domain.Entities.ConnectionRequest", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -117,7 +120,7 @@ namespace CTHelper.Persistence.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("binding_request", (string)null);
+                    b.ToTable("connection_request", (string)null);
                 });
 
             modelBuilder.Entity("CTHelper.Domain.Entities.EmailVerificationToken", b =>
@@ -292,10 +295,6 @@ namespace CTHelper.Persistence.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<DateTimeOffset?>("ExpiredAt")
-                        .HasColumnType("timestamptz")
-                        .HasColumnName("expired_at");
-
                     b.Property<bool>("IsRevoked")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -313,7 +312,7 @@ namespace CTHelper.Persistence.Migrations
                     b.Property<long?>("UserId")
                         .HasColumnType("bigint");
 
-                    b.Property<short?>("UsesLeft")
+                    b.Property<short>("UsesLeft")
                         .HasColumnType("smallint")
                         .HasColumnName("uses_left");
 
@@ -1243,7 +1242,7 @@ namespace CTHelper.Persistence.Migrations
                     b.Navigation("Test");
                 });
 
-            modelBuilder.Entity("CTHelper.Domain.Entities.BindingRequest", b =>
+            modelBuilder.Entity("CTHelper.Domain.Entities.ConnectionRequest", b =>
                 {
                     b.HasOne("CTHelper.Domain.Entities.InvitationCode", "Code")
                         .WithMany()

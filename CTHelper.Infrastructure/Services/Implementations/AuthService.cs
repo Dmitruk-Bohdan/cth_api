@@ -48,16 +48,16 @@ public class AuthService : IAuthService
 
     public async Task<OperationResult<LoginResponseModel>> LoginAsync(LoginCommand request, CancellationToken cancellationToken)
     {
-        var userToken = await _unitOfWork.Users.GetAsync(
-            new UserTokenByEmailAsNoTrackingSpecification(request.Email),
+        var userLogin = await _unitOfWork.Users.GetAsync(
+            new UserLoginByEmailAsNoTrackingSpecification(request.Email),
             cancellationToken);
 
-        if (userToken == null)
+        if (userLogin == null)
         {
             return OperationResultHelper.UserNotFoundTemplate<LoginResponseModel>(email: request.Email);
         }
 
-        if (!_passwordHashingService.Verify(request.Password, userToken.PasswordHash))
+        if (!_passwordHashingService.Verify(request.Password, userLogin.PasswordHash))
         {
             return new OperationResult<LoginResponseModel>
             {
@@ -67,9 +67,19 @@ public class AuthService : IAuthService
             };
         }
 
+        if(!userLogin.IsEmailVerified)
+        {
+            return new OperationResult<LoginResponseModel>
+            {
+                ErrorMessage = "Email is not verified",
+                ErrorCode = ErrorCodeConstants.EmailIsNotVerified,
+                HttpStatusCode = HttpStatusCode.Unauthorized
+            };
+        }
+
         if (request.DeviceId != null) {
             var activeSessionsOnCurrentDevice = await _unitOfWork.UserSessions.GetListAsync(
-                new ActiveUserSessionsByUserIdAndDeviceIdIncludingRefreshTokenSpecification(userToken!.UserId, request.DeviceId));
+                new ActiveUserSessionsByUserIdAndDeviceIdIncludingRefreshTokenSpecification(userLogin!.UserId, request.DeviceId));
 
             if (!activeSessionsOnCurrentDevice.IsNullOrEmpty())
             {
@@ -82,12 +92,12 @@ public class AuthService : IAuthService
         }
 
         var sessionJti = Guid.NewGuid();
-        var accessToken = _tokenService.GenerateAccessToken(userToken!, sessionJti);
+        var accessToken = _tokenService.GenerateAccessToken(userLogin!, sessionJti);
         var refreshTokenString = _tokenService.GenerateRefreshToken();
 
         var session = new UserSession
         {
-            UserId = userToken.UserId,
+            UserId = userLogin.UserId,
             Jti = sessionJti,
             ClientType = request.ClientType,
             IpAddress = request.IpAddress,

@@ -5,9 +5,9 @@ namespace CTHelper.Application.Specification.UserSpecifications
 {
     public class UserByIdAsNoTrackingSpecification : BaseSpecification<User>
     {
-        public UserByIdAsNoTrackingSpecification(string email)
+        public UserByIdAsNoTrackingSpecification(long userId)
         {
-            AddCriteria(u => u.Email == email);
+            AddCriteria(u => u.Id == userId);
             AsNoTracking = true;
         }
     }

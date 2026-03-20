@@ -16,8 +16,7 @@ public static class ApplicationServiceCollectionExtension
 
         services
             .AddValidation(assembly)
-            .AddMediatRServices(assembly)
-            .AddApplicationMapping(assembly);
+            .AddMediatRServices(assembly);
 
         return services;
     }
@@ -39,19 +38,6 @@ public static class ApplicationServiceCollectionExtension
             cfg.RegisterServicesFromAssembly(assembly);
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
-
-        return services;
-    }
-
-    private static IServiceCollection AddApplicationMapping(
-        this IServiceCollection services,
-        Assembly assembly)
-    {
-        var config = new TypeAdapterConfig();
-        config.Scan(assembly);
-
-        services.AddSingleton(config);
-        services.AddScoped<IMapper, ServiceMapper>();
 
         return services;
     }

@@ -47,7 +47,6 @@
     <Folder Include="UseCases\NotificationsManagment\Validation\" />
     <Folder Include="UseCases\ProblemManagment\Validation\" />
     <Folder Include="UseCases\StatisticsManagment\Validation\" />
-    <Folder Include="UseCases\TeacherStudentRelationship\Validation\" />
     <Folder Include="UseCases\TestManagment\Validation\" />
     <Folder Include="UseCases\TestTaking\Validation\" />
   </ItemGroup>

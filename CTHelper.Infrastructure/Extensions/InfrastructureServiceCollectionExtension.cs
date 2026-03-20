@@ -43,6 +43,7 @@ namespace CTHelper.Infrastructure
             services.AddTransient<IShortTokenService, ShortTokenService>();
             services.AddScoped<IFileStorageService, MinioFileStorageService>();
             services.AddScoped<IUserManagmentService, UserManagmentService>();
+            services.AddScoped<ITeacherStudentService, TeacherStudentService>();
 
             return services;
         }

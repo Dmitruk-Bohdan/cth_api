@@ -1,6 +1,6 @@
 ﻿namespace CTHelper.Domain.Entities
 {
-    public class ConnectionRequest : BaseEntity
+    public class BindingRequest : BaseEntity
     {
         public long CodeId { get; set; }
         public long StudentId { get; set; }
