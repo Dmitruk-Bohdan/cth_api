@@ -1,3 +1,5 @@
+using CTHelper.Application.Models.User;
+using CTHelper.Application.Services.Interfaces;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Application.UseCases.TeacherStudentRelationship.Command;
 using CTHelper.Domain.Common.Extensions;
@@ -9,6 +11,7 @@ using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.Security.Claims;
 
 namespace CTHelper.Presentation.Controllers;
@@ -17,20 +20,17 @@ namespace CTHelper.Presentation.Controllers;
 [Route("api/teacher-student")]
 public class TeacherStudentController : ControllerBase
 {
+    private readonly ITeacherStudentService _teacherStudentService;
     private readonly IMediator _mediator;
     private readonly IMapper _mapper;
 
 
-    public TeacherStudentController(IMediator mediator, IMapper mapper)
+    public TeacherStudentController(IMediator mediator, IMapper mapper, ITeacherStudentService teacherStudentService)
     {
         _mediator = mediator;
         _mapper = mapper;
+        _teacherStudentService = teacherStudentService;
     }
-
-
-    // =======================
-    // INVITATION / BINDING FLOW
-    // =======================
 
     [HttpPost("invitation-code")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
@@ -61,100 +61,296 @@ public class TeacherStudentController : ControllerBase
                 result.HttpStatusCode.ToInt(),
                 errorDto);
         }
-        
-        throw new NotImplementedException();
     }
 
     [HttpPost("binding/request")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
-    public IActionResult RequestBindingWithTeacherByCode([FromBody] CreateBindingRequestDto request)
+    public async Task <IActionResult> RequestBindingWithTeacherByCode([FromBody] CreateBindingRequestDto request)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.RequestBindingWithTeacherByCode(userId, request.Code);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpPost("binding/accept")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    public IActionResult AcceptStudentByInvitationCode([FromBody] AcceptBindingRequestDto request)
+    public async Task<IActionResult> AcceptStudentByInvitationCode([FromBody] AcceptBindingRequestDto request)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.AcceptStudentByInvitationCode(userId, request.BindingRequestId);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     // =======================
     // BINDING MANAGEMENT
     // =======================
 
-    [HttpDelete("binding/{bindingId:long}")]
+    [HttpDelete("binding/remove-teacher/{bindingId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
-    public IActionResult RemoveBindingWithTeacher(long bindingId)
+    public async Task<IActionResult> RemoveBindingWithTeacher(long bindingId)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.RemoveBindingWithTeacher(userId, bindingId);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
-    [HttpDelete("student/{studentId:long}")]
+    [HttpDelete("binding/remove-student/{bindingId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    public IActionResult RemoveStudentBinding(long studentId)
+    public async Task<IActionResult> RemoveBindingWithStudent(long bindingId)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.RemoveBindingWithStudent(userId, bindingId);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     // =======================
     // BLOCK / UNBLOCK
     // =======================
 
-    [HttpPost("binding/{bindingId:long}/block")]
+    [HttpPost("binding/{studentId:long}/block")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    public IActionResult BlockStudent(long bindingId)
+    public async Task<IActionResult> BlockStudentAsync(long studentId)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.BlockStudent(userId, studentId);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpPost("binding/{bindingId:long}/unblock")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    public IActionResult UnblockStudent(long bindingId)
+    public async Task<IActionResult> UnblockStudentAsync(long bindingId)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.UnblockStudent(userId, bindingId);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     // =======================
     // GET MY STUDENTS
     // =======================
 
-    [HttpGet("students/{id:long}")]
+    [HttpGet("students/{studentId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    public IActionResult GetMyStudentById(long id)
+    public async Task<IActionResult> GetMyStudentInfoByIdAsync(long studentId)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.GetMyStudentInfoById(userId, studentId);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpGet("students")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    public IActionResult GetMyStudentsList()
+    public async Task<IActionResult> GetMyStudentsListAsync()
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.GetMyStudentsList(userId);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok(new ListResponseDto<UserProfilePreviewWithAvatarUrlModel>(result.Payload));
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpGet("students/blocked")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    public IActionResult GetBlockedStudentList()
+    public async Task<IActionResult> GetBlockedStudentListAsync()
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.GetBlockedStudentList(userId);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok(new ListResponseDto<UserProfilePreviewWithAvatarUrlModel>(result.Payload));
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     // =======================
     // GET MY TEACHERS
     // =======================
 
-    [HttpGet("teachers/{id:long}")]
+    [HttpGet("teachers/{teacherId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
-    public IActionResult GetMyTeacherById(long id)
+    public async Task<IActionResult> GetMyTeacherByIdAsync(long teacherId)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.GetMyTeacherInfoById(userId, teacherId);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpGet("teachers")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
-    public IActionResult GetMyTeachersList()
+    public async Task<IActionResult> GetMyTeachersListAsync()
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.GetMyTeachersList(userId);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok(new ListResponseDto<UserProfilePreviewWithAvatarUrlModel>(result.Payload));
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 }

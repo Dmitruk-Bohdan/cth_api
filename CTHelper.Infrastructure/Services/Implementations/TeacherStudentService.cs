@@ -1,10 +1,15 @@
-﻿using CTHelper.Application.Common.Helpers;
+﻿using CTHelper.Application.Common.Enums;
+using CTHelper.Application.Common.Helpers;
 using CTHelper.Application.Models;
 using CTHelper.Application.Models.TeacherStudent;
+using CTHelper.Application.Models.User;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Application.Specification.UserSpecifications;
 using CTHelper.Domain.Abstractions;
+using CTHelper.Domain.Common.Enums;
 using CTHelper.Domain.Entities;
+using CTHelper.Persistence.Context;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace CTHelper.Infrastructure.Services.Implementations
@@ -13,13 +18,19 @@ namespace CTHelper.Infrastructure.Services.Implementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IShortTokenService _tokenService;
-        public TeacherStudentService(IUnitOfWork unitOfWork, IShortTokenService tokenService)
+        private readonly AppDbContext _dbContext;
+        private readonly IUserManagmentService _userManagmentService;
+        private readonly IFileStorageService _fileStorageService;
+        public TeacherStudentService(IUnitOfWork unitOfWork, IShortTokenService tokenService, AppDbContext dbContext, IUserManagmentService userManagmentService, IFileStorageService fileStorageService)
         {
             _unitOfWork = unitOfWork;
             _tokenService = tokenService;
+            _dbContext = dbContext;
+            _userManagmentService = userManagmentService;
+            _fileStorageService = fileStorageService;
         }
 
-        public async  Task<OperationResult<CreateInvitationCodeResponseModel>> CreateInvitationCodeAsync(
+        public async Task<OperationResult<CreateInvitationCodeResponseModel>> CreateInvitationCodeAsync(
             long teacherId, short? usesCount, DateTimeOffset? expiredAt)
         {
             var user = await _unitOfWork.Users.GetAsync(new UserByIdAsNoTrackingSpecification(teacherId));
@@ -56,6 +67,348 @@ namespace CTHelper.Infrastructure.Services.Implementations
             };
 
             return result;
+        }
+
+        public async Task<OperationResult> RequestBindingWithTeacherByCode(long studentId, string code)
+        {
+            var dbCodeEntity = await _dbContext.InvitationCodes.FirstOrDefaultAsync(c => c.Code == code);
+            if(dbCodeEntity == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.BindingCodeNotFound,
+                    ErrorMessage = "Teacher-student binding code not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+            if(dbCodeEntity.IsRevoked == true)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.BindingCodeIsRevoked,
+                    ErrorMessage = "Binding code is revoked",
+                    HttpStatusCode= HttpStatusCode.BadRequest
+                };
+            }
+
+            var existingRelationship = await _dbContext.TeacherStudents.FirstOrDefaultAsync(ts => ts.TeacherId == dbCodeEntity.TeacherId && ts.StudentId == studentId);
+
+            if(existingRelationship != null)
+            {
+                if (existingRelationship.Status == TeacherStudentStatus.Blocked)
+                {
+                    return new OperationResult()
+                    {
+                        ErrorCode = ErrorCodeConstants.StudentIsBlocked,
+                        ErrorMessage = "You are blocked by required teacher",
+                        HttpStatusCode = HttpStatusCode.Forbidden
+                    };
+                }
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.RelationAlreadyExist,
+                    ErrorMessage = "You are already bounded with this teacher",
+                    HttpStatusCode = HttpStatusCode.BadRequest
+                };
+            }
+
+            var bindingRequest = new BindingRequest()
+            {
+                CodeId = dbCodeEntity.Id,
+                StudentId = studentId,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            
+            _dbContext.BindingRequests.Add(bindingRequest);
+            await _dbContext.SaveChangesAsync();
+
+            return new OperationResult();
+        }
+
+        public async Task<OperationResult> AcceptStudentByInvitationCode(long teacherId, long bindingRequestId)
+        {
+            var bindingRequest = await _dbContext.BindingRequests.FirstOrDefaultAsync(br => br.Id == bindingRequestId);
+
+            if(bindingRequest == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.BindingRequestNotFound,
+                    ErrorMessage = "Specified binding request not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            var invitationCodeTeacherId = await _dbContext.BindingRequests.Select(br => br.Code.TeacherId).FirstOrDefaultAsync();
+
+            if(invitationCodeTeacherId != teacherId)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.BindingRequestNotFound,
+                    ErrorMessage = "You can only modify your own data. This record belongs to someone else",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            var newTeacherStudentRelation = new TeacherStudent()
+            {
+                TeacherId = teacherId,
+                StudentId = bindingRequest.StudentId,
+                Status = TeacherStudentStatus.Active,
+            };
+
+            await _dbContext.AddAsync(newTeacherStudentRelation);
+            await _dbContext.SaveChangesAsync();
+
+            return new OperationResult();
+        }
+
+        public async Task<OperationResult> RemoveBindingWithTeacher(long studentId, long bindingId)
+        {
+            var binding = _dbContext.TeacherStudents.FirstOrDefault(ts => ts.Id == bindingId && !ts.IsDeleted);
+            if(binding == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.BindingNotFound,
+                    ErrorMessage = $"Specified binding not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            if(binding.StudentId != studentId)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                    ErrorMessage = $"You can only modify your own data. This record belongs to someone else",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            binding.IsDeleted = true;
+            await _dbContext.SaveChangesAsync();
+
+            return new OperationResult();
+        }
+
+        public async Task<OperationResult> RemoveBindingWithStudent(long teacherId, long bindingId)
+        {
+            var binding = _dbContext.TeacherStudents.FirstOrDefault(ts => ts.Id == bindingId && !ts.IsDeleted);
+            if (binding == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.BindingNotFound,
+                    ErrorMessage = $"Specified binding not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            if (binding.TeacherId != teacherId)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                    ErrorMessage = $"You can only modify your own data. This record belongs to someone else",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            binding.IsDeleted = true;
+            await _dbContext.SaveChangesAsync();
+
+            return new OperationResult();
+        }
+
+        public async Task<OperationResult> BlockStudent(long teacherId, long studentId)
+        {
+            var binding = _dbContext.TeacherStudents.FirstOrDefault(
+                ts => ts.TeacherId == teacherId
+                && ts.StudentId == studentId 
+                && !ts.IsDeleted
+                && ts.Status != TeacherStudentStatus.Blocked);
+
+            if (binding != null)
+            {
+                binding.Status = TeacherStudentStatus.Blocked;
+            }
+            else
+            {
+                var newTeacherStudentRelation = new TeacherStudent()
+                {
+                    TeacherId = teacherId,
+                    StudentId = studentId,
+                    Status = TeacherStudentStatus.Blocked,
+                };
+
+                await _dbContext.AddAsync(newTeacherStudentRelation);
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            return new OperationResult();
+        }
+
+        public async Task<OperationResult> UnblockStudent(long teacherId, long bindingId)
+        {
+            var binding = _dbContext.TeacherStudents.FirstOrDefault(ts => ts.Id == bindingId && !ts.IsDeleted && ts.Status == TeacherStudentStatus.Blocked);
+            if (binding == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.BindingNotFound,
+                    ErrorMessage = $"Specified binding not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            if (binding.TeacherId != teacherId)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                    ErrorMessage = $"You can only modify your own data. This record belongs to someone else",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            binding.IsDeleted = true;
+            await _dbContext.SaveChangesAsync();
+
+            return new OperationResult();
+        }
+
+        public async Task<OperationResult<UserProfileResponseModel>> GetMyStudentInfoById(long teacherId, long studentId)
+        {
+            var binding = _dbContext.TeacherStudents.FirstOrDefault(
+               ts => ts.TeacherId == teacherId
+               && ts.StudentId == studentId
+               && !ts.IsDeleted
+               && ts.Status != TeacherStudentStatus.Blocked);
+
+            if (binding == null)
+            {
+                return new OperationResult<UserProfileResponseModel>()
+                {
+                    ErrorCode = ErrorCodeConstants.BindingNotFound,
+                    ErrorMessage = $"Specified binding not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            else return await _userManagmentService.GetUserInfoById(studentId);
+        }
+
+        public async Task<OperationResult<UserProfileResponseModel>> GetMyTeacherInfoById(long teacherId, long studentId)
+        {
+            var binding = _dbContext.TeacherStudents.FirstOrDefault(
+               ts => ts.TeacherId == teacherId
+               && ts.StudentId == studentId
+               && !ts.IsDeleted
+               && ts.Status != TeacherStudentStatus.Blocked);
+
+            if (binding == null)
+            {
+                return new OperationResult<UserProfileResponseModel>()
+                {
+                    ErrorCode = ErrorCodeConstants.BindingNotFound,
+                    ErrorMessage = $"Specified binding not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            else return await _userManagmentService.GetUserInfoById(teacherId);
+        }
+
+        public async Task<OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>> GetMyTeachersList(long studentId)
+        {
+            var teacherPreviewList = await _dbContext.TeacherStudents
+                .Where(ts => 
+                    ts.StudentId == studentId
+                    && ts.Status == TeacherStudentStatus.Active
+                    && ts.IsDeleted == false)
+                .Select(ts => new UserProfilePreviewWithAvatarIdModel()
+                {
+                    UserId = ts.TeacherId,
+                    Username = ts.Teacher.Username,
+                    AvatarId = ts.Teacher.AvatarImageId
+                })
+                .ToListAsync();
+
+            var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewWithAvatarUrlModel()
+            {
+                UserId = tp.UserId,
+                Username = tp.Username,
+                AvatarUrl = tp.AvatarId == null ? null : await _fileStorageService.GetDownloadUrl(tp.AvatarId!.Value)
+            }).ToList();
+
+            var response = (await Task.WhenAll(previewTaskList)).ToList();
+
+            return new OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>()
+            {
+                Payload = response
+            };
+        }
+
+        public async Task<OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>> GetMyStudentsList(long teacherId)
+        {
+            var teacherPreviewList = await _dbContext.TeacherStudents
+                .Where(ts =>
+                    ts.TeacherId == teacherId
+                    && ts.Status == TeacherStudentStatus.Active
+                    && ts.IsDeleted == false)
+                .Select(ts => new UserProfilePreviewWithAvatarIdModel()
+                {
+                    UserId = ts.StudentId,
+                    Username = ts.Student.Username,
+                    AvatarId = ts.Student.AvatarImageId
+                })
+                .ToListAsync();
+
+            var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewWithAvatarUrlModel()
+            {
+                UserId = tp.UserId,
+                Username = tp.Username,
+                AvatarUrl = tp.AvatarId == null ? null : await _fileStorageService.GetDownloadUrl(tp.AvatarId!.Value)
+            }).ToList();
+
+            var response = (await Task.WhenAll(previewTaskList)).ToList();
+
+            return new OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>()
+            {
+                Payload = response
+            };
+        }
+        public async Task<OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>> GetBlockedStudentList(long teacherId)
+        {
+            var teacherPreviewList = await _dbContext.TeacherStudents
+                .Where(ts =>
+                    ts.TeacherId == teacherId
+                    && ts.Status == TeacherStudentStatus.Blocked
+                    && ts.IsDeleted == false)
+                .Select(ts => new UserProfilePreviewWithAvatarIdModel()
+                {
+                    UserId = ts.StudentId,
+                    Username = ts.Student.Username,
+                    AvatarId = ts.Student.AvatarImageId
+                })
+                .ToListAsync();
+
+            var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewWithAvatarUrlModel()
+            {
+                UserId = tp.UserId,
+                Username = tp.Username,
+                AvatarUrl = tp.AvatarId == null ? null : await _fileStorageService.GetDownloadUrl(tp.AvatarId!.Value)
+            }).ToList();
+
+            var response = (await Task.WhenAll(previewTaskList)).ToList();
+
+            return new OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>()
+            {
+                Payload = response
+            };
         }
     }
 }

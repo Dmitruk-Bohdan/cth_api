@@ -4,11 +4,10 @@ namespace CTHelper.Application.Models.User
 {
     public class UserProfileResponseModel
     {
+        public long UserId {  get; set; }
         public string Username { get; set; } = default!;
 
         public string Email { get; set; } = default!;
-
-        public DateTimeOffset? LastLoginAt { get; set; }
 
         public string? AvatarUrl { get; set; }
 

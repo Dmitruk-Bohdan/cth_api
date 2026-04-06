@@ -5,5 +5,5 @@ namespace CTHelper.Presentation.Dtos.TeacherStudentDtos;
 public class AcceptBindingRequestDto
 {
     [JsonPropertyName("requestId")]
-    public long StudentId { get; set; }
+    public long BindingRequestId { get; set; }
 }

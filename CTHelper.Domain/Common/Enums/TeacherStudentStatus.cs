@@ -2,8 +2,8 @@ namespace CTHelper.Domain.Common.Enums
 {
     public enum TeacherStudentStatus : short
     {
-        Graduated = 1,
-        Active = 2
+        Active = 1,
+        Blocked = 2,
     }
 }
 

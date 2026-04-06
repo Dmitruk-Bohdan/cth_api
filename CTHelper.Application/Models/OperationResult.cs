@@ -10,6 +10,7 @@ namespace CTHelper.Application.Models
         public string? ErrorMessage { get; set; }
         public string? ErrorCode { get; set; }
         public HttpStatusCode HttpStatusCode { get; set; }
+        public bool IsSuccess => ErrorCode == null;
     }
     public class OperationResult<T> : OperationResult
     {

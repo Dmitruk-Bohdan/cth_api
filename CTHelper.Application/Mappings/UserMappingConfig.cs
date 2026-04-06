@@ -1,3 +1,4 @@
+using CTHelper.Application.Models.User;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Domain.Entities;
 using Mapster;
@@ -16,5 +17,11 @@ public class UserMappingConfig : IRegister
 
         config.NewConfig<User, RequestEmailVerificationCommand>()
             .Map(dest => dest.UserEmail, src => src.Email);
+
+        config.NewConfig<User, UserProfileResponseModel>()
+            .Map(dest => dest.UserId, src => src.Id)
+            .Map(dest => dest.Username, src => src.Username)
+            .Map(dest => dest.Email, src => src.Email)
+            .Map(dest => dest.CreatedAt, src => src.CreatedAt);
     }
 }

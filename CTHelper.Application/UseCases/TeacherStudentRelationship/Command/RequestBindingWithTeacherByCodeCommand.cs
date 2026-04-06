@@ -1,5 +1,4 @@
 namespace CTHelper.Application.UseCases.TeacherStudentRelationship.Command;
 
-public class RequestBindingWithTeacherByCodeCommand
-{
-}
+public record RequestBindingWithTeacherByCodeCommand(long StudentId,
+                                                     string Code);
