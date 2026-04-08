@@ -1,15 +1,17 @@
 ﻿using CTHelper.Application.Common.Enums;
 using CTHelper.Application.Models;
 using CTHelper.Application.Models.Group;
+using CTHelper.Application.Services.Interfaces;
 using CTHelper.Domain.Entities;
 using CTHelper.Persistence.Context;
 using CTHelper.Presentation.Dtos;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using Group = CTHelper.Domain.Entities.Group;
 
 namespace CTHelper.Infrastructure.Services.Implementations
 {
-    public class GroupService
+    public class GroupService : IGroupService
     {
         private readonly AppDbContext _dbContext;
 
@@ -81,7 +83,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 .Where(g => g.Id == request.GroupId)
                 .FirstOrDefaultAsync();
 
-            if(groupToDelete == null)
+            if (groupToDelete == null)
             {
                 return new OperationResult()
                 {
@@ -91,7 +93,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            if(groupToDelete.TeacherId != request.TeacherId)
+            if (groupToDelete.TeacherId != request.TeacherId)
             {
                 return new OperationResult()
                 {
@@ -103,14 +105,14 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             groupToDelete.IsDeleted = true;
             await _dbContext.SaveChangesAsync();
-            
+
             return new OperationResult();
         }
 
         public async Task<OperationResult> AddStudentToGroup(AddStudentToGroupModel request)
         {
             var studentBelongToTeacher = await _dbContext.TeacherStudents
-                .Where(ts => 
+                .Where(ts =>
                     ts.TeacherId == request.TeacherId
                     && ts.StudentId == request.StudentId)
                 .AnyAsync();
@@ -131,7 +133,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     && g.TeacherId == request.TeacherId)
                 .AnyAsync();
 
-            if(!groupBelongToTeacher)
+            if (!groupBelongToTeacher)
             {
                 return new OperationResult()
                 {
@@ -214,6 +216,11 @@ namespace CTHelper.Infrastructure.Services.Implementations
             await _dbContext.SaveChangesAsync();
 
             return new OperationResult();
+        }
+
+        public async Task<OperationResult<GroupDetailsResponseModel>> GetGroupById(GetGroupByIdModel request)
+        {
+            return new OperationResult<GroupDetailsResponseModel>();
         }
     }
 }

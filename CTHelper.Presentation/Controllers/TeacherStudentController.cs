@@ -17,7 +17,7 @@ using System.Security.Claims;
 namespace CTHelper.Presentation.Controllers;
 
 [ApiController]
-[Route("api/teacher-student")]
+[Route("teacher-student")]
 public class TeacherStudentController : ControllerBase
 {
     private readonly ITeacherStudentService _teacherStudentService;

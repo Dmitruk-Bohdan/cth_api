@@ -2,10 +2,12 @@
 
 namespace CTHelper.Presentation.Dtos
 {
-    public class PaginatedListRequestModel
+    public class PaginatedListRequestDto
     {
+        [JsonPropertyName("page")]
         public int PageNumber { get; set; } = 1;
 
+        [JsonPropertyName("pageSize")]
         public int PageSize { get; set; } = 20;
     }
 }

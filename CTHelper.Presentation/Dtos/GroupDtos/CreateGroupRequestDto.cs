@@ -1,15 +1,13 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace CTHelper.Presentation.Dtos.GroupDtos;
-
-public class CreateGroupRequestDto
+namespace CTHelper.Application.Models.Group
 {
-    [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
-
-    [JsonPropertyName("description")]
-    public string? Description { get; set; }
-
-    [JsonPropertyName("invitationCode")]
-    public string? InvitationCode { get; set; }
+    public class CreateGroupRequestDto
+    {
+        [JsonPropertyName("subjectId")]
+        public long SubjectId { get; set; }
+        
+        [JsonPropertyName("groupId")]
+        public string GroupName { get; set; } = default!;
+    }
 }
