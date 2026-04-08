@@ -1,6 +1,6 @@
 namespace CTHelper.Domain.Common.Enums
 {
-    public enum ProblemDifficulty : short
+    public enum ProblemDifficult : short
     {
         VeryEasy = 1,
         Easy = 2,

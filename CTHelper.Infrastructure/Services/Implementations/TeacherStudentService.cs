@@ -145,7 +145,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             {
                 return new OperationResult()
                 {
-                    ErrorCode = ErrorCodeConstants.BindingRequestNotFound,
+                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
                     ErrorMessage = "You can only modify your own data. This record belongs to someone else",
                     HttpStatusCode = HttpStatusCode.Forbidden
                 };

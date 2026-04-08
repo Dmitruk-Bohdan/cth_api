@@ -8,7 +8,7 @@ namespace CTHelper.Domain.Entities
 
         public ProblemType Type { get; set; }
 
-        public ProblemDifficulty Difficulty { get; set; }
+        public ProblemDifficult Difficulty { get; set; }
 
         public string Statement { get; set; } = default!;
 

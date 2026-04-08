@@ -8,13 +8,12 @@ namespace CTHelper.Presentation.Controllers;
 public class GroupsController : ControllerBase
 {
     [HttpGet]
-    public IActionResult GetAll()
+    public IActionResult GetGroupList()
     {
-        throw new NotImplementedException();
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetById(long id)
+    public IActionResult GetById()
     {
         throw new NotImplementedException();
     }

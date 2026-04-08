@@ -6,33 +6,37 @@
         public const string OwnershipRequired = "00000000";
 
         //User error codes
-        public const string UserNotFound = "00001000";
-        public const string WrongPassword = "00001001";
+        public const string UserNotFound = "00010000";
+        public const string WrongPassword = "00010001";
 
         //Email verification error codes
-        public const string EmailIsAlreadyVerified = "00002000";
-        public const string EmailVerificationTokenIsExpired = "00002001";
-        public const string WrongEmailVerificationToken = "00002002";
+        public const string EmailIsAlreadyVerified = "00020000";
+        public const string EmailVerificationTokenIsExpired = "00020001";
+        public const string WrongEmailVerificationToken = "00020002";
 
         //Password reset error codes
-        public const string WrongPasswordResetToken = "00003000";
-        public const string PasswordResetTokenIsExpired = "00003001";
-        public const string NoActivePasswordResetTokenFound = "00003002";
+        public const string WrongPasswordResetToken = "00030000";
+        public const string PasswordResetTokenIsExpired = "00030001";
+        public const string NoActivePasswordResetTokenFound = "00030002";
 
         //Authentication error codes
-        public const string InvalidRefreshToken = "00004000";
-        public const string RefreshTokenExpired = "00004001";
-        public const string DeviceAlreadyHasActiveSession = "00004002";
-        public const string InvalidSessionJti = "00004003";
-        public const string EmailIsNotVerified = "00004004";
+        public const string InvalidRefreshToken = "00040000";
+        public const string RefreshTokenExpired = "00040001";
+        public const string DeviceAlreadyHasActiveSession = "00040002";
+        public const string InvalidSessionJti = "00040003";
+        public const string EmailIsNotVerified = "00040004";
 
         //Teacher-Student binding codes
-        public const string BindingCodeNotFound = "00005000";
-        public const string BindingCodeIsRevoked = "00005001";
-        public const string StudentIsBlocked = "00005002";
-        public const string RelationAlreadyExist = "00005003";
-        public const string BindingRequestNotFound = "00005004";
-        public const string ForeignBindingConfirmationRequested = "00005005";
-        public const string BindingNotFound = "00005006";
+        public const string BindingCodeNotFound = "00050000";
+        public const string BindingCodeIsRevoked = "00050001";
+        public const string StudentIsBlocked = "00050002";
+        public const string RelationAlreadyExist = "00050003";
+        public const string BindingRequestNotFound = "00050004";
+        public const string ForeignBindingConfirmationRequested = "00050005";
+        public const string BindingNotFound = "00050006";
+
+        //Student Group codes
+        public const string GroupNotFound = "00060000";
+        public const string StudentNotBelongToGroup = "00060001";
     }
 }

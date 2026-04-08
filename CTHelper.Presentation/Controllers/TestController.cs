@@ -8,7 +8,7 @@ namespace CTHelper.Presentation.Controllers;
 public class TestsController : ControllerBase
 {
     [HttpGet]
-    public IActionResult GetAll()
+    public IActionResult GetTestList()
     {
         throw new NotImplementedException();
     }
