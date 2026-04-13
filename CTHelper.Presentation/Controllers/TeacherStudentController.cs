@@ -264,7 +264,7 @@ public class TeacherStudentController : ControllerBase
 
         if (result.ErrorCode == null)
         {
-            return Ok(new ListResponseDto<UserProfilePreviewWithAvatarUrlModel>(result.Payload));
+            return Ok(new ListResponseDto<UserProfilePreviewModel>(result.Payload));
         }
         else
         {
@@ -289,7 +289,7 @@ public class TeacherStudentController : ControllerBase
 
         if (result.ErrorCode == null)
         {
-            return Ok(new ListResponseDto<UserProfilePreviewWithAvatarUrlModel>(result.Payload));
+            return Ok(new ListResponseDto<UserProfilePreviewModel>(result.Payload));
         }
         else
         {
@@ -343,7 +343,7 @@ public class TeacherStudentController : ControllerBase
 
         if (result.ErrorCode == null)
         {
-            return Ok(new ListResponseDto<UserProfilePreviewWithAvatarUrlModel>(result.Payload));
+            return Ok(new ListResponseDto<UserProfilePreviewModel>(result.Payload));
         }
         else
         {

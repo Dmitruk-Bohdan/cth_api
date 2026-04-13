@@ -4,31 +4,22 @@ using CTHelper.Domain.Entities;
 
 namespace CTHelper.Persistence.Configurations
 {
-    public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
+    public class GroupAssignmentConfiguration : IEntityTypeConfiguration<GroupAssignment>
     {
-        public void Configure(EntityTypeBuilder<Assignment> builder)
+        public void Configure(EntityTypeBuilder<GroupAssignment> builder)
         {
-            builder.ToTable("assignment", t =>
+            builder.ToTable("group_assignment", t =>
             {
                 t.HasCheckConstraint(
-                    "CK_assignment_target",
-                    "(student_id IS NULL) <> (group_id IS NULL)"
-                );
-                t.HasCheckConstraint(
                     "CK_assignment_positive_values",
-                    "attempts_left >= 0"
+                    "default_attempts_allowed >= 0"
                 );
             });
-
 
             builder.HasKey(a => a.Id);
 
             builder.Property(a => a.Id)
                 .HasColumnName("id")
-                .HasColumnType("bigint");
-
-            builder.Property(a => a.StudentId)
-                .HasColumnName("student_id")
                 .HasColumnType("bigint");
 
             builder.Property(a => a.TeacherId)
@@ -50,8 +41,8 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
-            builder.Property(a => a.AttemptsLeft)
-                .HasColumnName("attempts_left")
+            builder.Property(a => a.DefaultAttemptsAllowed)
+                .HasColumnName("default_attempts_allowed")
                 .HasColumnType("smallint")
                 .IsRequired();
 
@@ -66,14 +57,8 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
-            builder.HasOne(a => a.Student)
-                .WithMany(s => s.RecievedAssignments)
-                .HasForeignKey(a => a.StudentId)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasPrincipalKey(u => u.Id);
-
             builder.HasOne(a => a.Teacher)
-                .WithMany(t => t.IssuedAssignments)
+                .WithMany(t => t.IssuedGroupAssignments)
                 .HasForeignKey(a => a.TeacherId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasPrincipalKey(u => u.Id);
@@ -90,7 +75,6 @@ namespace CTHelper.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasPrincipalKey(u => u.Id);
 
-            builder.HasIndex(a => a.StudentId); 
             builder.HasIndex(a => a.GroupId);   
             builder.HasIndex(a => a.TeacherId); 
         }

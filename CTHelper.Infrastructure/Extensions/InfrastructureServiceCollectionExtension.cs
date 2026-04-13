@@ -44,6 +44,8 @@ namespace CTHelper.Infrastructure
             services.AddScoped<IFileStorageService, MinioFileStorageService>();
             services.AddScoped<IUserManagmentService, UserManagmentService>();
             services.AddScoped<ITeacherStudentService, TeacherStudentService>();
+            services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<IAssignmentService, AssignmentService>();
 
             return services;
         }

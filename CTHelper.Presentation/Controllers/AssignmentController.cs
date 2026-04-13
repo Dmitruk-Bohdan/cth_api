@@ -1,6 +1,13 @@
+using CTHelper.Application.Models.Assignment;
+using CTHelper.Application.Services.Interfaces;
+using CTHelper.Domain.Common.Extensions;
+using CTHelper.Presentation.Common.Constants;
 using CTHelper.Presentation.Dtos;
 using CTHelper.Presentation.Dtos.AssignmentDtos;
+using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CTHelper.Presentation.Controllers;
 
@@ -8,124 +15,388 @@ namespace CTHelper.Presentation.Controllers;
 [Route("assignments")]
 public class AssignmentsController : ControllerBase
 {
-    /// <summary>
-    /// Get all assignments for teacher or student
-    /// </summary>
-    /// <param name="subjectId">ID of the subject</param>
-    /// <param name="notCompleted">Optional filter for incomplete assignments</param>
-    /// <param name="searchTextFragment">Optional search by text</param>
-    /// <param name="expiringDate">Optional filter by expiring date</param>
-    /// <returns>List of assignments for teacher or student</returns>    
-    [HttpGet("")]
-    [ProducesResponseType(typeof(TeacherAssignmentListResponseDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(StudentAssignmentListResponseDto), StatusCodes.Status200OK)]
-    public IActionResult GetAll(
-        [FromQuery] long subjectId,
-        [FromQuery] bool? notCompleted = null,
-        [FromQuery] string? searchTextFragment = null,
-        [FromQuery] DateTimeOffset? expiringDate = null)
+    private readonly IAssignmentService _assignmentService;
+    private readonly IMapper _mapper;
+
+    public AssignmentsController(IAssignmentService assignmentService, IMapper mapper)
     {
-        var role = "role";
-        if (role == "teacher")
+        _assignmentService = assignmentService;
+        _mapper = mapper;
+    }
+
+    [HttpPost("students")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> AssignTestToStudent([FromBody] AssignTestToStudentRequestDto dto)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
         {
-            return Ok(new TeacherAssignmentListResponseDto());
+            return Unauthorized();
+        }
+
+        var requestModel = new AssignTestToStudentRequestModel()
+        {
+            TestId = dto.TestId,
+            StudentId = dto.StudentId,
+            Deadline = dto.Deadline,
+            AttemptsAllowed = dto.AttemptsAllowed,
+            TeacherId = userId
+        };
+
+        var result = await _assignmentService.AssignTestToStudent(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
         }
         else
         {
-            return Ok(new StudentAssignmentListResponseDto());
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
         }
+
+        throw new NotImplementedException();
     }
 
-    /// <summary>
-    /// Get details of a single assignment by its ID.
-    /// </summary>
-    /// <param name="id">ID of the assignment.</param>
-    /// <returns>Assignment details. Response type depends on the role: teacher or student.</returns>
-    [HttpGet("{id}")]
-    [ProducesResponseType(typeof(TeacherAssignmentItemResponseModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(StudentAssignmentItemResponseModel), StatusCodes.Status200OK)]
-    public IActionResult GetById([FromRoute] long id)
+    [HttpPost("groups")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> AssignTestToGroup([FromBody] AssignTestToGroupRequestDto dto)
     {
-        var role = "role";
-        if(role == "teacher")
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
         {
-            return Ok(new TeacherAssignmentItemResponseModel());
+            return Unauthorized();
+        }
+
+        var requestModel = new AssignTestToGroupRequestModel()
+        {
+            TestId = dto.TestId,
+            GroupId = dto.GroupId,
+            Deadline = dto.Deadline,
+            AttemptsAllowed = dto.AttemptsAllowed,
+            TeacherId = userId
+        };
+
+        var result = await _assignmentService.AssignTestToGroup(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
         }
         else
         {
-            return Ok(new StudentAssignmentItemResponseModel());
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
+
+        throw new NotImplementedException();
+    }
+
+    [HttpPatch("")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> PatchAssignment ([FromBody] PatchAssignmentRequestDto dto)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new PatchAssignmentRequestModel()
+        {
+            TeacherId = userId,
+            AssignmentId = dto.AssignmentId,
+            Deadline = dto.Deadline,
+            Attempts = dto.Attempts,
+        };
+
+        var result = await _assignmentService.PatchAssignment(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
         }
     }
 
-    /// <summary>
-    /// Create a new assignment.
-    /// </summary>
-    /// <param name="dto">Assignment creation data.</param>
-    /// <returns>Returns 201 Created with the ID of the newly created assignment.</returns>
-    [HttpPost]
-    [ProducesResponseType(typeof(IdDto), StatusCodes.Status201Created)] 
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]       
-    public IActionResult Create([FromBody] CreateAssignmentRequestDto dto)
+    [HttpDelete("")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> RevokeAssignment([FromBody] RevokeAssignmentRequestDto dto)
     {
-        var createdAssignment = new StudentAssignmentItemResponseModel();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
 
-        return CreatedAtAction(
-            nameof(GetById),
-            new IdDto(createdAssignment.Id));
+        var requestModel = new RevokeAssignmentRequestModel()
+        {
+            TeacherId = userId,
+            AssignmentId = dto.AssignmentId,
+        };
+
+        var result = await _assignmentService.RevokeAssignment(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
-    /// <summary>
-    /// Delete an assignment by its ID.
-    /// </summary>
-    /// <param name="id">ID of the assignment to delete.</param>
-    /// <returns>No content (204) on successful deletion.</returns>
-    [HttpDelete("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]    
-    public IActionResult Delete([FromRoute] long id)
+    [HttpGet("teacher")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> GetIAssignedList()
     {
-        return NoContent();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _assignmentService.GetIAssignedList(userId);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
-    /// <summary>
-    /// Change the deadline of an assignment.
-    /// </summary>
-    /// <param name="id">ID of the assignment to update.</param>
-    /// <param name="dto">New deadline data.</param>
-    /// <returns>No content (204) on successful update.</returns>
-    [HttpPatch("{id}/deadline")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]    
-    public IActionResult ChangeDeadline(
-        [FromRoute] long id,
-        [FromBody] PatchAssignmentDeadlineRequestDto dto)
+    [HttpGet("student/me")]
+    [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
+    public async Task<IActionResult> GetAssignedToMeList()
     {
-        return NoContent();
-    }
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
 
-    /// <summary>
-    /// Get assignment scores grouped by student group.
-    /// </summary>
-    /// <param name="assignmentId">ID of the assignment.</param>
-    /// <returns>Group scores for the specified assignment.</returns>
-    [HttpGet("by-group-score/{assignmentId}")]
-    [ProducesResponseType(typeof(GroupScoreByAssignmentResponseDto), StatusCodes.Status200OK)]  
-    public IActionResult GetByGroup(long assignmentId)
-    {
-        return Ok(new GroupScoreByAssignmentResponseDto());
+        var result = await _assignmentService.GetAssignedToMeList(userId);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
 
-    /// <summary>
-    /// Get assignment scores for a specific student.
-    /// </summary>
-    /// <param name="studentId">ID of the student.</param>
-    /// <returns>List of assignments with scores for the student (teacher view).</returns>
-    [HttpGet("by-student-score/{studentId}")]
-    [ProducesResponseType(typeof(TeacherAssignmentListResponseDto), StatusCodes.Status200OK)] 
-    public IActionResult GetByStudent(long studentId)
+    [HttpGet("student/details/{assignmentId : long}")]
+    [Authorize]
+    public async Task<IActionResult> GetStudentAssignmentDetails([FromRoute] long assignmentId)
     {
-        return Ok(new TeacherAssignmentListResponseDto());
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new GetAssignmentDetailsModel()
+        {
+            AssignmentId = assignmentId,
+            TeacherId = userId
+        };
+
+        var result = await _assignmentService.GetStudentAssignmentDetails(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
+    }
+
+    [HttpGet("student/{studentId : long}/list")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> GetStudentAssignments([FromRoute] long studentId)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new GetAssignedToStudentListModel()
+        {
+            StudentId = studentId,
+            TeacherId = userId
+        };
+
+        var result = await _assignmentService.GetAssignedToStudentList(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
+    }
+
+    [HttpGet("group/details/{assignmentId : long}")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> GetGroupAssignmentsDetails([FromRoute] long assignmentId)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new GetAssignmentDetailsModel()
+        {
+            AssignmentId = assignmentId,
+            TeacherId = userId
+        };
+
+        var result = await _assignmentService.GetGroupAssignmentDetails(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
+    }
+
+    [HttpGet("group/{groupId : long}/list")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> GetGroupAssignmentDetailsById([FromRoute] long groupId)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new GetAssignedToGroupListModel()
+        {
+            GroupId = groupId,
+            TeacherId = userId
+        };
+
+        var result = await _assignmentService.GetAssignedToGroupList(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
+    }
+
+
+
+    [HttpGet("group-score/{assignmentId}")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> GetGroupAssignmentScore(long assignmentId)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new GetGroupAssignmentScoreModel()
+        {
+            AssignmentId = assignmentId,
+            TeacherId = userId
+        };
+
+        var result = await _assignmentService.GetGroupAssignmentScore(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
+    }
+
+
+    [HttpGet("student-score/{assignmentId}")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> GetByStudent(long assignmentId)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new GetStudentAssignmentScoreModel()
+        {
+            AssignmentId = assignmentId,
+            TeacherId = userId
+        };
+
+        var result = await _assignmentService.GetStudentAssignmentScore(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 }

@@ -322,7 +322,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             else return await _userManagmentService.GetUserInfoById(teacherId);
         }
 
-        public async Task<OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>> GetMyTeachersList(long studentId)
+        public async Task<OperationResult<List<UserProfilePreviewModel>>> GetMyTeachersList(long studentId)
         {
             var teacherPreviewList = await _dbContext.TeacherStudents
                 .Where(ts => 
@@ -337,7 +337,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 })
                 .ToListAsync();
 
-            var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewWithAvatarUrlModel()
+            var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewModel()
             {
                 UserId = tp.UserId,
                 Username = tp.Username,
@@ -346,13 +346,13 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             var response = (await Task.WhenAll(previewTaskList)).ToList();
 
-            return new OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>()
+            return new OperationResult<List<UserProfilePreviewModel>>()
             {
                 Payload = response
             };
         }
 
-        public async Task<OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>> GetMyStudentsList(long teacherId)
+        public async Task<OperationResult<List<UserProfilePreviewModel>>> GetMyStudentsList(long teacherId)
         {
             var teacherPreviewList = await _dbContext.TeacherStudents
                 .Where(ts =>
@@ -367,7 +367,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 })
                 .ToListAsync();
 
-            var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewWithAvatarUrlModel()
+            var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewModel()
             {
                 UserId = tp.UserId,
                 Username = tp.Username,
@@ -376,12 +376,12 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             var response = (await Task.WhenAll(previewTaskList)).ToList();
 
-            return new OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>()
+            return new OperationResult<List<UserProfilePreviewModel>>()
             {
                 Payload = response
             };
         }
-        public async Task<OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>> GetBlockedStudentList(long teacherId)
+        public async Task<OperationResult<List<UserProfilePreviewModel>>> GetBlockedStudentList(long teacherId)
         {
             var teacherPreviewList = await _dbContext.TeacherStudents
                 .Where(ts =>
@@ -396,7 +396,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 })
                 .ToListAsync();
 
-            var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewWithAvatarUrlModel()
+            var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewModel()
             {
                 UserId = tp.UserId,
                 Username = tp.Username,
@@ -405,7 +405,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             var response = (await Task.WhenAll(previewTaskList)).ToList();
 
-            return new OperationResult<List<UserProfilePreviewWithAvatarUrlModel>>()
+            return new OperationResult<List<UserProfilePreviewModel>>()
             {
                 Payload = response
             };

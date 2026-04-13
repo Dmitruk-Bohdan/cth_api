@@ -24,9 +24,10 @@ namespace CTHelper.Domain.Entities
         public DateTimeOffset LastUpdateAt { get; set; }
         public Image? Avatar { get; set; }
 
-        public ICollection<Assignment> IssuedAssignments { get; set; } = new List<Assignment>();
+        public ICollection<StudentAssignment> IssuedStudentAssignments { get; set; } = new List<StudentAssignment>();
+        public ICollection<GroupAssignment> IssuedGroupAssignments { get; set; } = new List<GroupAssignment>();
 
-        public ICollection<Assignment> RecievedAssignments { get; set; } = new List<Assignment>();
+        public ICollection<StudentAssignment> RecievedAssignments { get; set; } = new List<StudentAssignment>();
 
         public ICollection<Test> AuthoredTests { get; set; } = new List<Test>();
         public ICollection<Problem> AuthoredProblems { get; set; } = new List<Problem>();

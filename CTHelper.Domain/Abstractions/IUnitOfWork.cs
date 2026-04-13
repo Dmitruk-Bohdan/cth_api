@@ -6,7 +6,7 @@ namespace CTHelper.Domain.Abstractions
     {
         IRepository<TEntity> Repository<TEntity>() where TEntity : BaseEntity;
 
-        IRepository<Assignment> Assignments { get; }
+        IRepository<StudentAssignment> Assignments { get; }
         IRepository<BindingRequest> BindingRequests { get; }
         IRepository<EmailVerificationToken> EmailVerificationTokens { get; }
         IRepository<Group> Groups { get; }

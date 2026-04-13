@@ -13,7 +13,8 @@ namespace CTHelper.Persistence.Context
         }
 
         // Domain Entities
-        public DbSet<Assignment> Assignments { get; set; }
+        public DbSet<StudentAssignment> StudentAssignments { get; set; }
+        public DbSet<GroupAssignment> GroupAssignments { get; set; }
         public DbSet<BindingRequest> BindingRequests { get; set; }
         public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
         public DbSet<Group> Groups { get; set; }
