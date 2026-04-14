@@ -1,4 +1,17 @@
+using CTHelper.Application.Models;
+using CTHelper.Application.Models.Favourite;
+using CTHelper.Application.Models.Group;
+using CTHelper.Application.Models.Problem;
+using CTHelper.Application.Models.Test;
+using CTHelper.Application.Services.Interfaces;
+using CTHelper.Domain.Common.Extensions;
+using CTHelper.Domain.Entities;
+using CTHelper.Infrastructure.Services.Implementations;
+using CTHelper.Presentation.Dtos;
+using MailKit.Search;
+using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CTHelper.Presentation.Controllers;
 
@@ -6,39 +19,196 @@ namespace CTHelper.Presentation.Controllers;
 [Route("favourites")]
 public class FavouritesController : ControllerBase
 {
-    [HttpGet("problems")]
-    public IActionResult GetProblemFavourites()
+    private readonly IMapper _mapper;
+    private readonly IFavouriteService _favouriteService;
+
+    public FavouritesController(IFavouriteService favouriteService, IMapper mapper)
     {
-        throw new NotImplementedException();
+        _favouriteService = favouriteService;
+        _mapper = mapper;
+    }
+
+    [HttpGet("problems")]
+    public async Task<IActionResult> GetFavouriteProblemListAsync([FromQuery] string searchTerm, [FromQuery] int pageSize, [FromQuery] int pageNumber)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new MyFavouriteProblemListRequestModel()
+        {
+            UserId = userId,
+            SearchTerm = searchTerm,
+            PageSize = pageSize,
+            PageNumber = pageNumber
+        };
+
+        OperationResult<PaginatedListResponseModel<ProblemPreviewModel>> result = await _favouriteService.GetMyFavouriteProblemList(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpPost("problems/{problemId}")]
-    public IActionResult AddProblemFavourite(long problemId)
+    public async Task<IActionResult> AddProblemToFavourite([FromRoute] long problemId)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new AddProblemToFavouriteRequestModel()
+        {
+            UserId = userId,
+            ProblemId = problemId
+        };
+
+        OperationResult result = await _favouriteService.AddProblemToFavourite(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpDelete("problems/{problemId}")]
-    public IActionResult RemoveProblemFavourite(long problemId)
+    public async Task<IActionResult> RemoveProblemFromFavouriteAsync([FromRoute] long problemId)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new RemoveProblemFromFavouriteRequestModel()
+        {
+            UserId = userId,
+            ProblemId = problemId
+        };
+
+        OperationResult result = await _favouriteService.RemoveProblemFromFavourite(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpGet("tests")]
-    public IActionResult GetTestFavourites()
+    public async Task<IActionResult> GetTestFavouritesAsync([FromQuery] string searchTerm, [FromQuery] int pageSize, [FromQuery] int pageNumber)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new MyFavouriteProblemListRequestModel()
+        {
+            UserId = userId,
+            SearchTerm = searchTerm,
+            PageSize = pageSize,
+            PageNumber = pageNumber
+        };
+
+        OperationResult<PaginatedListResponseModel<TestPreviewModel>> result = await _favouriteService.GetMyFavouriteTestList(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpPost("tests/{testId}")]
-    public IActionResult AddTestFavourite(long testId)
+    public async Task<IActionResult> AddTestFavouriteAsync([FromRoute] long testId)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new AddTestToFavouriteRequestModel()
+        {
+            UserId = userId,
+            TestId = testId
+        };
+
+        OperationResult result = await _favouriteService.AddTestToFavourite(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpDelete("tests/{testId}")]
-    public IActionResult RemoveTestFavourite(long testId)
+    public async Task<IActionResult> RemoveTestFavouriteAsync([FromRoute] long testId)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new RemoveTestFromFavouriteRequestModel()
+        {
+            UserId = userId,
+            TestId = testId
+        };
+
+        OperationResult result = await _favouriteService.RemoveTestFrom(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 }

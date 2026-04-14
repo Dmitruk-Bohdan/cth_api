@@ -6,7 +6,7 @@ using CTHelper.Presentation.Dtos.TestAttemptDtos;
 
 namespace CTHelper.Infrastructure.Services.Implementations
 {
-    public class TestService
+    public class TestService : ITestService
     {
         private readonly AppDbContext _dbContext;
 
@@ -22,7 +22,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     !t.IsDeleted
                     && t.IsPublished);
 
-                throw new NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

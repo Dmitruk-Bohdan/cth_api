@@ -6,6 +6,8 @@ namespace CTHelper.Domain.Entities
         public long AuthorId { get; set; }
 
         public bool IsDeleted { get; set; }
+        public bool IsPublished { get; set; }
+        public bool IsPublic { get; set; } 
 
         public Topic Topic { get; set; } = default!;
         public User Author { get; set; } = default!;

@@ -30,6 +30,14 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnName("is_deleted")
                 .HasDefaultValue(false);
 
+            builder.Property(p => p.IsPublic)
+                .HasColumnName("is_public")
+                .HasDefaultValue(false);
+
+            builder.Property(p => p.IsPublished)
+                .HasColumnName("is_published")
+                .HasDefaultValue(false);
+
             builder.HasOne(p => p.Topic)
                 .WithMany(t => t.Problems)
                 .HasForeignKey(p => p.TopicId)

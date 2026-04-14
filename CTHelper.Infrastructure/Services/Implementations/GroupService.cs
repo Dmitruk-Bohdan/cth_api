@@ -1,4 +1,4 @@
-﻿using CTHelper.Application.Common.Enums;
+﻿using CTHelper.Application.Common.Constants;
 using CTHelper.Application.Models;
 using CTHelper.Application.Models.Group;
 using CTHelper.Application.Services.Interfaces;

@@ -1,4 +1,4 @@
-﻿namespace CTHelper.Application.Common.Enums
+﻿namespace CTHelper.Application.Common.Constants
 {
     public static class ErrorCodeConstants
     {

@@ -1,4 +1,4 @@
-﻿using CTHelper.Application.Common.Enums;
+﻿using CTHelper.Application.Common.Constants;
 using CTHelper.Application.Models;
 using System.Net;
 
