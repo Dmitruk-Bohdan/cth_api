@@ -1,12 +1,12 @@
 using CTHelper.Domain.Common.Enums;
 using System.Text.Json.Serialization;
 
-namespace CTHelper.Presentation.Dtos.ProblemDtos;
+namespace CTHelper.Presentation.Dtos.GroupDtos;
 
-public class UpdateProblemRequestDto
+public class CreateProblemRequestDto
 {
-    [JsonPropertyName("authorId")]
-    public long AuthorId { get; set; }
+    [JsonPropertyName("type")]
+    public ProblemType Type { get; set; }
 
     [JsonPropertyName("difficulty")]
     public ProblemDifficult Difficulty { get; set; }
@@ -22,6 +22,9 @@ public class UpdateProblemRequestDto
 
     [JsonPropertyName("topicId")]
     public long TopicId { get; set; }
+
+    [JsonPropertyName("authorId")]
+    public long AuthorId { get; set; }
 
     [JsonPropertyName("isPublished")]
     public bool IsPublished { get; set; }

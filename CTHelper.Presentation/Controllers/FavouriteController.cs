@@ -1,15 +1,12 @@
 using CTHelper.Application.Models;
 using CTHelper.Application.Models.Favourite;
-using CTHelper.Application.Models.Group;
 using CTHelper.Application.Models.Problem;
 using CTHelper.Application.Models.Test;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Domain.Common.Extensions;
-using CTHelper.Domain.Entities;
-using CTHelper.Infrastructure.Services.Implementations;
 using CTHelper.Presentation.Dtos;
-using MailKit.Search;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -29,7 +26,8 @@ public class FavouritesController : ControllerBase
     }
 
     [HttpGet("problems")]
-    public async Task<IActionResult> GetFavouriteProblemListAsync([FromQuery] string searchTerm, [FromQuery] int pageSize, [FromQuery] int pageNumber)
+    [Authorize]
+    public async Task<IActionResult> GetFavouriteProblemListAsync([FromQuery] long subjectId, [FromQuery] string searchTerm, [FromQuery] int pageSize, [FromQuery] int pageNumber)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -41,6 +39,7 @@ public class FavouritesController : ControllerBase
         {
             UserId = userId,
             SearchTerm = searchTerm,
+            SubjectId = subjectId,
             PageSize = pageSize,
             PageNumber = pageNumber
         };
@@ -61,6 +60,7 @@ public class FavouritesController : ControllerBase
     }
 
     [HttpPost("problems/{problemId}")]
+    [Authorize]
     public async Task<IActionResult> AddProblemToFavourite([FromRoute] long problemId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -90,7 +90,8 @@ public class FavouritesController : ControllerBase
         }
     }
 
-    [HttpDelete("problems/{problemId}")]
+    [HttpDelete("/problems/{problemId}")]
+    [Authorize]
     public async Task<IActionResult> RemoveProblemFromFavouriteAsync([FromRoute] long problemId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -121,7 +122,8 @@ public class FavouritesController : ControllerBase
     }
 
     [HttpGet("tests")]
-    public async Task<IActionResult> GetTestFavouritesAsync([FromQuery] string searchTerm, [FromQuery] int pageSize, [FromQuery] int pageNumber)
+    [Authorize]
+    public async Task<IActionResult> GetTestFavouritesAsync([FromQuery] long subjectId, [FromQuery] string searchTerm, [FromQuery] int pageSize, [FromQuery] int pageNumber)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -129,10 +131,11 @@ public class FavouritesController : ControllerBase
             return Unauthorized();
         }
 
-        var requestModel = new MyFavouriteProblemListRequestModel()
+        var requestModel = new MyFavouriteTestListRequestModel()
         {
             UserId = userId,
             SearchTerm = searchTerm,
+            SubjectId = subjectId,
             PageSize = pageSize,
             PageNumber = pageNumber
         };
@@ -153,6 +156,7 @@ public class FavouritesController : ControllerBase
     }
 
     [HttpPost("tests/{testId}")]
+    [Authorize]
     public async Task<IActionResult> AddTestFavouriteAsync([FromRoute] long testId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -183,6 +187,7 @@ public class FavouritesController : ControllerBase
     }
 
     [HttpDelete("tests/{testId}")]
+    [Authorize]
     public async Task<IActionResult> RemoveTestFavouriteAsync([FromRoute] long testId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);

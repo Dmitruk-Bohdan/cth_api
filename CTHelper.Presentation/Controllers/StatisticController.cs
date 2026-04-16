@@ -7,19 +7,19 @@ namespace CTHelper.Presentation.Controllers;
 public class StatisticsController : ControllerBase
 {
     [HttpGet("me")]
-    public IActionResult GetMyStatistics()
+    public IActionResult GetMyStatistics([FromQuery] long subjectId)
     {
         throw new NotImplementedException();
     }
 
     [HttpGet("students/{id}")]
-    public IActionResult GetStudentStatistics(long id)
+    public IActionResult GetStudentStatistics([FromRoute] long studentId, [FromQuery] long subjectId)
     {
         throw new NotImplementedException();
     }
 
     [HttpGet("groups/{id}")]
-    public IActionResult GetGroupStatistics(long id)
+    public IActionResult GetGroupStatistics([FromRoute] long groupId)
     {
         throw new NotImplementedException();
     }

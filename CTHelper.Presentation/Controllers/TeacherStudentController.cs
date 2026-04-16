@@ -1,9 +1,7 @@
 using CTHelper.Application.Models.User;
 using CTHelper.Application.Services.Interfaces;
-using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Application.UseCases.TeacherStudentRelationship.Command;
 using CTHelper.Domain.Common.Extensions;
-using CTHelper.Infrastructure.Settings;
 using CTHelper.Presentation.Common.Constants;
 using CTHelper.Presentation.Dtos;
 using CTHelper.Presentation.Dtos.TeacherStudentDtos;
@@ -11,7 +9,6 @@ using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System.Security.Claims;
 
 namespace CTHelper.Presentation.Controllers;

@@ -3,11 +3,16 @@ using CTHelper.Application.Models.Favourite;
 using CTHelper.Application.Models.Problem;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Domain.Common.Extensions;
+using CTHelper.Domain.Entities;
+using CTHelper.Presentation.Common.Constants;
 using CTHelper.Presentation.Dtos;
+using CTHelper.Presentation.Dtos.GroupDtos;
 using CTHelper.Presentation.Dtos.ProblemDtos;
 using MailKit.Search;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.Security.Claims;
 
 namespace CTHelper.Presentation.Controllers;
@@ -26,6 +31,7 @@ public class ProblemsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> GetProblemListAsync([FromBody] ProblemListRequestDto dto)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -67,6 +73,7 @@ public class ProblemsController : ControllerBase
     }
 
     [HttpGet("{id : long}")]
+    [Authorize]
     public async Task<IActionResult> GetByIdAsync(long problemId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -97,33 +104,110 @@ public class ProblemsController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Create([FromBody] CreateProblemRequestDto request)
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> CreateAsync([FromBody] CreateProblemRequestDto request)
     {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new CreateProblemRequestModel
+        {
+            AuthorId = userId,  
+            Type = request.Type,
+            Difficulty = request.Difficulty,
+            Statement = request.Statement,
+            correctAnswer = request.correctAnswer,
+            Explanation = request.Explanation,
+            TopicId = request.TopicId,
+            IsPublished = request.IsPublished,
+            IsPublic = request.IsPublic
+        };
+
+        OperationResult result = await _problemService.CreateProblem(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
         throw new NotImplementedException();
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update(long id, [FromBody] UpdateProblemRequestDto request)
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> UpdateAsync(long id, [FromBody] UpdateProblemRequestDto request)
     {
-        throw new NotImplementedException();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new UpdateProblemRequestModel
+        {
+            AuthorId = userId,
+            Difficulty = request.Difficulty,
+            Statement = request.Statement,
+            correctAnswer = request.correctAnswer,
+            Explanation = request.Explanation,
+            TopicId = request.TopicId,
+            IsPublished = request.IsPublished,
+            IsPublic = request.IsPublic
+        };
+
+        OperationResult result = await _problemService.UpdateProblem(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(long id)
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> DeleteAsync(long id)
     {
-        throw new NotImplementedException();
-    }
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
 
-    [HttpPatch("{id}/topic/{topicId}")]
-    public IActionResult UpdateTopic(long id, long topicId)
-    {
-        throw new NotImplementedException();
-    }
+        var requestModel = new DeleteProblemRequestModel
+        {
+            UserId = userId,
+            ProblemId = id,
+        };
 
-    [HttpPatch("{id}/difficulty/{difficulty}")]
-    public IActionResult UpdateDifficulty(long id, int difficulty)
-    {
-        throw new NotImplementedException();
+        OperationResult result = await _problemService.DeleteProblem(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok();
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
     [HttpGet("my")]

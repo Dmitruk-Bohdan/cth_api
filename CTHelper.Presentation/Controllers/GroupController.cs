@@ -58,6 +58,7 @@ public class GroupsController : ControllerBase
     }
 
     [HttpGet("{groupId:long}")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     public async Task<IActionResult> GetById([FromRoute] long groupId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -88,6 +89,7 @@ public class GroupsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     public async Task<IActionResult> Create([FromBody] CreateGroupRequestDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -119,6 +121,7 @@ public class GroupsController : ControllerBase
     }
 
     [HttpDelete("{groupId:long}")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     public async Task<IActionResult> Delete([FromRoute] long groupId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -149,6 +152,7 @@ public class GroupsController : ControllerBase
     }
 
     [HttpPost("students")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     public async Task<IActionResult> AddStudent([FromBody] AddStudentToGroupRequestDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -180,6 +184,7 @@ public class GroupsController : ControllerBase
     }
 
     [HttpDelete("students")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     public async Task<IActionResult> RemoveStudent([FromBody] RemoveStudentFromGroupRequestDto requestDto)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
