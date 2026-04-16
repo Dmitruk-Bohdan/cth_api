@@ -2,7 +2,7 @@
 
 namespace CTHelper.Infrastructure.Services.Implementations
 {
-    public class StatisticService : IStatisticService
+    public class TestAttemptService : ITestAttemptService
     {
     }
 }

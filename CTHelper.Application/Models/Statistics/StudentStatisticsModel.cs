@@ -1,6 +1,6 @@
 ﻿namespace CTHelper.Application.Models.Statistics
 {
-    public class UserStatisticsModel
+    public class StudentStatisticsModel
     {
         public DateTimeOffset FromDate { get; set; }
         public DateTimeOffset ToDate { get; set; }

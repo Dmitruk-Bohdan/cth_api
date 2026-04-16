@@ -46,6 +46,12 @@ namespace CTHelper.Infrastructure
             services.AddScoped<ITeacherStudentService, TeacherStudentService>();
             services.AddScoped<IGroupService, GroupService>();
             services.AddScoped<IAssignmentService, AssignmentService>();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IFavouriteService, FavouriteService>();
+            services.AddScoped<IProblemService, ProblemService>();
+            services.AddScoped<IStatisticsService, StatisticsService>();
+            services.AddScoped<ITestService, TestService>();
+            services.AddScoped<ITestAttemptService, TestAttemptService>();
 
             return services;
         }
