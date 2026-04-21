@@ -8,7 +8,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
 {
     public class NotificationService : INotificationService
     {
-        public Task<OperationResult<PaginatedListResponseModel<NotificationPreviewModel>>> GetMyNotificationList(long userId)
+        public Task<OperationResult<PaginatedListResponseModel<NotificationListItemModel>>> GetMyNotificationList(long userId)
         {
             throw new NotImplementedException();
         }

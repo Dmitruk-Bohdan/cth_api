@@ -4,21 +4,25 @@ namespace CTHelper.Presentation.Dtos.TestDtos;
 
 public class UpdateTestRequestDto
 {
+
     [JsonPropertyName("title")]
-    public string? Title { get; set; }
+    public string Title { get; set; } = default!;
 
-    [JsonPropertyName("description")]
-    public string? Description { get; set; }
+    [JsonPropertyName("isTraning")]
+    public bool IsTraning { get; set; }
 
-    [JsonPropertyName("type")]
-    public int? Type { get; set; }
+    [JsonPropertyName("isPublished")]
+    public bool IsPublished { get; set; }
 
-    [JsonPropertyName("timeLimit")]
-    public int? TimeLimit { get; set; }
+    [JsonPropertyName("isPublic")]
+    public bool IsPublic { get; set; }
 
-    [JsonPropertyName("passingScore")]
-    public int? PassingScore { get; set; }
+    [JsonPropertyName("duration")]
+    public int? Duration { get; set; }
 
-    [JsonPropertyName("problemIds")]
-    public List<long>? ProblemIds { get; set; }
+    [JsonPropertyName("attemptsCount")]
+    public int? AttemptsCount { get; set; }
+
+    [JsonPropertyName("problemItems")]
+    public IEnumerable<TestProblemCodeRequestDto> TestProblemList { get; set; } = new List<TestProblemCodeRequestDto>();
 }

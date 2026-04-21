@@ -1,4 +1,4 @@
-using CTHelper.Application.Models.User;
+using CTHelper.Application.Models.UserModels;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Application.UseCases.TeacherStudentRelationship.Command;
 using CTHelper.Domain.Common.Extensions;

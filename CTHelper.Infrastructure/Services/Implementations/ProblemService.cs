@@ -23,7 +23,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             throw new NotImplementedException();
         }
 
-        public Task<OperationResult<PaginatedListResponseModel<ProblemPreviewModel>>> GetProblemListAsync(ProblemListRequestModel requestModel)
+        public Task<OperationResult<PaginatedListResponseModel<ProblemListItemModel>>> GetProblemListAsync(ProblemListRequestModel requestModel)
         {
             throw new NotImplementedException();
         }

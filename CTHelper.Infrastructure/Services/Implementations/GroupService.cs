@@ -19,7 +19,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
         {
             _dbContext = dbContext;
         }
-        public async Task<OperationResult<PaginatedListResponseModel<GroupPreviewModel>>> GetMyGroupList(MyGroupListRequestModel request)
+        public async Task<OperationResult<PaginatedListResponseModel<GroupListItemModel>>> GetMyGroupList(MyGroupListRequestModel request)
         {
             var countQuery = _dbContext.Groups
                 .Where(g =>
@@ -37,7 +37,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             var pagesCount = (int)Math.Ceiling((double)groupsCount / request.PageSize);
 
             var groupPageList = await countQuery
-                .Select(g => new GroupPreviewModel()
+                .Select(g => new GroupListItemModel()
                 {
                     Name = g.Name,
                     CreatedAt = g.CreatedAt,
@@ -48,7 +48,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 .Take(request.PageSize)
                 .ToListAsync();
 
-            var paginatedGroupList = new PaginatedListResponseModel<GroupPreviewModel>()
+            var paginatedGroupList = new PaginatedListResponseModel<GroupListItemModel>()
             {
                 Items = groupPageList,
                 TotalPagesCount = pagesCount,
@@ -58,7 +58,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 HasNextPage = request.PageNumber < pagesCount
             };
 
-            var result = new OperationResult<PaginatedListResponseModel<GroupPreviewModel>>(paginatedGroupList);
+            var result = new OperationResult<PaginatedListResponseModel<GroupListItemModel>>(paginatedGroupList);
             return result;
         }
 

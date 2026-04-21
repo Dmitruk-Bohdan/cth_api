@@ -1,51 +1,275 @@
-using Microsoft.AspNetCore.Mvc;
+using CTHelper.Application.Models;
+using CTHelper.Application.Models.TestModels;
+using CTHelper.Domain.Common.Extensions;
+using CTHelper.Domain.Entities;
+using CTHelper.Infrastructure.Services.Implementations;
+using CTHelper.Presentation.Common.Constants;
+using CTHelper.Presentation.Dtos;
 using CTHelper.Presentation.Dtos.TestDtos;
+using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CTHelper.Presentation.Controllers;
 
 [ApiController]
 [Route("tests")]
-public class TestsController : ControllerBase
+public class TestController : BaseController
 {
-    [HttpGet]
-    public IActionResult GetTestList()
+    private readonly ITestService _testService;
+    protected TestController(IMapper mapper, ITestService testService) : base(mapper)
     {
-        throw new NotImplementedException();
+        _testService = testService;
     }
 
-    [HttpGet("{id}")]
-    public IActionResult GetById(long id)
+    [HttpPost("teacher/list")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> GetTestListTeacher([FromBody] TeacherTestListRequestDto request)
     {
-        throw new NotImplementedException();
+        if (!TryGetUserId(out long userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new TeacherTestListRequestModel()
+        {
+            NameFragment = request.NameFragment,
+            AuthorNameFragment = request.AuthorNameFragment,
+            AvgDifficult = request.AvgDifficult,
+            IsTraning = request.IsTraning,
+            Type = request.Type,
+            MaxTaskCount = request.MaxTaskCount,
+            MinTaskCount = request.MinTaskCount,
+
+            PageSize = request.PageSize,
+            PageNumber = request.PageNumber,
+
+            OnlyMyTests = request.OnlyMyTests,
+            UserId = userId  
+        };
+
+        OperationResult<PaginatedListResponseModel<TestListItemModel>> result = await _testService.GetTestList(requestModel);
+
+        return HandleOperationResult(result);
+    }
+
+    [HttpGet("teacher/me/list")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> GetMyTestListAsync(MyTestListRequestDto request)
+    {
+        if (!TryGetUserId(out long userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new MyTestListRequestModel
+        {
+            UserId = userId,
+            NameFragment = request.NameFragment,
+            AvgDifficult = request.AvgDifficult,
+            IsTraning = request.IsTraning,
+            Type = request.Type,
+            MaxTaskCount = request.MaxTaskCount,
+            MinTaskCount = request.MinTaskCount,
+            PageSize = request.PageSize,
+            PageNumber = request.PageNumber
+        };
+
+        OperationResult<PaginatedListResponseModel<TestListItemModel>> result = await _testService.GetTestList(requestModel);
+
+        return HandleOperationResult(result);
+    }
+
+    [HttpPost("student/list")]
+    [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
+    public async Task<IActionResult> GetTestListStudentAsync([FromBody] StudentTestListRequestDto request)
+    {
+        if (!TryGetUserId(out long userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new StudentTestListRequestModel()
+        {
+            NameFragment = request.NameFragment,
+            AuthorNameFragment = request.AuthorNameFragment,
+            AvgDifficult = request.AvgDifficult,
+            IsTraning = request.IsTraning,
+            Type = request.Type,
+            MaxTaskCount = request.MaxTaskCount,
+            MinTaskCount = request.MinTaskCount,
+
+            PageSize = request.PageSize,
+            PageNumber = request.PageNumber,
+
+            AssignedToMe = request.AssignedToMe,
+            UserId = userId
+        };
+
+        OperationResult<PaginatedListResponseModel<TestListItemModel>> result = await _testService.GetTestList(requestModel);
+
+        return HandleOperationResult(result);
+    }
+
+    [HttpGet("{testId:long}/details")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> GetTestDetailsAsync([FromRoute] long testId)
+    {
+        if (!TryGetUserId(out long userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new TestDetailsRequestModel()
+        {
+            TestId = testId,
+            UserId = userId
+        };
+        
+        OperationResult<TestDetailsModel> result = await _testService.GetTestDetails(requestModel);
+
+        return HandleOperationResult(result);
+    }
+
+
+    [HttpGet("{testId:long}/preview")]
+    [Authorize]
+    public async Task<IActionResult> GetTestPreviewAsync([FromRoute] long testId)
+    {
+        if (!TryGetUserId(out long userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new TestPreviewRequestModel()
+        {
+            TestId = testId,
+            UserId = userId
+        };
+
+        OperationResult<TestDetailsModel> result = await _testService.GetTestPreview(requestModel);
+
+        return HandleOperationResult(result);
     }
 
     [HttpPost]
-    public IActionResult Create([FromBody] CreateTestRequestDto request)
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> Create([FromBody] CreateTestRequestDto request)
     {
-        throw new NotImplementedException();
+        if (!TryGetUserId(out long userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new CreateTestRequestModel
+        {
+            Title = request.Title,
+            SubjectId = request.SubjectId,
+            AuthorId = userId,
+            IsTraning = request.IsTraning,
+            IsPublished = request.IsPublished,
+            IsPublic = request.IsPublic,
+            Duration = request.Duration,
+            AttemptsCount = request.AttemptsCount,
+            TestProblemList = request.TestProblemList.Select(x => new TestProblemCodeModel
+            {
+                ProblemId = x.ProblemId,
+                Code = x.Code
+            })
+        };
+
+        OperationResult result = await _testService.CreateTest(requestModel);
+        
+        return HandleOperationResult(result);
     }
 
-    [HttpPut("{id}")]
-    public IActionResult Update(long id, [FromBody] UpdateTestRequestDto request)
+    [HttpPost("init-mixed")]
+    [Authorize]
+    public async Task<IActionResult> InitMixedTestAsync([FromBody] CreateMixedTestRequestDto request)
     {
-        throw new NotImplementedException();
+        if (!TryGetUserId(out long userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new CreateMixedTestRequestModel
+        {
+            AuthorId = userId,
+            SubjectId = request.SubjectId,
+            AverageDifficult = request.AverageDifficult,
+            TopicItems = request.TopicItems.Select(x => new MixedTestTopicModel
+            {
+                TopicId = x.TopicId,
+                ProblemCount = x.ProblemCount
+            })
+        };
+
+        OperationResult<Test> result = await _testService.CreateMixedTest(requestModel);
+
+
+        if (result.IsSuccess)
+        {
+            return RedirectToAction(
+                actionName: nameof(TestAttemptsController.StartAttemptAsync),
+                controllerName: "TestAttempts",
+                routeValues: new { testId = result.Payload!.Id });
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
     }
 
-    [HttpDelete("{id}")]
-    public IActionResult Delete(long id)
+    [HttpPut("{testId:long}")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> UpdateAsync(long id, [FromBody] UpdateTestRequestDto request)
     {
-        throw new NotImplementedException();
+        if (!TryGetUserId(out long userId))
+        {
+            return Unauthorized();
+        }
+
+        var requestModel = new UpdateTestRequestModel
+        {
+            UserId = userId,
+            TestId = id,
+            Title = request.Title,
+            IsTraning = request.IsTraning,
+            IsPublished = request.IsPublished,
+            IsPublic = request.IsPublic,
+            Duration = request.Duration,
+            AttemptsCount = request.AttemptsCount,
+            TestProblemIdList = request.TestProblemList.Select(x => new TestProblemCodeModel
+            {
+                ProblemId = x.ProblemId,
+                Code = x.Code
+            })
+        };
+
+        OperationResult result = await _testService.UpdateTest(requestModel);
+        return HandleOperationResult(result);
     }
 
-    [HttpPost("mixed")]
-    public IActionResult CreateMixedTest([FromBody] CreateTestRequestDto request)
+    [HttpDelete("{testId:long}")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    public async Task<IActionResult> RemoveAsync(long testId)
     {
-        throw new NotImplementedException();
-    }
+        if (!TryGetUserId(out long userId))
+        {
+            return Unauthorized();
+        }
 
-    [HttpGet("my")]
-    public IActionResult GetMyTests()
-    {
-        throw new NotImplementedException();
+        var requestModel = new RemoveTestRequestModel()
+        {
+            UserId = userId,
+            TestId = testId
+        };
+
+        OperationResult result = await _testService.RemoveTest(requestModel);
+
+        return HandleOperationResult(result);
     }
 }

@@ -13,15 +13,13 @@ namespace CTHelper.Presentation.Controllers;
 
 [ApiController]
 [Route("assignments")]
-public class AssignmentsController : ControllerBase
+public class AssignmentsController : BaseController
 {
     private readonly IAssignmentService _assignmentService;
-    private readonly IMapper _mapper;
 
-    public AssignmentsController(IAssignmentService assignmentService, IMapper mapper)
+    public AssignmentsController(IAssignmentService assignmentService, IMapper mapper) : base(mapper)
     {
         _assignmentService = assignmentService;
-        _mapper = mapper;
     }
 
     [HttpPost("students")]
@@ -211,7 +209,7 @@ public class AssignmentsController : ControllerBase
     }
 
 
-    [HttpGet("student/details/{assignmentId : long}")]
+    [HttpGet("student/details/{assignmentId:long}")]
     [Authorize]
     public async Task<IActionResult> GetStudentAssignmentDetails([FromRoute] long assignmentId)
     {
@@ -242,7 +240,7 @@ public class AssignmentsController : ControllerBase
         }
     }
 
-    [HttpGet("student/{studentId : long}/list")]
+    [HttpGet("student/{studentId:long}/list")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     public async Task<IActionResult> GetStudentAssignments([FromRoute] long studentId)
     {
@@ -273,7 +271,7 @@ public class AssignmentsController : ControllerBase
         }
     }
 
-    [HttpGet("group/details/{assignmentId : long}")]
+    [HttpGet("group/details/{assignmentId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     public async Task<IActionResult> GetGroupAssignmentsDetails([FromRoute] long assignmentId)
     {
@@ -304,7 +302,7 @@ public class AssignmentsController : ControllerBase
         }
     }
 
-    [HttpGet("group/{groupId : long}/list")]
+    [HttpGet("group/{groupId:long}/list")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     public async Task<IActionResult> GetGroupAssignmentDetailsById([FromRoute] long groupId)
     {

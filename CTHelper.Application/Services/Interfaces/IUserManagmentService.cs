@@ -1,5 +1,5 @@
 ﻿using CTHelper.Application.Models;
-using CTHelper.Application.Models.User;
+using CTHelper.Application.Models.UserModels;
 
 namespace CTHelper.Application.Services.Interfaces
 {

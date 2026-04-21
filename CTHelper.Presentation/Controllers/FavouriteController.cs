@@ -1,7 +1,7 @@
 using CTHelper.Application.Models;
 using CTHelper.Application.Models.Favourite;
 using CTHelper.Application.Models.Problem;
-using CTHelper.Application.Models.Test;
+using CTHelper.Application.Models.TestModels;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Domain.Common.Extensions;
 using CTHelper.Presentation.Dtos;
@@ -44,7 +44,7 @@ public class FavouritesController : ControllerBase
             PageNumber = pageNumber
         };
 
-        OperationResult<PaginatedListResponseModel<ProblemPreviewModel>> result = await _favouriteService.GetMyFavouriteProblemList(requestModel);
+        OperationResult<PaginatedListResponseModel<ProblemListItemModel>> result = await _favouriteService.GetMyFavouriteProblemList(requestModel);
 
         if (result.IsSuccess)
         {
@@ -59,7 +59,7 @@ public class FavouritesController : ControllerBase
         }
     }
 
-    [HttpPost("problems/{problemId}")]
+    [HttpPost("problems/{problemId:long}")]
     [Authorize]
     public async Task<IActionResult> AddProblemToFavourite([FromRoute] long problemId)
     {

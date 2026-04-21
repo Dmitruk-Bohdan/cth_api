@@ -38,7 +38,7 @@ public class NotificationsController : ControllerBase
             return Unauthorized();
         }
 
-        OperationResult<PaginatedListResponseModel<NotificationPreviewModel>> result = await _notificationService.GetMyNotificationList(userId);
+        OperationResult<PaginatedListResponseModel<NotificationListItemModel>> result = await _notificationService.GetMyNotificationList(userId);
 
         if (result.IsSuccess)
         {
@@ -53,7 +53,7 @@ public class NotificationsController : ControllerBase
         }
     }
 
-    [HttpGet("{notificationId : long}")]
+    [HttpGet("{notificationId:long}")]
     [Authorize]
     public async Task<IActionResult> GetByIdAsync(long notificationId)
     {
@@ -84,7 +84,7 @@ public class NotificationsController : ControllerBase
         }
     }
 
-    [HttpDelete("remove/{notificationId : long}")]
+    [HttpDelete("remove/{notificationId:long}")]
     [Authorize]
     public async Task<IActionResult> RemoveAsync(long notificationId)
     {
@@ -145,7 +145,7 @@ public class NotificationsController : ControllerBase
         }
     }
 
-    [HttpDelete("read/{notificationId : long}")]
+    [HttpDelete("read/{notificationId:long}")]
     [Authorize]
     public async Task<IActionResult> MarkAsReadAsync(long notificationId)
     {

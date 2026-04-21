@@ -2,7 +2,7 @@
 using CTHelper.Application.Common.Helpers;
 using CTHelper.Application.Models;
 using CTHelper.Application.Models.TeacherStudent;
-using CTHelper.Application.Models.User;
+using CTHelper.Application.Models.UserModels;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Application.Specification.UserSpecifications;
 using CTHelper.Domain.Abstractions;

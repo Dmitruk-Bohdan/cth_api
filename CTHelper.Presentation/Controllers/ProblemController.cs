@@ -30,7 +30,7 @@ public class ProblemsController : ControllerBase
         _problemService = problemService;
     }
 
-    [HttpPost]
+    [HttpPost("list")]
     [Authorize]
     public async Task<IActionResult> GetProblemListAsync([FromBody] ProblemListRequestDto dto)
     {
@@ -57,7 +57,7 @@ public class ProblemsController : ControllerBase
 
         };
 
-        OperationResult<PaginatedListResponseModel<ProblemPreviewModel>> result = await _problemService.GetProblemListAsync(requestModel);
+        OperationResult<PaginatedListResponseModel<ProblemListItemModel>> result = await _problemService.GetProblemListAsync(requestModel);
 
         if (result.IsSuccess)
         {
@@ -72,7 +72,7 @@ public class ProblemsController : ControllerBase
         }
     }
 
-    [HttpGet("{id : long}")]
+    [HttpGet("{problemId:long}")]
     [Authorize]
     public async Task<IActionResult> GetByIdAsync(long problemId)
     {

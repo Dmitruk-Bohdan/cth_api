@@ -10,7 +10,7 @@ namespace CTHelper.Application.Services.Interfaces
         Task<OperationResult> CreateProblem(CreateProblemRequestModel requestModel);
         Task<OperationResult> DeleteProblem(DeleteProblemRequestModel requestModel);
         Task<OperationResult<ProblemDetailsModel>> GetProblemDetailsAsync(ProblemDetailsRequestModel requestModel);
-        Task<OperationResult<PaginatedListResponseModel<ProblemPreviewModel>>> GetProblemListAsync(ProblemListRequestModel requestModel);
+        Task<OperationResult<PaginatedListResponseModel<ProblemListItemModel>>> GetProblemListAsync(ProblemListRequestModel requestModel);
         Task<OperationResult<Problem>> UpdateProblem(UpdateProblemRequestModel requestModel);
     }
 }

@@ -1,4 +1,4 @@
-using CTHelper.Application.Models.User;
+using CTHelper.Application.Models.UserModels;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Domain.Entities;
 using Mapster;

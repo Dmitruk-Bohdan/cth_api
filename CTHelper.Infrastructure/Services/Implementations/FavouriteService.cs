@@ -1,7 +1,7 @@
 ﻿using CTHelper.Application.Models;
 using CTHelper.Application.Models.Favourite;
 using CTHelper.Application.Models.Problem;
-using CTHelper.Application.Models.Test;
+using CTHelper.Application.Models.TestModels;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Presentation.Dtos;
 
@@ -19,7 +19,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             throw new NotImplementedException();
         }
 
-        public Task<OperationResult<PaginatedListResponseModel<ProblemPreviewModel>>> GetMyFavouriteProblemList(MyFavouriteProblemListRequestModel requestModel)
+        public Task<OperationResult<PaginatedListResponseModel<ProblemListItemModel>>> GetMyFavouriteProblemList(MyFavouriteProblemListRequestModel requestModel)
         {
             throw new NotImplementedException();
         }

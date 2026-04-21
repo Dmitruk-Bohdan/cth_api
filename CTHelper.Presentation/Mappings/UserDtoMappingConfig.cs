@@ -1,4 +1,4 @@
-using CTHelper.Application.Models.User;
+using CTHelper.Application.Models.UserModels;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Application.UseCases.Identity.Command.ResponseModels;
 using CTHelper.Application.UseCases.UserManagment.Command;

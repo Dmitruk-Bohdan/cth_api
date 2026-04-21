@@ -12,7 +12,7 @@ namespace CTHelper.Application.Services.Interfaces
 {
     public interface INotificationService
     {
-        Task<OperationResult<PaginatedListResponseModel<NotificationPreviewModel>>> GetMyNotificationList(long userId);
+        Task<OperationResult<PaginatedListResponseModel<NotificationListItemModel>>> GetMyNotificationList(long userId);
         Task<OperationResult<NotificationDetailsModel>> GetNotificationDetails(NotificationDetailsRequestModel requestModel);
         Task<OperationResult> MarkAsRead(ReadNotificationRequestModel requestModel);
         Task<OperationResult> ReadAllNotification(ReadAllNotificationRequestModel requestModel);

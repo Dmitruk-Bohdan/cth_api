@@ -12,7 +12,7 @@ namespace CTHelper.Domain.Entities
 
         public int Duration { get; set; }
 
-        public short RawScore { get; set; }
+        public short? RawScore { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
 

@@ -10,7 +10,7 @@ namespace CTHelper.Application.Services.Interfaces
         Task<OperationResult> CreateGroup(CreateGroupModel request);
         Task<OperationResult> DeleteGroup(DeleteGroupModel request);
         Task<OperationResult<GroupDetailsResponseModel>> GetGroupById(GetGroupByIdModel request);
-        Task<OperationResult<PaginatedListResponseModel<GroupPreviewModel>>> GetMyGroupList(MyGroupListRequestModel request);
+        Task<OperationResult<PaginatedListResponseModel<GroupListItemModel>>> GetMyGroupList(MyGroupListRequestModel request);
         Task<OperationResult> RemoveStudentFromGroup(RemoveStudentFromGroupModel request);
     }
 }
