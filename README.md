@@ -1,10 +1,10 @@
 # CTH API
 
 Серверная часть программного комплекса для подготовки к ЦТ и ЦЭ.  
-REST API на ASP.NET Core 9 с PostgreSQL.
+REST API на ASP.NET Core 8 с PostgreSQL.
 
 ## Стек
-- .NET 9
+- .NET 8
 - ASP.NET Core Web API
 - Entity Framework Core
 - PostgreSQL
@@ -26,10 +26,8 @@ REST API на ASP.NET Core 9 с PostgreSQL.
 
 ```bash
 git clone https://github.com/Dmitruk-Bohdan/cth_api.git
-cd cth_api/CTHelper.Presentation
-dotnet restore
-dotnet ef database update
-dotnet run
+cd cth_api
+docker-compose up --build
 ```
 Swagger: http://localhost:5000/swagger
 
