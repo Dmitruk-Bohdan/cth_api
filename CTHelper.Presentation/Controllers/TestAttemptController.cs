@@ -22,6 +22,7 @@ public class TestAttemptsController : BaseController
 
     [HttpGet("me/list")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<TestAttemptListItemModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyAttemptListAsync([FromQuery] string? searchTerm, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
         if (!TryGetUserId(out long userId))
@@ -44,6 +45,7 @@ public class TestAttemptsController : BaseController
 
     [HttpGet("me/{attemptId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
+    [ProducesResponseType(typeof(TestAttemptDetails), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyAttemptAsync([FromRoute] long attemptId)
     {
         if (!TryGetUserId(out long userId))
@@ -64,6 +66,7 @@ public class TestAttemptsController : BaseController
 
     [HttpGet("teacher/student/{studentId:long}/list")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<TestAttemptListItemModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStudentAttemptListAsync([FromQuery] string? searchTerm, [FromRoute] long studentId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
         if (!TryGetUserId(out long userId))
@@ -87,6 +90,7 @@ public class TestAttemptsController : BaseController
 
     [HttpGet("teacher/student/{studentId:long}/attempt/{attemptId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(TestAttemptDetails), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStudentAttemptAsync([FromRoute] long studentId, [FromRoute] long attemptId)
     {
         if (!TryGetUserId(out long userId))
@@ -108,6 +112,7 @@ public class TestAttemptsController : BaseController
 
     [HttpPost("start/{testId:long}")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> StartAttemptAsync([FromRoute] long testId)
     {
         if (!TryGetUserId(out long userId))
@@ -128,6 +133,7 @@ public class TestAttemptsController : BaseController
 
     [HttpPatch("{attemptId:long}/pause")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> PauseAttemptAsync(long attemptId)
     {
         if (!TryGetUserId(out long userId))
@@ -148,6 +154,7 @@ public class TestAttemptsController : BaseController
 
     [HttpPatch("{attemptId:long}/resume")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> ResumeAsync(long attemptId)
     {
         if (!TryGetUserId(out long userId))
@@ -168,6 +175,7 @@ public class TestAttemptsController : BaseController
 
     [HttpPatch("{attemptId:long}/complete")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> CompleteAsync(long attemptId)
     {
         if (!TryGetUserId(out long userId))
@@ -188,6 +196,7 @@ public class TestAttemptsController : BaseController
 
     [HttpPatch("{attemptId:long}/cancel")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> CancelAsync(long attemptId)
     {
         if (!TryGetUserId(out long userId))

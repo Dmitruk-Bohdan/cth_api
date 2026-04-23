@@ -1,3 +1,4 @@
+using CTHelper.Application.Models.UserModels;
 using CTHelper.Application.UseCases.UserManagment.Command;
 using CTHelper.Domain.Common.Extensions;
 using CTHelper.Presentation.Dtos;
@@ -25,6 +26,7 @@ public class UsersController : ControllerBase
 
     [HttpGet("me/")]
     [Authorize]
+    [ProducesResponseType(typeof(UserProfileResponseModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyInfo()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -51,6 +53,7 @@ public class UsersController : ControllerBase
 
     [HttpPut("me/")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateUserProfileAsync([FromForm] UpdateUserProfileRequestDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -82,6 +85,7 @@ public class UsersController : ControllerBase
 
     [HttpDelete("me/")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteUserAsync()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -108,6 +112,7 @@ public class UsersController : ControllerBase
 
     [HttpPost("avatar/")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UploadAvatar([FromForm] UploadAvatarDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -140,6 +145,7 @@ public class UsersController : ControllerBase
 
     [HttpDelete("avatar/")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteAvatar()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);

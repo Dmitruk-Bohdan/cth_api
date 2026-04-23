@@ -27,6 +27,7 @@ public class FavouritesController : ControllerBase
 
     [HttpGet("problems")]
     [Authorize]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<ProblemListItemModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFavouriteProblemListAsync([FromQuery] long subjectId, [FromQuery] string searchTerm, [FromQuery] int pageSize, [FromQuery] int pageNumber)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -61,6 +62,7 @@ public class FavouritesController : ControllerBase
 
     [HttpPost("problems/{problemId:long}")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AddProblemToFavourite([FromRoute] long problemId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -92,6 +94,7 @@ public class FavouritesController : ControllerBase
 
     [HttpDelete("/problems/{problemId}")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RemoveProblemFromFavouriteAsync([FromRoute] long problemId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -123,6 +126,7 @@ public class FavouritesController : ControllerBase
 
     [HttpGet("tests")]
     [Authorize]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<TestPreviewModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTestFavouritesAsync([FromQuery] long subjectId, [FromQuery] string searchTerm, [FromQuery] int pageSize, [FromQuery] int pageNumber)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -157,6 +161,7 @@ public class FavouritesController : ControllerBase
 
     [HttpPost("tests/{testId}")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AddTestFavouriteAsync([FromRoute] long testId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -188,6 +193,7 @@ public class FavouritesController : ControllerBase
 
     [HttpDelete("tests/{testId}")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RemoveTestFavouriteAsync([FromRoute] long testId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);

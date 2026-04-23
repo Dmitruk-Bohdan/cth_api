@@ -24,6 +24,7 @@ public class AssignmentsController : BaseController
 
     [HttpPost("students")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AssignTestToStudent([FromBody] AssignTestToStudentRequestDto dto)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -60,6 +61,7 @@ public class AssignmentsController : BaseController
 
     [HttpPost("groups")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AssignTestToGroup([FromBody] AssignTestToGroupRequestDto dto)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -96,6 +98,7 @@ public class AssignmentsController : BaseController
 
     [HttpPatch("")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> PatchAssignment ([FromBody] PatchAssignmentRequestDto dto)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -129,6 +132,7 @@ public class AssignmentsController : BaseController
 
     [HttpDelete("")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RevokeAssignment([FromBody] RevokeAssignmentRequestDto dto)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -160,6 +164,7 @@ public class AssignmentsController : BaseController
 
     [HttpGet("teacher")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<AssignmentPreviewModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetIAssignedList()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -185,6 +190,7 @@ public class AssignmentsController : BaseController
 
     [HttpGet("student/me")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<AssignmentPreviewModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAssignedToMeList()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -211,6 +217,7 @@ public class AssignmentsController : BaseController
 
     [HttpGet("student/details/{assignmentId:long}")]
     [Authorize]
+    [ProducesResponseType(typeof(StudentAssignmentDetailsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStudentAssignmentDetails([FromRoute] long assignmentId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -242,6 +249,7 @@ public class AssignmentsController : BaseController
 
     [HttpGet("student/{studentId:long}/list")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<AssignmentPreviewModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStudentAssignments([FromRoute] long studentId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -273,6 +281,7 @@ public class AssignmentsController : BaseController
 
     [HttpGet("group/details/{assignmentId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(GroupAssignmentDetailsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetGroupAssignmentsDetails([FromRoute] long assignmentId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -304,6 +313,7 @@ public class AssignmentsController : BaseController
 
     [HttpGet("group/{groupId:long}/list")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<AssignmentPreviewModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetGroupAssignmentDetailsById([FromRoute] long groupId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -337,6 +347,7 @@ public class AssignmentsController : BaseController
 
     [HttpGet("group-score/{assignmentId}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(GroupScoreByAssignmentResponseModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetGroupAssignmentScore(long assignmentId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -367,9 +378,10 @@ public class AssignmentsController : BaseController
     }
 
 
-    [HttpGet("student-score/{assignmentId}")]
+    [HttpGet("student-score/{assignmentId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    public async Task<IActionResult> GetByStudent(long assignmentId)
+    [ProducesResponseType(typeof(StudentScoreByAssignmentResponseModel), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetStudentAssignmentScore(long assignmentId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))

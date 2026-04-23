@@ -19,19 +19,17 @@ namespace CTHelper.Presentation.Controllers;
 
 [ApiController]
 [Route("problems")]
-public class ProblemsController : ControllerBase
+public class ProblemsController : BaseController
 {
     private readonly IProblemService _problemService;
-    private readonly IMapper _mapper;
-
-    public ProblemsController(IMapper mapper, IProblemService problemService)
+    public ProblemsController(IMapper mapper, IProblemService problemService) : base(mapper)
     {
-        _mapper = mapper;
         _problemService = problemService;
     }
 
     [HttpPost("list")]
     [Authorize]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<ProblemListItemModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProblemListAsync([FromBody] ProblemListRequestDto dto)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -74,6 +72,7 @@ public class ProblemsController : ControllerBase
 
     [HttpGet("{problemId:long}")]
     [Authorize]
+    [ProducesResponseType(typeof(ProblemDetailsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByIdAsync(long problemId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -105,6 +104,7 @@ public class ProblemsController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateAsync([FromBody] CreateProblemRequestDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -144,6 +144,7 @@ public class ProblemsController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateAsync(long id, [FromBody] UpdateProblemRequestDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -181,6 +182,7 @@ public class ProblemsController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteAsync(long id)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -208,11 +210,5 @@ public class ProblemsController : ControllerBase
                 result.HttpStatusCode.ToInt(),
                 errorDto);
         }
-    }
-
-    [HttpGet("my")]
-    public IActionResult GetMyProblems()
-    {
-        throw new NotImplementedException();
     }
 }

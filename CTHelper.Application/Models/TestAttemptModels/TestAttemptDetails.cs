@@ -6,10 +6,10 @@ namespace CTHelper.Application.Models.TestAttemptModels
     public class TestAttemptDetails
     {
         public long TestAttemptId { get; set; }
-        public long TestName { get; set; }
+        public string TestName { get; set; } = default!;
         public long TestId { get; set; }
         public long StudentId { get; set; }
-        public long StudentName { get; set; }
+        public string StudentName { get; set; } = default!;
         public TestAttemptStatusType Status { get; set; }
         public int Duration { get; set; }
         public short? RawScore { get; set; }
@@ -20,7 +20,7 @@ namespace CTHelper.Application.Models.TestAttemptModels
     public class UserAnswerModel
     {
         public long ProblemId { get; set; }
-        public long IsActualProblemVersion { get; set; }
+        public bool IsActualProblemVersion { get; set; }
         public string Statement { get; set; } = default!;
         public string Answer { get; set; } = default!;
         public bool IsCorrect { get; set; }
@@ -28,6 +28,6 @@ namespace CTHelper.Application.Models.TestAttemptModels
         public string? Explanation { get; set; } = default!;
         public ProblemType Type { get; set; }
         public ProblemDifficult Difficulty { get; set; }
-        public long TopicName { get; set; }
+        public string TopicName { get; set; } = default!;
     }
 }

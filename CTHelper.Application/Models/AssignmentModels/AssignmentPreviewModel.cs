@@ -3,9 +3,9 @@
     public class AssignmentPreviewModel
     {
         public long AssignmentId { get; set; }
-        public long TeacherName { get; set; }
+        public string TeacherName { get; set; } = default!;
         public long TeacherId { get; set; }
-        public long TestName { get; set; }
+        public string TestName { get; set; } = default!;
         public DateTimeOffset ExpiredAt { get; set; }
     }
 }

@@ -1,3 +1,4 @@
+using CTHelper.Application.Models.TeacherStudent;
 using CTHelper.Application.Models.UserModels;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Application.UseCases.TeacherStudentRelationship.Command;
@@ -31,6 +32,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpPost("invitation-code")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(CreateInvitationCodeResponseModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateInvitationCode([FromBody] CreateInvitationCodeRequestDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -62,6 +64,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpPost("binding/request")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task <IActionResult> RequestBindingWithTeacherByCode([FromBody] CreateBindingRequestDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -87,6 +90,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpPost("binding/accept")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AcceptStudentByInvitationCode([FromBody] AcceptBindingRequestDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -116,6 +120,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpDelete("binding/remove-teacher/{bindingId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RemoveBindingWithTeacher(long bindingId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -141,6 +146,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpDelete("binding/remove-student/{bindingId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RemoveBindingWithStudent(long bindingId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -170,6 +176,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpPost("binding/{studentId:long}/block")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> BlockStudentAsync(long studentId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -195,6 +202,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpPost("binding/{bindingId:long}/unblock")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UnblockStudentAsync(long bindingId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -224,6 +232,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpGet("students/{studentId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(UserProfileResponseModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyStudentInfoByIdAsync(long studentId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -249,6 +258,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpGet("students")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(List<UserProfilePreviewModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyStudentsListAsync()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -274,6 +284,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpGet("students/blocked")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(List<UserProfilePreviewModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetBlockedStudentListAsync()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -303,6 +314,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpGet("teachers/{teacherId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
+    [ProducesResponseType(typeof(UserProfileResponseModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyTeacherByIdAsync(long teacherId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -328,6 +340,7 @@ public class TeacherStudentController : ControllerBase
 
     [HttpGet("teachers")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
+    [ProducesResponseType(typeof(List<UserProfilePreviewModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyTeachersListAsync()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);

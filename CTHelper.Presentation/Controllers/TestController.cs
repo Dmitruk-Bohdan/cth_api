@@ -24,6 +24,7 @@ public class TestController : BaseController
 
     [HttpPost("teacher/list")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<TestListItemModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTestListTeacher([FromBody] TeacherTestListRequestDto request)
     {
         if (!TryGetUserId(out long userId))
@@ -55,6 +56,7 @@ public class TestController : BaseController
 
     [HttpGet("teacher/me/list")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<TestListItemModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyTestListAsync(MyTestListRequestDto request)
     {
         if (!TryGetUserId(out long userId))
@@ -82,6 +84,7 @@ public class TestController : BaseController
 
     [HttpPost("student/list")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<TestListItemModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTestListStudentAsync([FromBody] StudentTestListRequestDto request)
     {
         if (!TryGetUserId(out long userId))
@@ -113,6 +116,7 @@ public class TestController : BaseController
 
     [HttpGet("{testId:long}/details")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(TestDetailsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTestDetailsAsync([FromRoute] long testId)
     {
         if (!TryGetUserId(out long userId))
@@ -134,6 +138,7 @@ public class TestController : BaseController
 
     [HttpGet("{testId:long}/preview")]
     [Authorize]
+    [ProducesResponseType(typeof(TestDetailsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTestPreviewAsync([FromRoute] long testId)
     {
         if (!TryGetUserId(out long userId))
@@ -154,6 +159,7 @@ public class TestController : BaseController
 
     [HttpPost]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Create([FromBody] CreateTestRequestDto request)
     {
         if (!TryGetUserId(out long userId))
@@ -185,6 +191,7 @@ public class TestController : BaseController
 
     [HttpPost("init-mixed")]
     [Authorize]
+    [ProducesResponseType(typeof(Test), StatusCodes.Status200OK)]
     public async Task<IActionResult> InitMixedTestAsync([FromBody] CreateMixedTestRequestDto request)
     {
         if (!TryGetUserId(out long userId))
@@ -225,6 +232,7 @@ public class TestController : BaseController
 
     [HttpPut("{testId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateAsync(long id, [FromBody] UpdateTestRequestDto request)
     {
         if (!TryGetUserId(out long userId))
@@ -255,6 +263,7 @@ public class TestController : BaseController
 
     [HttpDelete("{testId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RemoveAsync(long testId)
     {
         if (!TryGetUserId(out long userId))

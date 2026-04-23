@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using CTHelper.Application.Models.Session;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Application.UseCases.Identity.Query;
 using CTHelper.Domain.Common.Extensions;
@@ -35,6 +36,7 @@ public class AuthController : ControllerBase
 
     [HttpPost]
     [Route("register")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<IActionResult> Register([FromBody] RegisterUserRequestDto request)
     {
         var createUserCommand = _mapper.Map<RegisterUserCommand>(request);
@@ -47,6 +49,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
     {
         var loginCommand = _mapper.Map<LoginCommand>(request);
@@ -83,6 +86,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("logout")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Logout()
     {
         var sessionJtiClaim = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
@@ -100,6 +104,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("logout-all")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> LogoutAll()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -116,6 +121,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
+    [ProducesResponseType(typeof(RefreshTokenResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> RefreshToken()
     {
         var sessionsJwt = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
@@ -153,6 +159,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("request-password-reset")]
     [EnableRateLimiting(PoliciesNamesConstants.OtpDeliveryPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetRequestDto request)
     {
         var command = _mapper.Map<RequestPasswordResetCommand>(request);
@@ -173,6 +180,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("confirm-password-reset")]
     [EnableRateLimiting(PoliciesNamesConstants.OtpDeliveryPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> ConfirmPasswordReset([FromBody] ConfirmPasswordResetRequestDto request)
     {
         var command = _mapper.Map<ConfirmPasswordResetCommand>(request);
@@ -193,6 +201,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("request-email-verification")]
     [EnableRateLimiting(PoliciesNamesConstants.ResendEmailPolicy)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<IActionResult> RequestEmailVerification([FromBody] RequestEmailVerificationRequestDto request)
     {
         var requestEmailVerificationCommand = _mapper.Map<RequestEmailVerificationCommand>(request);
@@ -213,6 +222,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("confirm-email-verification")]
     [EnableRateLimiting(PoliciesNamesConstants.ResendEmailPolicy)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<IActionResult> ConfirmEmailVerification([FromBody] ConfirmEmailVerificationDto request)
     {
         var confirmEmailCommand = _mapper.Map<ConfirmEmailVerificationCommand>(request);
@@ -234,6 +244,7 @@ public class AuthController : ControllerBase
 
     [HttpGet("me/sessions")]
     [Authorize]
+    [ProducesResponseType(typeof(List<UserSessionListResponseModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMySessions()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);

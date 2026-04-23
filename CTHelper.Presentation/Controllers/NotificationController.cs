@@ -1,16 +1,12 @@
 using CTHelper.Application.Models;
-using CTHelper.Application.Models.Group;
 using CTHelper.Application.Models.Notification;
 using CTHelper.Application.Models.Problem;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Domain.Common.Extensions;
-using CTHelper.Domain.Entities;
-using CTHelper.Infrastructure.Services.Implementations;
 using CTHelper.Presentation.Dtos;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System.Security.Claims;
 
 namespace CTHelper.Presentation.Controllers;
@@ -30,6 +26,7 @@ public class NotificationsController : ControllerBase
 
     [HttpGet]
     [Authorize]
+    [ProducesResponseType(typeof(PaginatedListResponseModel<NotificationListItemModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetListAsync()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -55,6 +52,7 @@ public class NotificationsController : ControllerBase
 
     [HttpGet("{notificationId:long}")]
     [Authorize]
+    [ProducesResponseType(typeof(NotificationDetailsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByIdAsync(long notificationId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -86,6 +84,7 @@ public class NotificationsController : ControllerBase
 
     [HttpDelete("remove/{notificationId:long}")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RemoveAsync(long notificationId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -117,6 +116,7 @@ public class NotificationsController : ControllerBase
 
     [HttpDelete("remove-all")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RemoveAllAsync()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -147,6 +147,7 @@ public class NotificationsController : ControllerBase
 
     [HttpDelete("read/{notificationId:long}")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> MarkAsReadAsync(long notificationId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -178,6 +179,7 @@ public class NotificationsController : ControllerBase
 
     [HttpPatch("read-all")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> MarkAllAsReadAsync()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);

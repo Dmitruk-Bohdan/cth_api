@@ -4,8 +4,10 @@ using CTHelper.Application.Models.Statistics;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Domain.Common.Extensions;
 using CTHelper.Infrastructure.Services.Implementations;
+using CTHelper.Presentation.Common.Constants;
 using CTHelper.Presentation.Dtos;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Security.Claims;
@@ -27,6 +29,8 @@ public class StatisticsController : ControllerBase
     }
 
     [HttpGet("me")]
+    [Authorize]
+    [ProducesResponseType(typeof(StudentStatisticsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyStatisticsAsync([FromQuery] long subjectId, [FromQuery] DateTimeOffset? dateFrom, [FromQuery] DateTimeOffset? dateTo)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -59,6 +63,8 @@ public class StatisticsController : ControllerBase
     }
 
     [HttpGet("students/{id}")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(StudentStatisticsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStudentStatisticsAsync([FromRoute] long studentId, [FromQuery] long subjectId, [FromQuery] DateTimeOffset? dateFrom, [FromQuery] DateTimeOffset? dateTo)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -92,6 +98,8 @@ public class StatisticsController : ControllerBase
     }
 
     [HttpGet("groups/{id}")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(GroupStatisticsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetGroupStatisticsAsync([FromRoute] long groupId, [FromQuery] long subjectId, [FromQuery] DateTimeOffset? dateFrom, [FromQuery] DateTimeOffset? dateTo)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
