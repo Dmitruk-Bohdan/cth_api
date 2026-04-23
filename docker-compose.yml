@@ -30,18 +30,18 @@ services:
     environment:
       - MH_UI_BIND_ADDR=0.0.0.0:8025   
 
-#  api:
-#    env_file:
-#      - .env
-#    build:
-#      context: .
-#      dockerfile: CTHelper.Presentation/Dockerfile
-#    depends_on:
-#      - db
-#      - minio
-#    ports:
-#      - "5003:8080"
-#    restart: unless-stopped
+  api:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: CTHelper.Presentation/Dockerfile
+    depends_on:
+      - db
+      - minio
+    ports:
+      - "5003:8080"
+    restart: unless-stopped
  
 
 volumes:

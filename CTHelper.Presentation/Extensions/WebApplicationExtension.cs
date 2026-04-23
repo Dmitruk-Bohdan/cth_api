@@ -17,15 +17,12 @@
 
             app.MapControllers();
 
-            if (app.Environment.IsDevelopment())
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "CTHelper API V1");
-                    c.RoutePrefix = "swagger";
-                });
-            }
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "CTHelper API V1");
+                c.RoutePrefix = "swagger";
+            });
         }
     }
 }
