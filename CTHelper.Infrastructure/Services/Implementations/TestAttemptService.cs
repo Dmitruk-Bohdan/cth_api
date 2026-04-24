@@ -21,34 +21,284 @@ namespace CTHelper.Infrastructure.Services.Implementations
             _dbContext = dbContext;
         }
 
-        public Task<OperationResult> CancelTestAttempt(CancelTestAttemptRequestModel requestModel)
+        public async Task<OperationResult> CancelTestAttempt(CancelTestAttemptRequestModel requestModel)
         {
-            throw new NotImplementedException();
+            var attempt = await _dbContext.TestAttempts
+                .FirstOrDefaultAsync(ta =>
+                    ta.Id == requestModel.AttemptId
+                    && ta.StudentId == requestModel.UserId);
+
+            if (attempt == null)
+            {
+                return new OperationResult
+                {
+                    ErrorCode = ErrorCodeConstants.AttemptNotFound,
+                    ErrorMessage = "Attempt not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            if (attempt.Status != TestAttemptStatusType.InProgress && attempt.Status != TestAttemptStatusType.Paused)
+            {
+                return new OperationResult
+                {
+                    ErrorCode = ErrorCodeConstants.AttemptNotActive,
+                    ErrorMessage = "Attempt can not be cancelled",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            attempt.Status = TestAttemptStatusType.Canceled;
+            await _dbContext.SaveChangesAsync();
+
+            return new OperationResult();
         }
 
-        public Task<OperationResult> CompleteTestAttempt(CompleteTestAttemptRequestModel requestModel)
+        public async Task<OperationResult> CompleteTestAttempt(CompleteTestAttemptRequestModel requestModel)
         {
-            throw new NotImplementedException();
+            var attempt = await _dbContext.TestAttempts
+                .Include(ta => ta.UserAnswers)
+                .FirstOrDefaultAsync(ta =>
+                    ta.Id == requestModel.AttemptId
+                    && ta.StudentId == requestModel.UserId);
+
+            if (attempt == null)
+            {
+                return new OperationResult
+                {
+                    ErrorCode = ErrorCodeConstants.AttemptNotFound,
+                    ErrorMessage = "Attempt not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            if (attempt.Status != TestAttemptStatusType.InProgress && attempt.Status != TestAttemptStatusType.Paused)
+            {
+                return new OperationResult
+                {
+                    ErrorCode = ErrorCodeConstants.AttemptNotActive,
+                    ErrorMessage = "Attempt can not be completed",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            if (attempt.Status == TestAttemptStatusType.InProgress)
+            {
+                attempt.Duration += (int)Math.Ceiling((DateTimeOffset.UtcNow - attempt.LastResumedAt).TotalSeconds);
+            }
+
+            var correctAnswers = attempt.UserAnswers.Count(ua => ua.IsCorrect);
+            var totalAnswers = attempt.UserAnswers.Count;
+            attempt.RawScore = totalAnswers > 0 ? (short)((double)correctAnswers / totalAnswers * 100) : (short)0;
+
+            attempt.Status = TestAttemptStatusType.Completed;
+            await _dbContext.SaveChangesAsync();
+
+            return new OperationResult();
         }
 
-        public Task<OperationResult<TestAttemptDetails>> GetMyAttempt(MyTestAttemptRequestModel requestModel)
+        public async Task<OperationResult<TestAttemptDetails>> GetMyAttempt(MyTestAttemptRequestModel requestModel)
         {
-            throw new NotImplementedException();
+            var attempt = await _dbContext.TestAttempts
+                .Where(ta =>
+                    ta.Id == requestModel.AttemptId
+                    && ta.StudentId == requestModel.UserId)
+                .AsNoTracking()
+                .Select(ta => new TestAttemptDetails
+                {
+                    TestAttemptId = ta.Id,
+                    TestName = ta.Test.Title,
+                    TestId = ta.TestId,
+                    StudentId = ta.StudentId,
+                    StudentName = ta.Student.Username,
+                    Status = ta.Status,
+                    Duration = ta.Duration,
+                    RawScore = ta.RawScore,
+                    CreatedAt = ta.CreatedAt,
+                    UserAnswers = ta.UserAnswers.Select(ua => new UserAnswerModel
+                    {
+                        ProblemId = ua.ProblemVersion.ProblemId,
+                        IsActualProblemVersion = ua.ProblemVersion.IsActive,
+                        Statement = ua.ProblemVersion.Statement,
+                        Answer = ua.Answer,
+                        IsCorrect = ua.IsCorrect,
+                        CorrectAnswer = ua.ProblemVersion.CorrectAnswer,
+                        Explanation = ua.ProblemVersion.Explanation,
+                        Type = ua.ProblemVersion.Type,
+                        Difficulty = ua.ProblemVersion.Difficulty,
+                        TopicName = ua.ProblemVersion.Problem.Topic.Name
+                    })
+                })
+                .FirstOrDefaultAsync();
+
+            if (attempt == null)
+            {
+                return new OperationResult<TestAttemptDetails>
+                {
+                    ErrorCode = ErrorCodeConstants.AttemptNotFound,
+                    ErrorMessage = "Attempt not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            return new OperationResult<TestAttemptDetails>(attempt);
         }
 
-        public Task<OperationResult<PaginatedListResponseModel<TestAttemptListItemModel>>> GetMyAttemptList(MyTestAttemptListRequestModel requestModel)
+        public async Task<OperationResult<PaginatedListResponseModel<TestAttemptListItemModel>>> GetMyAttemptList(MyTestAttemptListRequestModel requestModel)
         {
-            throw new NotImplementedException();
+            var attemptsQuery = _dbContext.TestAttempts
+                .Where(ta => ta.StudentId == requestModel.UserId)
+                .AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(requestModel.TestNameFragment))
+            {
+                attemptsQuery = attemptsQuery.Where(ta => ta.Test.Title.StartsWith(requestModel.TestNameFragment));
+            }
+
+            var attemptsCount = await attemptsQuery.CountAsync();
+            var pagesCount = (int)Math.Ceiling((double)attemptsCount / requestModel.PageSize);
+
+            var attemptPageList = await attemptsQuery
+                .Select(ta => new TestAttemptListItemModel
+                {
+                    TestAttemptId = ta.Id,
+                    TestName = ta.Test.Title,
+                    Duration = ta.Duration,
+                    RawScore = ta.RawScore,
+                    CreatedAt = ta.CreatedAt
+                })
+                .OrderByDescending(ta => ta.CreatedAt)
+                .Skip((requestModel.PageNumber - 1) * requestModel.PageSize)
+                .Take(requestModel.PageSize)
+                .ToListAsync();
+
+            var paginatedList = new PaginatedListResponseModel<TestAttemptListItemModel>
+            {
+                Items = attemptPageList,
+                TotalPagesCount = pagesCount,
+                Page = requestModel.PageNumber,
+                PageSize = requestModel.PageSize,
+                HasPreviousPage = requestModel.PageNumber > 1,
+                HasNextPage = requestModel.PageNumber < pagesCount
+            };
+
+            return new OperationResult<PaginatedListResponseModel<TestAttemptListItemModel>>(paginatedList);
         }
 
-        public Task<OperationResult<TestAttemptDetails>> GetStudentAttempt(StudentTestAttemptRequestModel requestModel)
+        public async Task<OperationResult<TestAttemptDetails>> GetStudentAttempt(StudentTestAttemptRequestModel requestModel)
         {
-            throw new NotImplementedException();
+            var hasBinding = await _dbContext.TeacherStudents
+                .Where(ts => ts.TeacherId == requestModel.UserId && ts.StudentId == requestModel.StudentId && !ts.IsDeleted)
+                .AnyAsync();
+
+            if (!hasBinding)
+            {
+                return new OperationResult<TestAttemptDetails>
+                {
+                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                    ErrorMessage = "You do not have access to this student's attempts",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            var attempt = await _dbContext.TestAttempts
+                .Where(ta =>
+                    ta.Id == requestModel.AttemptId
+                    && ta.StudentId == requestModel.StudentId)
+                .AsNoTracking()
+                .Select(ta => new TestAttemptDetails
+                {
+                    TestAttemptId = ta.Id,
+                    TestName = ta.Test.Title,
+                    TestId = ta.TestId,
+                    StudentId = ta.StudentId,
+                    StudentName = ta.Student.Username,
+                    Status = ta.Status,
+                    Duration = ta.Duration,
+                    RawScore = ta.RawScore,
+                    CreatedAt = ta.CreatedAt,
+                    UserAnswers = ta.UserAnswers.Select(ua => new UserAnswerModel
+                    {
+                        ProblemId = ua.ProblemVersion.ProblemId,
+                        IsActualProblemVersion = ua.ProblemVersion.IsActive,
+                        Statement = ua.ProblemVersion.Statement,
+                        Answer = ua.Answer,
+                        IsCorrect = ua.IsCorrect,
+                        CorrectAnswer = ua.ProblemVersion.CorrectAnswer,
+                        Explanation = ua.ProblemVersion.Explanation,
+                        Type = ua.ProblemVersion.Type,
+                        Difficulty = ua.ProblemVersion.Difficulty,
+                        TopicName = ua.ProblemVersion.Problem.Topic.Name
+                    })
+                })
+                .FirstOrDefaultAsync();
+
+            if (attempt == null)
+            {
+                return new OperationResult<TestAttemptDetails>
+                {
+                    ErrorCode = ErrorCodeConstants.AttemptNotFound,
+                    ErrorMessage = "Attempt not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            return new OperationResult<TestAttemptDetails>(attempt);
         }
 
-        public Task<OperationResult<PaginatedListResponseModel<TestAttemptListItemModel>>> GetStudentAttemptList(StudentTestAttemptListRequestModel requestModel)
+        public async Task<OperationResult<PaginatedListResponseModel<TestAttemptListItemModel>>> GetStudentAttemptList(StudentTestAttemptListRequestModel requestModel)
         {
-            throw new NotImplementedException();
+            var hasBinding = await _dbContext.TeacherStudents
+                .Where(ts => ts.TeacherId == requestModel.UserId && ts.StudentId == requestModel.StudentId && !ts.IsDeleted)
+                .AnyAsync();
+
+            if (!hasBinding)
+            {
+                return new OperationResult<PaginatedListResponseModel<TestAttemptListItemModel>>
+                {
+                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                    ErrorMessage = "You do not have access to this student's attempts",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            var attemptsQuery = _dbContext.TestAttempts
+                .Where(ta => ta.StudentId == requestModel.StudentId)
+                .AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(requestModel.TestNameFragment))
+            {
+                attemptsQuery = attemptsQuery.Where(ta => ta.Test.Title.StartsWith(requestModel.TestNameFragment));
+            }
+
+            var attemptsCount = await attemptsQuery.CountAsync();
+            var pagesCount = (int)Math.Ceiling((double)attemptsCount / requestModel.PageSize);
+
+            var attemptPageList = await attemptsQuery
+                .Select(ta => new TestAttemptListItemModel
+                {
+                    TestAttemptId = ta.Id,
+                    TestName = ta.Test.Title,
+                    Duration = ta.Duration,
+                    RawScore = ta.RawScore,
+                    CreatedAt = ta.CreatedAt
+                })
+                .OrderByDescending(ta => ta.CreatedAt)
+                .Skip((requestModel.PageNumber - 1) * requestModel.PageSize)
+                .Take(requestModel.PageSize)
+                .ToListAsync();
+
+            var paginatedList = new PaginatedListResponseModel<TestAttemptListItemModel>
+            {
+                Items = attemptPageList,
+                TotalPagesCount = pagesCount,
+                Page = requestModel.PageNumber,
+                PageSize = requestModel.PageSize,
+                HasPreviousPage = requestModel.PageNumber > 1,
+                HasNextPage = requestModel.PageNumber < pagesCount
+            };
+
+            return new OperationResult<PaginatedListResponseModel<TestAttemptListItemModel>>(paginatedList);
         }
 
         public async Task<OperationResult> PauseTestAttempt(PauseTestAttemptRequestModel requestModel)
@@ -108,9 +358,38 @@ namespace CTHelper.Infrastructure.Services.Implementations
             return new OperationResult();
         }
 
-        public Task<OperationResult> ResumeTestAttempt(ResumeTestAttemptRequestModel requestModel)
+        public async Task<OperationResult> ResumeTestAttempt(ResumeTestAttemptRequestModel requestModel)
         {
-            throw new NotImplementedException();
+            var attempt = await _dbContext.TestAttempts
+                .FirstOrDefaultAsync(ta =>
+                    ta.Id == requestModel.AttemptId
+                    && ta.StudentId == requestModel.UserId);
+
+            if (attempt == null)
+            {
+                return new OperationResult
+                {
+                    ErrorCode = ErrorCodeConstants.AttemptNotFound,
+                    ErrorMessage = "Attempt not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            if (attempt.Status != TestAttemptStatusType.Paused)
+            {
+                return new OperationResult
+                {
+                    ErrorCode = ErrorCodeConstants.AttemptNotActive,
+                    ErrorMessage = "Attempt is not paused. You can resume only paused attempts",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            attempt.Status = TestAttemptStatusType.InProgress;
+            attempt.LastResumedAt = DateTimeOffset.UtcNow;
+            await _dbContext.SaveChangesAsync();
+
+            return new OperationResult();
         }
 
         public async Task<OperationResult> StartTestAttempt(StartTestAttemptRequestModel requestModel)
@@ -170,7 +449,8 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     TestId = requestModel.TestId,
                     StudentId = requestModel.UserId,
                     Duration = 0,
-                    Status = TestAttemptStatusType.InProgress
+                    Status = TestAttemptStatusType.InProgress,
+                    LastResumedAt = DateTimeOffset.UtcNow
                 };
                 await _dbContext.TestAttempts.AddAsync(newTestAttempt);
 
