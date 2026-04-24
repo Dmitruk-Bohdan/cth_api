@@ -3,6 +3,7 @@ using System;
 using CTHelper.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -12,9 +13,11 @@ using NpgsqlTypes;
 namespace CTHelper.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260424114035_TestAttemptsCountNullability")]
+    partial class TestAttemptsCountNullability
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -171,7 +174,7 @@ namespace CTHelper.Persistence.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<short?>("DefaultAttemptsAllowed")
+                    b.Property<short>("DefaultAttemptsAllowed")
                         .HasColumnType("smallint")
                         .HasColumnName("default_attempts_allowed");
 
@@ -620,7 +623,7 @@ namespace CTHelper.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<short?>("AttemptsLeft")
+                    b.Property<short>("AttemptsLeft")
                         .HasColumnType("smallint")
                         .HasColumnName("attempts_left");
 
@@ -858,12 +861,6 @@ namespace CTHelper.Persistence.Migrations
                     b.Property<int>("Duration")
                         .HasColumnType("integer")
                         .HasColumnName("duration");
-
-                    b.Property<DateTimeOffset>("LastResumedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamptz")
-                        .HasColumnName("last_resumed_at")
-                        .HasDefaultValueSql("now()");
 
                     b.Property<short?>("RawScore")
                         .HasColumnType("smallint")
@@ -1342,7 +1339,7 @@ namespace CTHelper.Persistence.Migrations
                         .IsRequired();
 
                     b.HasOne("CTHelper.Domain.Entities.Test", "Test")
-                        .WithMany("GroupAssignments")
+                        .WithMany()
                         .HasForeignKey("TestId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1467,7 +1464,7 @@ namespace CTHelper.Persistence.Migrations
                         .IsRequired();
 
                     b.HasOne("CTHelper.Domain.Entities.Test", "Test")
-                        .WithMany("StudentAssignments")
+                        .WithMany()
                         .HasForeignKey("TestId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1693,10 +1690,6 @@ namespace CTHelper.Persistence.Migrations
 
             modelBuilder.Entity("CTHelper.Domain.Entities.Test", b =>
                 {
-                    b.Navigation("GroupAssignments");
-
-                    b.Navigation("StudentAssignments");
-
                     b.Navigation("TestProblems");
                 });
 

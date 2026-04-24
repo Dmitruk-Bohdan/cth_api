@@ -208,7 +208,7 @@ public class FavouritesController : ControllerBase
             TestId = testId
         };
 
-        OperationResult result = await _favouriteService.RemoveTestFrom(requestModel);
+        OperationResult result = await _favouriteService.RemoveTestFromFromFavourite(requestModel);
 
         if (result.IsSuccess)
         {

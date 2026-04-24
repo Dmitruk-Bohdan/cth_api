@@ -38,5 +38,25 @@
         //Student Group codes
         public const string GroupNotFound = "00060000";
         public const string StudentNotBelongToGroup = "00060001";
+
+        //Favourite codes
+        public const string ProblemNotInFavourites = "00070002";
+        public const string TestNotInFavourites = "00070003";
+
+        //Notification codes
+        public const string NotificationNotFound = "00080000";
+
+        //Problem codes
+        public const string ProblemNotFound = "00090000";
+
+        //Test codes
+        public const string TestNotFound = "00100000";
+
+        //Attempt codes
+        public const string AttemptNotFound = "00110000";
+        public const string AttemptNotActive = "00110001";
+        public const string AttemptAlreadyActive = "00110002";
+        public const string AttemptIsExaminative = "00110003";
+
     }
 }

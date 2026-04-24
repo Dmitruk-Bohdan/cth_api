@@ -15,6 +15,7 @@ namespace CTHelper.Domain.Entities
         public short? RawScore { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset LastResumedAt { get; set; }
 
         public Test Test { get; set; } = default!;
 

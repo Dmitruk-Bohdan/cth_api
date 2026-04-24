@@ -19,5 +19,7 @@ namespace CTHelper.Domain.Entities
         public DateTimeOffset LastUpdateAt { get; set; }
         public User Author { get; set; } = default!;
         public ICollection<TestProblem> TestProblems { get; set; } = new List<TestProblem>();
+        public ICollection<GroupAssignment> GroupAssignments { get; set; } = new List<GroupAssignment>();
+        public ICollection<StudentAssignment> StudentAssignments { get; set; } = new List<StudentAssignment>();
     }
 }

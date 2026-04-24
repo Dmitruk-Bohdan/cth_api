@@ -48,8 +48,7 @@ namespace CTHelper.Persistence.Configurations
 
             builder.Property(a => a.AttemptsLeft)
                 .HasColumnName("attempts_left")
-                .HasColumnType("smallint")
-                .IsRequired();
+                .HasColumnType("smallint");
 
             builder.Property(a => a.CreatedAt)
                 .HasColumnName("created_at")
@@ -81,7 +80,7 @@ namespace CTHelper.Persistence.Configurations
                 .HasPrincipalKey(u => u.Id);
 
             builder.HasOne(a => a.Test)
-                .WithMany()
+                .WithMany(t => t.StudentAssignments)
                 .HasForeignKey(a => a.TestId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasPrincipalKey(u => u.Id);

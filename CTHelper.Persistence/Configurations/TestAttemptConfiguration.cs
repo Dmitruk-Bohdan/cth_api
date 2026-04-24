@@ -49,6 +49,12 @@ namespace CTHelper.Persistence.Configurations
                 .HasDefaultValueSql("now()")
                 .IsRequired();
 
+            builder.Property(ta => ta.LastResumedAt)
+                .HasColumnName("last_resumed_at")
+                .HasColumnType("timestamptz")
+                .HasDefaultValueSql("now()")
+                .IsRequired();
+
             builder.HasOne(ta => ta.Test)
                 .WithMany()
                 .HasForeignKey(ta => ta.TestId)

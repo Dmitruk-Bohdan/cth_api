@@ -7,7 +7,7 @@ namespace CTHelper.Domain.Entities
         public long? GroupAssignmentId { get; set; }
         public long TestId { get; set; }
         public DateTimeOffset ExpiredAt { get; set; }
-        public short AttemptsLeft { get; set; }
+        public short? AttemptsLeft { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset LastUpdateAt { get; set; }
         public User Teacher { get; set; } = default!;

@@ -6,8 +6,7 @@ namespace CTHelper.Domain.Entities
         public long? GroupId { get; set; }
         public long TestId { get; set; }
         public DateTimeOffset ExpiredAt { get; set; }
-        public short DefaultAttemptsAllowed { get; set; }
-
+        public short? DefaultAttemptsAllowed { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset LastUpdateAt { get; set; }
 
