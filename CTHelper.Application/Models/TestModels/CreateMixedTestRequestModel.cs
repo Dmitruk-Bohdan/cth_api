@@ -6,7 +6,7 @@ namespace CTHelper.Application.Models.TestModels
     {
         public long AuthorId { get; set; }
         public long SubjectId { get; set; }
-        public ProblemDifficult AverageDifficult { get; set; }
+        public ProblemDifficultEnum AverageDifficult { get; set; }
         public IEnumerable<MixedTestTopicModel> TopicItems { get; set; } = new List<MixedTestTopicModel>();
     }
     public class MixedTestTopicModel

@@ -95,7 +95,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             if(existingRelationship != null)
             {
-                if (existingRelationship.Status == TeacherStudentStatus.Blocked)
+                if (existingRelationship.Status == TeacherStudentStatusEnum.Blocked)
                 {
                     return new OperationResult()
                     {
@@ -155,7 +155,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             {
                 TeacherId = teacherId,
                 StudentId = bindingRequest.StudentId,
-                Status = TeacherStudentStatus.Active,
+                Status = TeacherStudentStatusEnum.Active,
             };
 
             await _dbContext.AddAsync(newTeacherStudentRelation);
@@ -228,11 +228,11 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 ts => ts.TeacherId == teacherId
                 && ts.StudentId == studentId 
                 && !ts.IsDeleted
-                && ts.Status != TeacherStudentStatus.Blocked);
+                && ts.Status != TeacherStudentStatusEnum.Blocked);
 
             if (binding != null)
             {
-                binding.Status = TeacherStudentStatus.Blocked;
+                binding.Status = TeacherStudentStatusEnum.Blocked;
             }
             else
             {
@@ -240,7 +240,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 {
                     TeacherId = teacherId,
                     StudentId = studentId,
-                    Status = TeacherStudentStatus.Blocked,
+                    Status = TeacherStudentStatusEnum.Blocked,
                 };
 
                 await _dbContext.AddAsync(newTeacherStudentRelation);
@@ -253,7 +253,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
         public async Task<OperationResult> UnblockStudent(long teacherId, long bindingId)
         {
-            var binding = _dbContext.TeacherStudents.FirstOrDefault(ts => ts.Id == bindingId && !ts.IsDeleted && ts.Status == TeacherStudentStatus.Blocked);
+            var binding = _dbContext.TeacherStudents.FirstOrDefault(ts => ts.Id == bindingId && !ts.IsDeleted && ts.Status == TeacherStudentStatusEnum.Blocked);
             if (binding == null)
             {
                 return new OperationResult()
@@ -286,7 +286,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                ts => ts.TeacherId == teacherId
                && ts.StudentId == studentId
                && !ts.IsDeleted
-               && ts.Status != TeacherStudentStatus.Blocked);
+               && ts.Status != TeacherStudentStatusEnum.Blocked);
 
             if (binding == null)
             {
@@ -307,7 +307,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                ts => ts.TeacherId == teacherId
                && ts.StudentId == studentId
                && !ts.IsDeleted
-               && ts.Status != TeacherStudentStatus.Blocked);
+               && ts.Status != TeacherStudentStatusEnum.Blocked);
 
             if (binding == null)
             {
@@ -327,7 +327,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             var teacherPreviewList = await _dbContext.TeacherStudents
                 .Where(ts => 
                     ts.StudentId == studentId
-                    && ts.Status == TeacherStudentStatus.Active
+                    && ts.Status == TeacherStudentStatusEnum.Active
                     && ts.IsDeleted == false)
                 .Select(ts => new UserProfilePreviewWithAvatarIdModel()
                 {
@@ -357,7 +357,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             var teacherPreviewList = await _dbContext.TeacherStudents
                 .Where(ts =>
                     ts.TeacherId == teacherId
-                    && ts.Status == TeacherStudentStatus.Active
+                    && ts.Status == TeacherStudentStatusEnum.Active
                     && ts.IsDeleted == false)
                 .Select(ts => new UserProfilePreviewWithAvatarIdModel()
                 {
@@ -386,7 +386,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             var teacherPreviewList = await _dbContext.TeacherStudents
                 .Where(ts =>
                     ts.TeacherId == teacherId
-                    && ts.Status == TeacherStudentStatus.Blocked
+                    && ts.Status == TeacherStudentStatusEnum.Blocked
                     && ts.IsDeleted == false)
                 .Select(ts => new UserProfilePreviewWithAvatarIdModel()
                 {

@@ -52,7 +52,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 Title = "Сгенерированный тест",
                 SubjectId = requestModel.SubjectId,
                 AuthorId = requestModel.AuthorId,
-                Type = TestType.Mixed,
+                Type = TestTypeEnum.Mixed,
                 IsTraning = true,
                 IsPublished = true,
                 IsPublic = false,
@@ -80,7 +80,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 Title = requestModel.Title,
                 SubjectId = requestModel.SubjectId,
                 AuthorId = requestModel.AuthorId,
-                Type = TestType.Custom,
+                Type = TestTypeEnum.Custom,
                 IsTraning = requestModel.IsTraning,
                 IsPublished = requestModel.IsPublished,
                 IsPublic = requestModel.IsPublic,
@@ -116,7 +116,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     ProblemCount = t.TestProblems.Count,
                     Type = t.Type,
                     AttemptsLeft = t.AttemptsCount,
-                    AvgDifficult = (ProblemDifficult)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty),
+                    AvgDifficult = (ProblemDifficultEnum)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty),
                     Problems = t.TestProblems.Select(tp => new TestProblemModel
                     {
                         ProblemId = tp.ProblemId,
@@ -197,7 +197,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     TestName = t.Title,
                     AuthorName = t.Author.Username,
                     ProblemCount = t.TestProblems.Count,
-                    AvgDifficult = (ProblemDifficult)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty)
+                    AvgDifficult = (ProblemDifficultEnum)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty)
                 })
                 .OrderByDescending(t => t.TestId)
                 .Skip((requestModel.PageNumber - 1) * requestModel.PageSize)
@@ -262,7 +262,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     TestName = t.Title,
                     AuthorName = t.Author.Username,
                     ProblemCount = t.TestProblems.Count,
-                    AvgDifficult = (ProblemDifficult)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty)
+                    AvgDifficult = (ProblemDifficultEnum)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty)
                 })
                 .OrderByDescending(t => t.TestId)
                 .Skip((requestModel.PageNumber - 1) * requestModel.PageSize)
@@ -338,7 +338,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     TestName = t.Title,
                     AuthorName = t.Author.Username,
                     ProblemCount = t.TestProblems.Count,
-                    AvgDifficult = (ProblemDifficult)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty)
+                    AvgDifficult = (ProblemDifficultEnum)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty)
                 })
                 .OrderByDescending(t => t.TestId)
                 .Skip((requestModel.PageNumber - 1) * requestModel.PageSize)
@@ -373,7 +373,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     ProblemCount = t.TestProblems.Count,
                     Type = t.Type,
                     AttemptsLeft = t.AttemptsCount,
-                    AvgDifficult = (ProblemDifficult)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty),
+                    AvgDifficult = (ProblemDifficultEnum)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty),
                     Problems = t.TestProblems.Select(tp => new TestProblemModel
                     {
                         ProblemId = tp.ProblemId,

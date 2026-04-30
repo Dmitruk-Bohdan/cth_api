@@ -7,7 +7,7 @@ namespace CTHelper.Domain.Entities
         public string Title { get; set; } = default!;
         public long SubjectId { get; set; }
         public long AuthorId { get; set; }
-        public TestType Type { get; set; }
+        public TestTypeEnum Type { get; set; }
         public bool IsTraning { get; set; }
         public bool IsPublished { get; set; }
         public bool IsPublic { get; set; }

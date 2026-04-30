@@ -1,6 +1,6 @@
 namespace CTHelper.Domain.Common.Enums
 {
-    public enum TestType : short
+    public enum TestTypeEnum : short
     {
         State = 1,
         Custom = 2,

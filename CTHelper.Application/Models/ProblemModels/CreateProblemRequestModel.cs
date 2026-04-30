@@ -5,8 +5,8 @@ namespace CTHelper.Application.Models.Problem
     public class CreateProblemRequestModel
     {
         public long AuthorId { get; set; }
-        public ProblemType Type { get; set; }
-        public ProblemDifficult Difficulty { get; set; }
+        public ProblemTypeEnum Type { get; set; }
+        public ProblemDifficultEnum Difficulty { get; set; }
         public string Statement { get; set; } = default!;
         public string correctAnswer { get; set; } = default!;
         public string Explanation { get; set; } = default!;

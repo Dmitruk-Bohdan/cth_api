@@ -38,7 +38,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            if (attempt.Status != TestAttemptStatusType.InProgress && attempt.Status != TestAttemptStatusType.Paused)
+            if (attempt.Status != TestAttemptStatusTypeEnum.InProgress && attempt.Status != TestAttemptStatusTypeEnum.Paused)
             {
                 return new OperationResult
                 {
@@ -48,7 +48,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            attempt.Status = TestAttemptStatusType.Canceled;
+            attempt.Status = TestAttemptStatusTypeEnum.Canceled;
             await _dbContext.SaveChangesAsync();
 
             return new OperationResult();
@@ -72,7 +72,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            if (attempt.Status != TestAttemptStatusType.InProgress && attempt.Status != TestAttemptStatusType.Paused)
+            if (attempt.Status != TestAttemptStatusTypeEnum.InProgress && attempt.Status != TestAttemptStatusTypeEnum.Paused)
             {
                 return new OperationResult
                 {
@@ -82,7 +82,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            if (attempt.Status == TestAttemptStatusType.InProgress)
+            if (attempt.Status == TestAttemptStatusTypeEnum.InProgress)
             {
                 attempt.Duration += (int)Math.Ceiling((DateTimeOffset.UtcNow - attempt.LastResumedAt).TotalSeconds);
             }
@@ -91,7 +91,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             var totalAnswers = attempt.UserAnswers.Count;
             attempt.RawScore = totalAnswers > 0 ? (short)((double)correctAnswers / totalAnswers * 100) : (short)0;
 
-            attempt.Status = TestAttemptStatusType.Completed;
+            attempt.Status = TestAttemptStatusTypeEnum.Completed;
             await _dbContext.SaveChangesAsync();
 
             return new OperationResult();
@@ -327,7 +327,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     HttpStatusCode = HttpStatusCode.NotFound
                 };
             }
-            if (attemptInfo.Status != TestAttemptStatusType.InProgress)
+            if (attemptInfo.Status != TestAttemptStatusTypeEnum.InProgress)
             {
                 return new OperationResult
                 {
@@ -351,7 +351,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             attempt!.Duration += (int)Math.Ceiling((DateTimeOffset.UtcNow - attempt.LastResumedAt).TotalSeconds);
 
-            attempt.Status = TestAttemptStatusType.Paused;
+            attempt.Status = TestAttemptStatusTypeEnum.Paused;
 
             await _dbContext.SaveChangesAsync();
 
@@ -375,7 +375,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            if (attempt.Status != TestAttemptStatusType.Paused)
+            if (attempt.Status != TestAttemptStatusTypeEnum.Paused)
             {
                 return new OperationResult
                 {
@@ -385,7 +385,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            attempt.Status = TestAttemptStatusType.InProgress;
+            attempt.Status = TestAttemptStatusTypeEnum.InProgress;
             attempt.LastResumedAt = DateTimeOffset.UtcNow;
             await _dbContext.SaveChangesAsync();
 
@@ -428,7 +428,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             var existingActiveAttempt = await _dbContext.TestAttempts
                 .AnyAsync(ta => ta.TestId == requestModel.TestId
                              && ta.StudentId == requestModel.UserId
-                             && ta.Status == TestAttemptStatusType.InProgress);
+                             && ta.Status == TestAttemptStatusTypeEnum.InProgress);
 
             if (existingActiveAttempt)
             {
@@ -449,7 +449,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     TestId = requestModel.TestId,
                     StudentId = requestModel.UserId,
                     Duration = 0,
-                    Status = TestAttemptStatusType.InProgress,
+                    Status = TestAttemptStatusTypeEnum.InProgress,
                     LastResumedAt = DateTimeOffset.UtcNow
                 };
                 await _dbContext.TestAttempts.AddAsync(newTestAttempt);

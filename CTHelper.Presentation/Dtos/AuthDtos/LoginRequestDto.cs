@@ -12,7 +12,7 @@ public class LoginRequestDto
     public string Password { get; set; } = string.Empty;
 
     [JsonPropertyName("clientType")]
-    public ClientType ClientType { get; set; } = ClientType.Web;
+    public ClientTypeEnum ClientType { get; set; } = ClientTypeEnum.Web;
 
     [JsonPropertyName("ipAddress")]
     public string? IpAddress { get; set; }

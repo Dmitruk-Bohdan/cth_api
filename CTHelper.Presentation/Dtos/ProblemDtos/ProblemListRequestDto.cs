@@ -17,10 +17,10 @@ namespace CTHelper.Presentation.Dtos.ProblemDtos
         public long? TopicId { get; set; }
 
         [JsonPropertyName("type")]
-        public ProblemType? Type { get; set; }
+        public ProblemTypeEnum? Type { get; set; }
 
         [JsonPropertyName("difficulty")]
-        public ProblemDifficult? Difficulty { get; set; }
+        public ProblemDifficultEnum? Difficulty { get; set; }
 
         [JsonPropertyName("searchTerm")]
         public string? SearchTerm { get; set; }

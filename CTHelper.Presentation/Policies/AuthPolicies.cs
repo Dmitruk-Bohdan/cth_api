@@ -29,11 +29,11 @@ namespace CTHelper.Presentation.Policies
             {
                 options.AddPolicy(TeacherOnlyPolicy, policy =>
                 {
-                    policy.RequireRole(UserRole.Teacher.ToString(), UserRole.Admin.ToString());
+                    policy.RequireRole(UserRoleEnum.Teacher.ToString(), UserRoleEnum.Admin.ToString());
                 });
                 options.AddPolicy(StudentOnlyPolicy, policy =>
                 {
-                    policy.RequireRole(UserRole.Student.ToString(), UserRole.Admin.ToString());
+                    policy.RequireRole(UserRoleEnum.Student.ToString(), UserRoleEnum.Admin.ToString());
                 });
             });
 

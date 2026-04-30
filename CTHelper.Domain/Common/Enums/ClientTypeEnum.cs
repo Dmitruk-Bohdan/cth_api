@@ -1,6 +1,6 @@
 namespace CTHelper.Domain.Common.Enums
 {
-    public enum ClientType : short
+    public enum ClientTypeEnum : short
     {
         Mobile = 1,
         Web = 2

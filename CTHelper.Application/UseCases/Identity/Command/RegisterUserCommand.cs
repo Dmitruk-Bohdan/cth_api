@@ -8,5 +8,5 @@ namespace CTHelper.Application.UseCases.Identity.Command
         string Username,
         string Email,
         string Password,
-        UserRole Role) : IRequest<User>;
+        UserRoleEnum Role) : IRequest<User>;
 }

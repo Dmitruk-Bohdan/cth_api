@@ -330,7 +330,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             var newVersion = new ProblemVersion()
             {
                 ProblemId = problem.Id,
-                Type = activeVersion?.Type ?? Domain.Common.Enums.ProblemType.SingleChoice,
+                Type = activeVersion?.Type ?? Domain.Common.Enums.ProblemTypeEnum.SingleChoice,
                 Difficulty = requestModel.Difficulty,
                 Statement = requestModel.Statement,
                 CorrectAnswer = requestModel.correctAnswer,

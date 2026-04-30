@@ -8,7 +8,7 @@ namespace CTHelper.Application.UseCases.Identity.Command;
 public record LoginCommand(
     string Email,
     string Password,
-    ClientType ClientType,
+    ClientTypeEnum ClientType,
     string? IpAddress,
     string? DeviceInfo,
     string? DeviceId) : IRequest<OperationResult<LoginResponseModel>>;

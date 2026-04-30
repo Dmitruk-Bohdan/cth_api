@@ -9,7 +9,7 @@ public class UpdateProblemRequestDto
     public long AuthorId { get; set; }
 
     [JsonPropertyName("difficulty")]
-    public ProblemDifficult Difficulty { get; set; }
+    public ProblemDifficultEnum Difficulty { get; set; }
 
     [JsonPropertyName("statement")]
     public string Statement { get; set; } = default!;

@@ -1,6 +1,6 @@
 namespace CTHelper.Domain.Common.Enums
 {
-    public enum NotificationPriorityLevelType : short
+    public enum NotificationPriorityLevelTypeEnum : short
     {
         Urgent = 1,
         Important = 2,

@@ -6,7 +6,7 @@ namespace CTHelper.Domain.Entities
     {
         public long RecipientId { get; set; }
 
-        public NotificationPriorityLevelType PriorityLevel { get; set; }
+        public NotificationPriorityLevelTypeEnum PriorityLevel { get; set; }
 
         public string Payload { get; set; } = default!;
 

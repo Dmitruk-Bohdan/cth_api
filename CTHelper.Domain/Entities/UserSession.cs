@@ -8,7 +8,7 @@ namespace CTHelper.Domain.Entities
 
         public Guid Jti { get; set; }
 
-        public ClientType ClientType { get; set; }
+        public ClientTypeEnum ClientType { get; set; }
 
         public string? IpAddress { get; set; } = default!;
 

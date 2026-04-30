@@ -29,7 +29,7 @@ namespace CTHelper.Application.UseCases.Identity.Validation
             RuleFor(cuc => cuc.Role)
                 .NotEmpty()
                 .IsInEnum()
-                .Must(role => role == UserRole.Student || role == UserRole.Teacher);
+                .Must(role => role == UserRoleEnum.Student || role == UserRoleEnum.Teacher);
         }
     }
 }

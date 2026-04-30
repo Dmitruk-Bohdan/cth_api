@@ -6,9 +6,9 @@ namespace CTHelper.Domain.Entities
     {
         public long ProblemId { get; set; }
 
-        public ProblemType Type { get; set; }
+        public ProblemTypeEnum Type { get; set; }
 
-        public ProblemDifficult Difficulty { get; set; }
+        public ProblemDifficultEnum Difficulty { get; set; }
 
         public string Statement { get; set; } = default!;
 

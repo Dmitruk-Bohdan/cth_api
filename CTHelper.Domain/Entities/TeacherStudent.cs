@@ -8,7 +8,7 @@ namespace CTHelper.Domain.Entities
 
         public long StudentId { get; set; }
 
-        public TeacherStudentStatus Status { get; set; }
+        public TeacherStudentStatusEnum Status { get; set; }
 
         public bool IsDeleted { get; set; }
 

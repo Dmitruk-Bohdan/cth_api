@@ -15,5 +15,5 @@ public class RegisterUserRequestDto
     public string Password { get; set; } = string.Empty;
 
     [JsonPropertyName("role")]
-    public UserRole Role { get; set; }
+    public UserRoleEnum Role { get; set; }
 }

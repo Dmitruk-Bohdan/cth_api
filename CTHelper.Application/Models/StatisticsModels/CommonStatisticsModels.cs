@@ -17,7 +17,7 @@ namespace CTHelper.Application.Models.Statistics
 
     public class SuccessByDifficultModel
     {
-        public ProblemDifficult Difficult { get; set; }
+        public ProblemDifficultEnum Difficult { get; set; }
         public int SuccessRate { get; set; }
     }
 }

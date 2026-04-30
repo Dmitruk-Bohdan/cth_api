@@ -10,13 +10,13 @@ namespace CTHelper.Application.Models.TestModels
         public string? NameFragment { get; set; }
         
         [JsonPropertyName("avgDifficult)")]
-        public ProblemDifficult? AvgDifficult { get; set; }
+        public ProblemDifficultEnum? AvgDifficult { get; set; }
         
         [JsonPropertyName("isTraning)")]
         public bool? IsTraning { get; set; }
         
         [JsonPropertyName("type)")]
-        public TestType? Type { get; set; }
+        public TestTypeEnum? Type { get; set; }
         
         [JsonPropertyName("maxTaskCount)")]
         public int? MaxTaskCount { get; set; }

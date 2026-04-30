@@ -8,7 +8,7 @@ namespace CTHelper.Domain.Entities
 
         public long StudentId { get; set; }
 
-        public TestAttemptStatusType Status { get; set; }
+        public TestAttemptStatusTypeEnum Status { get; set; }
 
         public int Duration { get; set; }
 

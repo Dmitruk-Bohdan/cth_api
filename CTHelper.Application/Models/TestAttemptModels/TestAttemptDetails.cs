@@ -10,7 +10,7 @@ namespace CTHelper.Application.Models.TestAttemptModels
         public long TestId { get; set; }
         public long StudentId { get; set; }
         public string StudentName { get; set; } = default!;
-        public TestAttemptStatusType Status { get; set; }
+        public TestAttemptStatusTypeEnum Status { get; set; }
         public int Duration { get; set; }
         public short? RawScore { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
@@ -26,8 +26,8 @@ namespace CTHelper.Application.Models.TestAttemptModels
         public bool IsCorrect { get; set; }
         public string CorrectAnswer { get; set; } = default!;
         public string? Explanation { get; set; } = default!;
-        public ProblemType Type { get; set; }
-        public ProblemDifficult Difficulty { get; set; }
+        public ProblemTypeEnum Type { get; set; }
+        public ProblemDifficultEnum Difficulty { get; set; }
         public string TopicName { get; set; } = default!;
     }
 }

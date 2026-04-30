@@ -1,6 +1,6 @@
 namespace CTHelper.Domain.Common.Enums
 {
-    public enum TestAttemptStatusType : short
+    public enum TestAttemptStatusTypeEnum : short
     {
         InProgress = 1,
         Paused = 2,

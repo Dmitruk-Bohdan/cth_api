@@ -183,7 +183,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 IsAssigned = false,
                 Type = t.Type,
                 AttemptsLeft = t.AttemptsLeft,
-                AvgDifficult = (ProblemDifficult)(t.AvgDifficultRaw.HasValue
+                AvgDifficult = (ProblemDifficultEnum)(t.AvgDifficultRaw.HasValue
                     ? Math.Round(t.AvgDifficultRaw.Value)
                     : 0)
             }).ToList();

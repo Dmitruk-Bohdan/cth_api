@@ -7,9 +7,9 @@ namespace CTHelper.Application.Models.TestModels
     {
         public string? NameFragment { get; set; }
         public string? AuthorNameFragment { get; set; }
-        public ProblemDifficult? AvgDifficult { get; set; }
+        public ProblemDifficultEnum? AvgDifficult { get; set; }
         public bool? IsTraning { get; set; }
-        public TestType? Type { get; set; }
+        public TestTypeEnum? Type { get; set; }
         public int? MaxTaskCount { get; set; }
         public int? MinTaskCount { get; set; }
     }

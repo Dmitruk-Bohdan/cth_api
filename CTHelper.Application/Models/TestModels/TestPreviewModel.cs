@@ -10,8 +10,8 @@ namespace CTHelper.Application.Models.TestModels
         public string AuthorName { get; set; } = default!;
         public int ProblemCount { get; set; }
         public bool IsAssigned { get; set; }
-        public TestType Type { get; set; }
+        public TestTypeEnum Type { get; set; }
         public int AttemptsLeft { get; set; }
-        public ProblemDifficult AvgDifficult { get; set; }
+        public ProblemDifficultEnum AvgDifficult { get; set; }
     }
 }

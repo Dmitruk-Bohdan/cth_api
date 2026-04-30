@@ -6,10 +6,10 @@ namespace CTHelper.Presentation.Dtos.GroupDtos;
 public class CreateProblemRequestDto
 {
     [JsonPropertyName("type")]
-    public ProblemType Type { get; set; }
+    public ProblemTypeEnum Type { get; set; }
 
     [JsonPropertyName("difficulty")]
-    public ProblemDifficult Difficulty { get; set; }
+    public ProblemDifficultEnum Difficulty { get; set; }
 
     [JsonPropertyName("statement")]
     public string Statement { get; set; } = default!;

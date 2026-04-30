@@ -7,8 +7,8 @@ namespace CTHelper.Application.Models.Problem
         public long ProblemId { get; set; }
         public string TopicName { get; set; } = default!;
         public string StatementFragment { get; set; } = default!;
-        public ProblemType ProblemType { get; set; }
-        public ProblemDifficult Difficulty { get; set; }
+        public ProblemTypeEnum ProblemType { get; set; }
+        public ProblemDifficultEnum Difficulty { get; set; }
 
     }
 }

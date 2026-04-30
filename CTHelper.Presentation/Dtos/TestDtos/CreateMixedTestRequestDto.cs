@@ -9,7 +9,7 @@ public class CreateMixedTestRequestDto
     public long SubjectId { get; set; }
     
     [JsonPropertyName("averageDifficult")]
-    public ProblemDifficult AverageDifficult { get; set; }
+    public ProblemDifficultEnum AverageDifficult { get; set; }
     
     [JsonPropertyName("topicItems")]
     public IEnumerable<MixedTestTopicDto> TopicItems { get; set; } = new List<MixedTestTopicDto>();
