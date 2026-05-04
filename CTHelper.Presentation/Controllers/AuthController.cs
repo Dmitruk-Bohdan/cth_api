@@ -1,5 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using CTHelper.Application.Models.Session;
 using CTHelper.Application.UseCases.Identity.Command;
 using CTHelper.Application.UseCases.Identity.Query;
@@ -11,9 +9,12 @@ using CTHelper.Presentation.Dtos.AuthDtos;
 using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace CTHelper.Presentation.Controllers;
 
@@ -46,6 +47,28 @@ public class AuthController : ControllerBase
         await _mediator.Send(requestEmailVerificationCommand);
 
         return Created();
+    }
+
+#if DEBUG
+    [HttpPost("login_as_teacher")]
+    [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> LoginAsTeacher()
+    {
+        return await Login(new LoginRequestDto() { Email = "teacher1@teacher1.com", Password = "111111" });
+    }
+
+    [HttpPost("login_as_student")]
+    [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> LoginAsStudent()
+    {
+        return await Login(new LoginRequestDto() { Email = "student1@student1.com", Password = "111111" });
+    }
+
+    [HttpPost("login_as_admin")]
+    [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> LoginAsAdmin()
+    {
+        return await Login(new LoginRequestDto() { Email = "admin1@admin1.com", Password = "111111" });
     }
 
     [HttpPost("login")]
@@ -83,6 +106,8 @@ public class AuthController : ControllerBase
                 errorDto);
         }
     }
+
+#endif
 
     [HttpPost("logout")]
     [Authorize]

@@ -18,6 +18,7 @@ namespace CTHelper.Persistence.Context
         public DbSet<BindingRequest> BindingRequests { get; set; }
         public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
         public DbSet<Group> Groups { get; set; }
+        public DbSet<Subject> Subjects { get; set; }
         public DbSet<InvitationCode> InvitationCodes { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }

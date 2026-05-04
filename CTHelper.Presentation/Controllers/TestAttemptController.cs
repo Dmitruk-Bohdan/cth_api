@@ -1,5 +1,6 @@
 using CTHelper.Application.Models;
 using CTHelper.Application.Models.TestAttemptModels;
+using CTHelper.Application.Models.TestModels;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Presentation.Common.Constants;
 using CTHelper.Presentation.Dtos;
@@ -112,7 +113,7 @@ public class TestAttemptsController : BaseController
 
     [HttpPost("start/{testId:long}")]
     [Authorize]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(TestPassingResponseModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> StartAttemptAsync([FromRoute] long testId)
     {
         if (!TryGetUserId(out long userId))
@@ -126,7 +127,7 @@ public class TestAttemptsController : BaseController
             TestId = testId
         };
 
-        OperationResult result = await _attemptService.StartTestAttempt(requestModel);
+        OperationResult<TestPassingResponseModel> result = await _attemptService.StartTestAttempt(requestModel);
 
         return HandleOperationResult(result);
     }
@@ -134,7 +135,7 @@ public class TestAttemptsController : BaseController
     [HttpPatch("{attemptId:long}/pause")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> PauseAttemptAsync(long attemptId)
+    public async Task<IActionResult> PauseAttemptAsync([FromRoute] long attemptId, [FromBody] IEnumerable<UserAnswerDto>? userAnswers)
     {
         if (!TryGetUserId(out long userId))
         {
@@ -145,6 +146,7 @@ public class TestAttemptsController : BaseController
         {
             UserId = userId,
             AttemptId = attemptId,
+            UserAnswers = userAnswers
         };
 
         OperationResult result = await _attemptService.PauseTestAttempt(requestModel);
@@ -154,8 +156,8 @@ public class TestAttemptsController : BaseController
 
     [HttpPatch("{attemptId:long}/resume")]
     [Authorize]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ResumeAsync(long attemptId)
+    [ProducesResponseType(typeof(TestPassingResponseModel), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ResumeAsync([FromRoute] long attemptId)
     {
         if (!TryGetUserId(out long userId))
         {
@@ -168,15 +170,15 @@ public class TestAttemptsController : BaseController
             AttemptId = attemptId,
         };
 
-        OperationResult result = await _attemptService.ResumeTestAttempt(requestModel);
+        OperationResult<TestPassingResponseModel> result = await _attemptService.ResumeTestAttempt(requestModel);
 
         return HandleOperationResult(result);
     }
 
     [HttpPatch("{attemptId:long}/complete")]
     [Authorize]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> CompleteAsync(long attemptId)
+    [ProducesResponseType(typeof(CompleteTestAttemptResponseModel), StatusCodes.Status200OK)]
+    public async Task<IActionResult> CompleteAsync([FromRoute] long attemptId, [FromBody] IEnumerable<UserAnswerDto>? userAnswers)
     {
         if (!TryGetUserId(out long userId))
         {
@@ -187,9 +189,10 @@ public class TestAttemptsController : BaseController
         {
             UserId = userId,
             AttemptId = attemptId,
+            UserAnswers = userAnswers
         };
 
-        OperationResult result = await _attemptService.CompleteTestAttempt(requestModel);
+        OperationResult<CompleteTestAttemptResponseModel> result = await _attemptService.CompleteTestAttempt(requestModel);
 
         return HandleOperationResult(result);
     }
@@ -197,7 +200,7 @@ public class TestAttemptsController : BaseController
     [HttpPatch("{attemptId:long}/cancel")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> CancelAsync(long attemptId)
+    public async Task<IActionResult> CancelAsync([FromRoute] long attemptId)
     {
         if (!TryGetUserId(out long userId))
         {

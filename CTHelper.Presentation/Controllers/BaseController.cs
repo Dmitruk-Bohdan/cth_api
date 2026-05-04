@@ -11,7 +11,7 @@ namespace CTHelper.Presentation.Controllers
     {
         protected readonly IMapper _mapper;
 
-        protected BaseController(IMapper mapper)
+        public BaseController(IMapper mapper)
         {
             _mapper = mapper;
         }

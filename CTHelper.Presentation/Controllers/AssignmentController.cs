@@ -162,7 +162,7 @@ public class AssignmentsController : BaseController
         }
     }
 
-    [HttpGet("teacher")]
+    [HttpGet("teacher/me")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     [ProducesResponseType(typeof(PaginatedListResponseModel<AssignmentPreviewModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetIAssignedList()

@@ -1,5 +1,7 @@
 using CTHelper.Application.Models;
+using CTHelper.Application.Models.TestAttemptModels;
 using CTHelper.Application.Models.TestModels;
+using CTHelper.Application.Services.Interfaces;
 using CTHelper.Domain.Common.Extensions;
 using CTHelper.Domain.Entities;
 using CTHelper.Infrastructure.Services.Implementations;
@@ -17,9 +19,11 @@ namespace CTHelper.Presentation.Controllers;
 public class TestController : BaseController
 {
     private readonly ITestService _testService;
-    protected TestController(IMapper mapper, ITestService testService) : base(mapper)
+    private readonly ITestAttemptService _testAttemptService;
+    public TestController(IMapper mapper, ITestService testService, ITestAttemptService testAttemptService) : base(mapper)
     {
         _testService = testService;
+        _testAttemptService = testAttemptService;
     }
 
     [HttpPost("teacher/list")]
@@ -47,34 +51,6 @@ public class TestController : BaseController
 
             OnlyMyTests = request.OnlyMyTests,
             UserId = userId  
-        };
-
-        OperationResult<PaginatedListResponseModel<TestListItemModel>> result = await _testService.GetTestList(requestModel);
-
-        return HandleOperationResult(result);
-    }
-
-    [HttpGet("teacher/me/list")]
-    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    [ProducesResponseType(typeof(PaginatedListResponseModel<TestListItemModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetMyTestListAsync(MyTestListRequestDto request)
-    {
-        if (!TryGetUserId(out long userId))
-        {
-            return Unauthorized();
-        }
-
-        var requestModel = new MyTestListRequestModel
-        {
-            UserId = userId,
-            NameFragment = request.NameFragment,
-            AvgDifficult = request.AvgDifficult,
-            IsTraning = request.IsTraning,
-            Type = request.Type,
-            MaxTaskCount = request.MaxTaskCount,
-            MinTaskCount = request.MinTaskCount,
-            PageSize = request.PageSize,
-            PageNumber = request.PageNumber
         };
 
         OperationResult<PaginatedListResponseModel<TestListItemModel>> result = await _testService.GetTestList(requestModel);
@@ -152,7 +128,7 @@ public class TestController : BaseController
             UserId = userId
         };
 
-        OperationResult<TestDetailsModel> result = await _testService.GetTestPreview(requestModel);
+        OperationResult<TestPreviewModel> result = await _testService.GetTestPreview(requestModel);
 
         return HandleOperationResult(result);
     }
@@ -216,10 +192,9 @@ public class TestController : BaseController
 
         if (result.IsSuccess)
         {
-            return RedirectToAction(
-                actionName: nameof(TestAttemptsController.StartAttemptAsync),
-                controllerName: "TestAttempts",
-                routeValues: new { testId = result.Payload!.Id });
+            OperationResult startTesResult = await _testAttemptService.StartTestAttempt(new StartTestAttemptRequestModel() { UserId = userId, TestId = result.Payload!.Id});
+
+            return HandleOperationResult(startTesResult);
         }
         else
         {

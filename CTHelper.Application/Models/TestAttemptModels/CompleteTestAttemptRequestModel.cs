@@ -2,5 +2,6 @@
 {
     public class CompleteTestAttemptRequestModel : BaseAttemptUserRequestModel
     {
+        public IEnumerable<UserAnswerDto>? UserAnswers { get; set; }
     }
 }

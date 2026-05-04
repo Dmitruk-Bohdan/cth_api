@@ -13,7 +13,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
         Task<OperationResult<PaginatedListResponseModel<TestListItemModel>>> GetTestList(TeacherTestListRequestModel requestModel);
         Task<OperationResult<PaginatedListResponseModel<TestListItemModel>>> GetTestList(MyTestListRequestModel requestModel);
         Task<OperationResult<PaginatedListResponseModel<TestListItemModel>>> GetTestList(StudentTestListRequestModel requestModel);
-        Task<OperationResult<TestDetailsModel>> GetTestPreview(TestPreviewRequestModel requestModel);
+        Task<OperationResult<TestPreviewModel>> GetTestPreview(TestPreviewRequestModel requestModel);
         Task<OperationResult> RemoveTest(RemoveTestRequestModel requestModel);
         Task<OperationResult> UpdateTest(UpdateTestRequestModel requestModel);
     }

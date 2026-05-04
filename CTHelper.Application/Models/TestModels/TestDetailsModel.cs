@@ -14,5 +14,7 @@ namespace CTHelper.Application.Models.TestModels
         public ProblemTypeEnum Type { get; set; }
         public ProblemDifficultEnum Difficulty { get; set; }
         public string Statement { get; set; } = default!;
+        public string Answer { get; set; } = default!;
+        public string? Explanation { get; set; }
     }
 }

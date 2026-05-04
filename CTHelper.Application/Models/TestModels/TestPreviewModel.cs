@@ -11,7 +11,7 @@ namespace CTHelper.Application.Models.TestModels
         public int ProblemCount { get; set; }
         public bool IsAssigned { get; set; }
         public TestTypeEnum Type { get; set; }
-        public int AttemptsLeft { get; set; }
+        public int? AttemptsLeft { get; set; }
         public ProblemDifficultEnum AvgDifficult { get; set; }
     }
 }

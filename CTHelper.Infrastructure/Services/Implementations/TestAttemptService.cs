@@ -1,6 +1,7 @@
 ﻿using CTHelper.Application.Common.Constants;
 using CTHelper.Application.Models;
 using CTHelper.Application.Models.TestAttemptModels;
+using CTHelper.Application.Models.TestModels;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Domain.Common.Enums;
 using CTHelper.Domain.Entities;
@@ -53,18 +54,30 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             return new OperationResult();
         }
-
-        public async Task<OperationResult> CompleteTestAttempt(CompleteTestAttemptRequestModel requestModel)
+        public async Task<OperationResult<CompleteTestAttemptResponseModel>> CompleteTestAttempt(CompleteTestAttemptRequestModel requestModel)
         {
             var attempt = await _dbContext.TestAttempts
-                .Include(ta => ta.UserAnswers)
-                .FirstOrDefaultAsync(ta =>
-                    ta.Id == requestModel.AttemptId
-                    && ta.StudentId == requestModel.UserId);
+                .Where(ta => ta.Id == requestModel.AttemptId && ta.StudentId == requestModel.UserId)
+                .Select(ta => new
+                {
+                    ta.Id,
+                    ta.Status,
+                    ta.Duration,
+                    ta.LastResumedAt,
+                    ta.TestId,
+                    IsTraining = ta.Test.IsTraning,
+                    TestProblems = ta.Test.TestProblems.Select(tp => new
+                    {
+                        tp.Id,
+                        tp.Code,
+                        ProblemVersion = tp.Problem.Versions.FirstOrDefault(pv => pv.IsActive)
+                    })
+                })
+                .FirstOrDefaultAsync();
 
             if (attempt == null)
             {
-                return new OperationResult
+                return new OperationResult<CompleteTestAttemptResponseModel>
                 {
                     ErrorCode = ErrorCodeConstants.AttemptNotFound,
                     ErrorMessage = "Attempt not found",
@@ -74,7 +87,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             if (attempt.Status != TestAttemptStatusTypeEnum.InProgress && attempt.Status != TestAttemptStatusTypeEnum.Paused)
             {
-                return new OperationResult
+                return new OperationResult<CompleteTestAttemptResponseModel>
                 {
                     ErrorCode = ErrorCodeConstants.AttemptNotActive,
                     ErrorMessage = "Attempt can not be completed",
@@ -82,21 +95,61 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            if (attempt.Status == TestAttemptStatusTypeEnum.InProgress)
+            if (requestModel.UserAnswers != null && requestModel.UserAnswers.Any())
             {
-                attempt.Duration += (int)Math.Ceiling((DateTimeOffset.UtcNow - attempt.LastResumedAt).TotalSeconds);
+                foreach (var userAnswerDto in requestModel.UserAnswers)
+                {
+                    var userAnswer = await _dbContext.UserAnswers
+                        .FirstOrDefaultAsync(ua => ua.Id == userAnswerDto.UserAnswerId && ua.TestAttemptId == requestModel.AttemptId);
+
+                    if (userAnswer != null)
+                    {
+                        userAnswer.Answer = userAnswerDto.Answer ?? string.Empty;
+                    }
+                }
+                await _dbContext.SaveChangesAsync();
             }
 
-            var correctAnswers = attempt.UserAnswers.Count(ua => ua.IsCorrect);
-            var totalAnswers = attempt.UserAnswers.Count;
-            attempt.RawScore = totalAnswers > 0 ? (short)((double)correctAnswers / totalAnswers * 100) : (short)0;
+            var userAnswers = await _dbContext.UserAnswers
+                .Where(ua => ua.TestAttemptId == requestModel.AttemptId)
+                .ToListAsync();
 
-            attempt.Status = TestAttemptStatusTypeEnum.Completed;
-            await _dbContext.SaveChangesAsync();
+            foreach (var userAnswer in userAnswers)
+            {
+                var testProblem = attempt.TestProblems.FirstOrDefault(tp => tp.ProblemVersion?.Id == userAnswer.ProblemVersionId);
+                if (testProblem?.ProblemVersion != null)
+                {
+                    userAnswer.IsCorrect = string.Equals(userAnswer.Answer?.Trim(), testProblem.ProblemVersion.CorrectAnswer?.Trim(), StringComparison.OrdinalIgnoreCase);
+                }
+            }
 
-            return new OperationResult();
+            var correctAnswers = userAnswers.Count(ua => ua.IsCorrect);
+            var totalAnswers = userAnswers.Count;
+            short? rawScore = totalAnswers > 0 ? (short)((double)correctAnswers / totalAnswers * 100) : (short)0;
+
+            var attemptToUpdate = await _dbContext.TestAttempts
+                .FirstOrDefaultAsync(ta => ta.Id == requestModel.AttemptId);
+
+            if (attemptToUpdate != null)
+            {
+                if (attempt.Status == TestAttemptStatusTypeEnum.InProgress)
+                {
+                    attemptToUpdate.Duration += (int)Math.Ceiling((DateTimeOffset.UtcNow - attempt.LastResumedAt).TotalSeconds);
+                }
+
+                attemptToUpdate.RawScore = rawScore;
+                attemptToUpdate.Status = TestAttemptStatusTypeEnum.Completed;
+                await _dbContext.SaveChangesAsync();
+            }
+
+            var response = new CompleteTestAttemptResponseModel();
+            if (attempt.IsTraining == false)
+            {
+                response.AttemptId = attempt.Id;
+            }
+
+            return new OperationResult<CompleteTestAttemptResponseModel>(response);
         }
-
         public async Task<OperationResult<TestAttemptDetails>> GetMyAttempt(MyTestAttemptRequestModel requestModel)
         {
             var attempt = await _dbContext.TestAttempts
@@ -162,6 +215,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 .Select(ta => new TestAttemptListItemModel
                 {
                     TestAttemptId = ta.Id,
+                    Status = ta.Status,
                     TestName = ta.Test.Title,
                     Duration = ta.Duration,
                     RawScore = ta.RawScore,
@@ -278,6 +332,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 .Select(ta => new TestAttemptListItemModel
                 {
                     TestAttemptId = ta.Id,
+                    Status = ta.Status,
                     TestName = ta.Test.Title,
                     Duration = ta.Duration,
                     RawScore = ta.RawScore,
@@ -303,67 +358,18 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
         public async Task<OperationResult> PauseTestAttempt(PauseTestAttemptRequestModel requestModel)
         {
-            var attemptInfo = await _dbContext.TestAttempts
-                .Where(ta =>
-                    ta.Id == requestModel.AttemptId
-                    && ta.StudentId == requestModel.UserId)
-                .Select(ta =>
-                new
+            var attempt = await _dbContext.TestAttempts
+                .Where(ta => ta.Id == requestModel.AttemptId && ta.StudentId == requestModel.UserId)
+                .Select(ta => new
                 {
+                    ta.Id,
                     ta.Status,
+                    ta.Duration,
+                    ta.LastResumedAt,
                     ta.TestId,
-                    ta.StudentId,
-                    IsExam = ta.Test.IsTraning
+                    IsTraining = ta.Test.IsTraning
                 })
                 .FirstOrDefaultAsync();
-
-
-            if(attemptInfo == null)
-            {
-                return new OperationResult
-                {
-                    ErrorCode = ErrorCodeConstants.AttemptNotFound,
-                    ErrorMessage = "Attempt not found",
-                    HttpStatusCode = HttpStatusCode.NotFound
-                };
-            }
-            if (attemptInfo.Status != TestAttemptStatusTypeEnum.InProgress)
-            {
-                return new OperationResult
-                {
-                    ErrorCode = ErrorCodeConstants.AttemptNotActive,
-                    ErrorMessage = "Attempt is not in progress. You can stop only active attempts",
-                    HttpStatusCode = HttpStatusCode.Forbidden
-                };
-            }
-            if (attemptInfo.IsExam)
-            {
-                return new OperationResult
-                {
-                    ErrorCode = ErrorCodeConstants.AttemptIsExaminative,
-                    ErrorMessage = "You can not stop examinative attempts",
-                    HttpStatusCode = HttpStatusCode.Forbidden
-                };
-            }
-
-
-            var attempt = await _dbContext.TestAttempts.FirstOrDefaultAsync(ta => ta.Id == requestModel.AttemptId);
-
-            attempt!.Duration += (int)Math.Ceiling((DateTimeOffset.UtcNow - attempt.LastResumedAt).TotalSeconds);
-
-            attempt.Status = TestAttemptStatusTypeEnum.Paused;
-
-            await _dbContext.SaveChangesAsync();
-
-            return new OperationResult();
-        }
-
-        public async Task<OperationResult> ResumeTestAttempt(ResumeTestAttemptRequestModel requestModel)
-        {
-            var attempt = await _dbContext.TestAttempts
-                .FirstOrDefaultAsync(ta =>
-                    ta.Id == requestModel.AttemptId
-                    && ta.StudentId == requestModel.UserId);
 
             if (attempt == null)
             {
@@ -375,9 +381,70 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            if (attempt.Status != TestAttemptStatusTypeEnum.Paused)
+            if (attempt.Status != TestAttemptStatusTypeEnum.InProgress)
             {
                 return new OperationResult
+                {
+                    ErrorCode = ErrorCodeConstants.AttemptNotActive,
+                    ErrorMessage = "Attempt is not in progress. You can pause only active attempts",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            if (attempt.IsTraining == false)
+            {
+                return new OperationResult
+                {
+                    ErrorCode = ErrorCodeConstants.AttemptIsExaminative,
+                    ErrorMessage = "You cannot pause examinative attempts",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            if (requestModel.UserAnswers != null && requestModel.UserAnswers.Any())
+            {
+                foreach (var userAnswerDto in requestModel.UserAnswers)
+                {
+                    var userAnswer = await _dbContext.UserAnswers
+                        .FirstOrDefaultAsync(ua => ua.Id == userAnswerDto.UserAnswerId && ua.TestAttemptId == requestModel.AttemptId);
+
+                    if (userAnswer != null)
+                    {
+                        userAnswer.Answer = userAnswerDto.Answer ?? string.Empty;
+                    }
+                }
+            }
+
+            var attemptToUpdate = await _dbContext.TestAttempts
+                .FirstOrDefaultAsync(ta => ta.Id == requestModel.AttemptId);
+
+            if (attemptToUpdate != null)
+            {
+                attemptToUpdate.Duration += (int)Math.Ceiling((DateTimeOffset.UtcNow - attempt.LastResumedAt).TotalSeconds);
+                attemptToUpdate.Status = TestAttemptStatusTypeEnum.Paused;
+                await _dbContext.SaveChangesAsync();
+            }
+
+            return new OperationResult();
+        }
+        public async Task<OperationResult<TestPassingResponseModel>> ResumeTestAttempt(ResumeTestAttemptRequestModel requestModel)
+        {
+            var attempt = await _dbContext.TestAttempts
+                .FirstOrDefaultAsync(ta => ta.Id == requestModel.AttemptId && ta.StudentId == requestModel.UserId);
+
+            if (attempt == null)
+            {
+                return new OperationResult<TestPassingResponseModel>
+                {
+                    ErrorCode = ErrorCodeConstants.AttemptNotFound,
+                    ErrorMessage = "Attempt not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            if (attempt.Status != TestAttemptStatusTypeEnum.Paused)
+            {
+                return new OperationResult<TestPassingResponseModel>
                 {
                     ErrorCode = ErrorCodeConstants.AttemptNotActive,
                     ErrorMessage = "Attempt is not paused. You can resume only paused attempts",
@@ -389,16 +456,22 @@ namespace CTHelper.Infrastructure.Services.Implementations
             attempt.LastResumedAt = DateTimeOffset.UtcNow;
             await _dbContext.SaveChangesAsync();
 
-            return new OperationResult();
+            var response = await BuildTestPassingResponse(attempt.Id, requestModel.UserId);
+            return new OperationResult<TestPassingResponseModel>(response);
         }
 
-        public async Task<OperationResult> StartTestAttempt(StartTestAttemptRequestModel requestModel)
+        public async Task<OperationResult<TestPassingResponseModel>> StartTestAttempt(StartTestAttemptRequestModel requestModel)
         {
             var testInfo = await _dbContext.Tests
                 .Where(t => t.Id == requestModel.TestId && t.IsPublished)
                 .Select(t => new
                 {
+                    t.Id,
+                    t.Title,
                     t.IsPublic,
+                    t.AuthorId,
+                    t.IsTraning,
+                    t.Duration,
                     Assignment = t.StudentAssignments
                         .FirstOrDefault(sa => sa.StudentId == requestModel.UserId && sa.AttemptsLeft > 0)
                 })
@@ -406,21 +479,21 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             if (testInfo == null)
             {
-                return new OperationResult
+                return new OperationResult<TestPassingResponseModel>
                 {
                     ErrorCode = ErrorCodeConstants.TestNotFound,
                     ErrorMessage = "Test not found",
-                    HttpStatusCode = HttpStatusCode.Forbidden
+                    HttpStatusCode = HttpStatusCode.NotFound
                 };
             }
 
-            var hasAccess = testInfo.IsPublic || testInfo.Assignment != null;
+            var hasAccess = testInfo.IsPublic || testInfo.Assignment != null || testInfo.AuthorId == requestModel.UserId;
             if (!hasAccess)
             {
-                return new OperationResult
+                return new OperationResult<TestPassingResponseModel>
                 {
                     ErrorCode = ErrorCodeConstants.OwnershipRequired,
-                    ErrorMessage = "You can only modify your own data. This record belongs to someone else",
+                    ErrorMessage = "You do not have access to this test",
                     HttpStatusCode = HttpStatusCode.Forbidden
                 };
             }
@@ -432,7 +505,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             if (existingActiveAttempt)
             {
-                return new OperationResult
+                return new OperationResult<TestPassingResponseModel>
                 {
                     ErrorCode = ErrorCodeConstants.AttemptAlreadyActive,
                     ErrorMessage = "You already have an active attempt for this test",
@@ -450,25 +523,112 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     StudentId = requestModel.UserId,
                     Duration = 0,
                     Status = TestAttemptStatusTypeEnum.InProgress,
-                    LastResumedAt = DateTimeOffset.UtcNow
+                    LastResumedAt = DateTimeOffset.UtcNow,
+                    CreatedAt = DateTimeOffset.UtcNow
                 };
+
                 await _dbContext.TestAttempts.AddAsync(newTestAttempt);
+                await _dbContext.SaveChangesAsync();
+
+                var testProblems = await _dbContext.TestProblems
+                    .Include(tp => tp.Problem)
+                        .ThenInclude(p => p.Versions)
+                    .Where(tp => tp.TestId == requestModel.TestId)
+                    .OrderBy(tp => tp.Code)
+                    .ToListAsync();
+
+                var userAnswers = new List<UserAnswer>();
+                foreach (var testProblem in testProblems)
+                {
+                    var activeVersion = testProblem.Problem?.Versions.FirstOrDefault(pv => pv.IsActive);
+                    if (activeVersion != null)
+                    {
+                        userAnswers.Add(new UserAnswer
+                        {
+                            TestAttemptId = newTestAttempt.Id,
+                            ProblemVersionId = activeVersion.Id,
+                            Answer = string.Empty,
+                            IsCorrect = false,
+                            CreatedAt = DateTimeOffset.UtcNow
+                        });
+                    }
+                }
+
+                await _dbContext.UserAnswers.AddRangeAsync(userAnswers);
+                await _dbContext.SaveChangesAsync();
 
                 if (testInfo.Assignment != null)
                 {
                     testInfo.Assignment.AttemptsLeft--;
+                    await _dbContext.SaveChangesAsync();
                 }
 
-                await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return new OperationResult();
+                var response = await BuildTestPassingResponse(newTestAttempt.Id, requestModel.UserId);
+                return new OperationResult<TestPassingResponseModel>(response);
             }
             catch
             {
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+        private async Task<TestPassingResponseModel> BuildTestPassingResponse(long attemptId, long userId)
+        {
+            var attempt = await _dbContext.TestAttempts
+                .Where(ta => ta.Id == attemptId && ta.StudentId == userId)
+                .Select(ta => new
+                {
+                    ta.TestId,
+                    TestName = ta.Test.Title,
+                    ta.Id,
+                    ta.Status,
+                    ta.Duration,
+                    ta.RawScore,
+                    TestProblems = ta.Test.TestProblems
+                        .OrderBy(tp => tp.Code)
+                        .Select(tp => new
+                        {
+                            tp.Code,
+                            ProblemVersion = tp.Problem.Versions.FirstOrDefault(pv => pv.IsActive),
+                            UserAnswer = ta.UserAnswers.FirstOrDefault(ua => ua.ProblemVersionId == (tp.Problem.Versions.FirstOrDefault(pv => pv.IsActive) != null ? tp.Problem.Versions.FirstOrDefault(pv => pv.IsActive).Id : 0))
+                        })
+                })
+                .FirstOrDefaultAsync();
+
+            if (attempt == null)
+            {
+                throw new InvalidOperationException("Attempt not found");
+            }
+
+            var problems = new List<TestPassingProblemModel>();
+
+            foreach (var tp in attempt.TestProblems)
+            {
+                if (tp.ProblemVersion == null) continue;
+
+                problems.Add(new TestPassingProblemModel
+                {
+                    Code = tp.Code,
+                    Type = tp.ProblemVersion.Type,
+                    Statement = tp.ProblemVersion.Statement,
+                    UserAnswer = tp.UserAnswer?.Answer,
+                    UserAnswerId = tp.UserAnswer?.Id ?? 0
+                });
+            }
+
+            return new TestPassingResponseModel
+            {
+                TestId = attempt.TestId,
+                TestName = attempt.TestName,
+                AttemptId = attempt.Id,
+                Status = attempt.Status,
+                Duration = attempt.Duration,
+                RawScore = attempt.RawScore,
+                Problems = problems
+            };
         }
     }
 }
