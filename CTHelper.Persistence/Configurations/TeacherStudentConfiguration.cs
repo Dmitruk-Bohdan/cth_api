@@ -58,9 +58,6 @@ namespace CTHelper.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasPrincipalKey(u => u.Id);
 
-            builder.HasIndex(ts => new { ts.TeacherId, ts.StudentId })
-                   .IsUnique();
-
             builder.HasIndex(us => us.StudentId);
         }
     }

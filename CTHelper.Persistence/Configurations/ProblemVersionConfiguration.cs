@@ -33,7 +33,7 @@ namespace CTHelper.Persistence.Configurations
 
             builder.Property(pv => pv.Statement)
                 .HasColumnName("statement")
-                .HasColumnType("jsonb")
+                .HasColumnType("text")
                 .IsRequired();
 
             builder.Property(pv => pv.CorrectAnswer)
@@ -43,8 +43,7 @@ namespace CTHelper.Persistence.Configurations
 
             builder.Property(pv => pv.Explanation)
                 .HasColumnName("explanation")
-                .HasColumnType("jsonb")
-                .HasDefaultValue("{}");
+                .HasColumnType("text");
 
             builder.Property(pv => pv.IsActive)
                 .HasColumnName("is_active")

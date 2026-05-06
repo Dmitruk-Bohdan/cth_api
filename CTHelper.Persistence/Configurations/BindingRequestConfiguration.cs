@@ -26,6 +26,11 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnType("bigint")
                 .IsRequired();
 
+            builder.Property(cr => cr.IsAccepted)
+                .HasColumnName("is_accepted")
+                .HasDefaultValue(false)
+                .IsRequired();
+
             builder.Property(cr => cr.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("timestamptz")

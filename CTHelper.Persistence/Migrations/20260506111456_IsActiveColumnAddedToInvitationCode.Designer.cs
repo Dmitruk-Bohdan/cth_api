@@ -3,6 +3,7 @@ using System;
 using CTHelper.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -12,9 +13,11 @@ using NpgsqlTypes;
 namespace CTHelper.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260506111456_IsActiveColumnAddedToInvitationCode")]
+    partial class IsActiveColumnAddedToInvitationCode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -494,7 +497,9 @@ namespace CTHelper.Persistence.Migrations
 
                     b.Property<string>("Explanation")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasDefaultValue("{}")
                         .HasColumnName("explanation");
 
                     b.Property<bool>("IsActive")
@@ -509,7 +514,7 @@ namespace CTHelper.Persistence.Migrations
 
                     b.Property<string>("Statement")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("jsonb")
                         .HasColumnName("statement");
 
                     b.Property<short>("Type")
@@ -751,7 +756,8 @@ namespace CTHelper.Persistence.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.HasIndex("TeacherId");
+                    b.HasIndex("TeacherId", "StudentId")
+                        .IsUnique();
 
                     b.ToTable("teacher_student", (string)null);
                 });
