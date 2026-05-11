@@ -114,7 +114,7 @@ public class TestController : BaseController
 
     [HttpGet("{testId:long}/preview")]
     [Authorize]
-    [ProducesResponseType(typeof(TestDetailsModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(TestPreviewModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTestPreviewAsync([FromRoute] long testId)
     {
         if (!TryGetUserId(out long userId))
