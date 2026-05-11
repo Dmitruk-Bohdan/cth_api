@@ -49,7 +49,6 @@ public class AuthController : ControllerBase
         return Created();
     }
 
-#if DEBUG
     [HttpPost("login_as_teacher")]
     [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> LoginAsTeacher()
@@ -107,7 +106,6 @@ public class AuthController : ControllerBase
         }
     }
 
-#endif
 
     [HttpPost("logout")]
     [Authorize]

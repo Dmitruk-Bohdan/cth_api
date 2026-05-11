@@ -24,11 +24,12 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
         public async Task<OperationResult> AddProblemToFavourite(AddProblemToFavouriteRequestModel requestModel)
         {
-            var problemExists = await _dbContext.Problems
-                .Where(p => !p.IsDeleted && p.Id == requestModel.ProblemId)
-                .AnyAsync();
+            var problem = await _dbContext.Problems
+                .AsNoTracking()
+                .Include(p => p.Versions)
+                .FirstOrDefaultAsync(p => !p.IsDeleted && p.Id == requestModel.ProblemId);
 
-            if (!problemExists)
+            if (problem == null)
             {
                 return new OperationResult()
                 {
@@ -36,6 +37,24 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     ErrorMessage = "Specified problem is not found",
                     HttpStatusCode = HttpStatusCode.NotFound
                 };
+            }
+
+            if (!problem.IsPublic)
+            {
+                var isInAssignedTest = await _dbContext.StudentAssignments
+                    .Where(sa => sa.StudentId == requestModel.UserId && sa.AttemptsLeft > 0)
+                    .SelectMany(sa => sa.Test.TestProblems)
+                    .AnyAsync(tp => tp.ProblemId == requestModel.ProblemId);
+
+                if (!isInAssignedTest)
+                {
+                    return new OperationResult()
+                    {
+                        ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                        ErrorMessage = "You can only add problems that are public or included in tests assigned to you",
+                        HttpStatusCode = HttpStatusCode.Forbidden
+                    };
+                }
             }
 
             var alreadyInFavourites = await _dbContext.Users
@@ -61,17 +80,38 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
         public async Task<OperationResult> AddTestToFavourite(AddTestToFavouriteRequestModel requestModel)
         {
-            var testExists = await _dbContext.Tests
-                .Where(t => !t.IsDeleted && t.Id == requestModel.TestId)
-                .AnyAsync();
+            var test = await _dbContext.Tests
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => !t.IsDeleted && t.Id == requestModel.TestId);
 
-            if (!testExists)
+            if (test == null)
             {
                 return new OperationResult()
                 {
                     ErrorCode = ErrorCodeConstants.TestNotFound,
                     ErrorMessage = "Specified test is not found",
                     HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            var hasAccess = test.IsPublic;
+
+            if (!hasAccess)
+            {
+                var assignment = await _dbContext.StudentAssignments
+                    .FirstOrDefaultAsync(sa => sa.StudentId == requestModel.UserId
+                                            && sa.TestId == requestModel.TestId
+                                            && sa.AttemptsLeft > 0);
+                hasAccess = assignment != null;
+            }
+
+            if (!hasAccess)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                    ErrorMessage = "You can only add tests that are public or assigned to you",
+                    HttpStatusCode = HttpStatusCode.Forbidden
                 };
             }
 
@@ -95,14 +135,19 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             return new OperationResult();
         }
-
         public async Task<OperationResult<PaginatedListResponseModel<ProblemListItemModel>>> GetMyFavouriteProblemList(MyFavouriteProblemListRequestModel requestModel)
         {
             var countQuery = _dbContext.Users
                 .Where(u => u.Id == requestModel.UserId)
                 .SelectMany(u => u.FavoriteProblems)
-                .Where(p => !p.IsDeleted)
-                .AsNoTracking();
+                .Where(p => !p.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(requestModel.SearchTerm))
+            {
+                countQuery = countQuery.Where(p =>
+                    p.Topic.Name.Contains(requestModel.SearchTerm) ||
+                    p.Versions.Any(v => v.IsActive && v.Statement.Contains(requestModel.SearchTerm)));
+            }
 
             var problemsCount = await countQuery.CountAsync();
             var pagesCount = (int)Math.Ceiling((double)problemsCount / requestModel.PageSize);
@@ -140,7 +185,6 @@ namespace CTHelper.Infrastructure.Services.Implementations
             var result = new OperationResult<PaginatedListResponseModel<ProblemListItemModel>>(paginatedProblemList);
             return result;
         }
-
         public async Task<OperationResult<PaginatedListResponseModel<TestPreviewModel>>> GetMyFavouriteTestList(MyFavouriteTestListRequestModel requestModel)
         {
             var countQuery = _dbContext.Users
@@ -148,6 +192,11 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 .SelectMany(u => u.FavoriteTests)
                 .Where(t => !t.IsDeleted)
                 .AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(requestModel.SearchTerm))
+            {
+                countQuery = countQuery.Where(t => t.Title.Contains(requestModel.SearchTerm));
+            }
 
             var testsCount = await countQuery.CountAsync();
             var pagesCount = (int)Math.Ceiling((double)testsCount / requestModel.PageSize);
@@ -201,14 +250,24 @@ namespace CTHelper.Infrastructure.Services.Implementations
             var result = new OperationResult<PaginatedListResponseModel<TestPreviewModel>>(paginatedTestList);
             return result;
         }
-
         public async Task<OperationResult> RemoveProblemFromFavourite(RemoveProblemFromFavouriteRequestModel requestModel)
         {
-            var inFavourites = await _dbContext.Users
-                .Where(u => u.Id == requestModel.UserId)
-                .AnyAsync(u => u.FavoriteProblems.Any(p => p.Id == requestModel.ProblemId));
+            var user = await _dbContext.Users
+                .Include(u => u.FavoriteProblems)
+                .FirstOrDefaultAsync(u => u.Id == requestModel.UserId);
 
-            if (!inFavourites)
+            if (user == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.UserNotFound,
+                    ErrorMessage = "User not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            var problem = user.FavoriteProblems.FirstOrDefault(p => p.Id == requestModel.ProblemId);
+            if (problem == null)
             {
                 return new OperationResult()
                 {
@@ -218,25 +277,30 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            var userStub = new User { Id = requestModel.UserId };
-            var problemStub = new Problem { Id = requestModel.ProblemId };
-
-            _dbContext.Users.Attach(userStub);
-            _dbContext.Problems.Attach(problemStub);
-
-            userStub.FavoriteProblems.Remove(problemStub);
+            user.FavoriteProblems.Remove(problem);
             await _dbContext.SaveChangesAsync();
 
             return new OperationResult();
         }
 
-        public async Task<OperationResult> RemoveTestFromFromFavourite(RemoveTestFromFavouriteRequestModel requestModel)
+        public async Task<OperationResult> RemoveTestFromFavourite(RemoveTestFromFavouriteRequestModel requestModel)
         {
-            var inFavourites = await _dbContext.Users
-                .Where(u => u.Id == requestModel.UserId)
-                .AnyAsync(u => u.FavoriteTests.Any(t => t.Id == requestModel.TestId));
+            var user = await _dbContext.Users
+                .Include(u => u.FavoriteTests)
+                .FirstOrDefaultAsync(u => u.Id == requestModel.UserId);
 
-            if (!inFavourites)
+            if (user == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.UserNotFound,
+                    ErrorMessage = "User not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            var test = user.FavoriteTests.FirstOrDefault(t => t.Id == requestModel.TestId);
+            if (test == null)
             {
                 return new OperationResult()
                 {
@@ -246,13 +310,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            var userStub = new User { Id = requestModel.UserId };
-            var testStub = new Test { Id = requestModel.TestId };
-
-            _dbContext.Users.Attach(userStub);
-            _dbContext.Tests.Attach(testStub);
-
-            userStub.FavoriteTests.Remove(testStub);
+            user.FavoriteTests.Remove(test);
             await _dbContext.SaveChangesAsync();
 
             return new OperationResult();

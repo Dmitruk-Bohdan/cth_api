@@ -6,6 +6,6 @@ namespace CTHelper.Application.Models.Favourite
     {
         public long UserId { get; set; }
         public long SubjectId { get; set; }
-        public string SearchTerm { get; set; } = default!;
+        public string? SearchTerm { get; set; }
     }
 }

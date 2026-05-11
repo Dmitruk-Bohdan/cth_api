@@ -1,6 +1,7 @@
 ﻿using CTHelper.Application.Common.Constants;
 using CTHelper.Application.Models;
 using CTHelper.Application.Models.Group;
+using CTHelper.Application.Models.UserModels;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Domain.Entities;
 using CTHelper.Persistence.Context;
@@ -14,6 +15,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
     public class GroupService : IGroupService
     {
         private readonly AppDbContext _dbContext;
+        private readonly IFileStorageService _fileStorageService;
 
         public GroupService(AppDbContext dbContext)
         {
@@ -42,6 +44,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     Name = g.Name,
                     CreatedAt = g.CreatedAt,
                     StudentsCount = g.Students.Count(),
+                    GroupId = g.Id
                 })
                 .OrderBy(g => g.Name)
                 .Skip((request.PageNumber - 1) * request.PageSize)
@@ -143,13 +146,44 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            var groupStub = new Group { Id = request.GroupId };
-            var studentStub = new User { Id = request.StudentId };
+            var group = await _dbContext.Groups
+                .Include(g => g.Students)
+                .FirstOrDefaultAsync(g => g.Id == request.GroupId);
 
-            _dbContext.Groups.Attach(groupStub);
-            _dbContext.Users.Attach(studentStub);
+            if (group == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.GroupNotFound,
+                    ErrorMessage = "Group not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
 
-            groupStub.Students.Add(studentStub);
+            var student = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Id == request.StudentId && !u.IsDeleted);
+
+            if (student == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.UserNotFound,
+                    ErrorMessage = "Student not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            if (group.Students.Any(s => s.Id == request.StudentId))
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.StudentAlreadyInGroup,
+                    ErrorMessage = "Student is already in this group",
+                    HttpStatusCode = HttpStatusCode.BadRequest
+                };
+            }
+
+            group.Students.Add(student);
             await _dbContext.SaveChangesAsync();
 
             return new OperationResult();
@@ -189,38 +223,102 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            var groupStub = new Group { Id = request.GroupId };
-            var studentStub = new User { Id = request.StudentId };
+            var group = await _dbContext.Groups
+                .Include(g => g.Students)
+                .FirstOrDefaultAsync(g => g.Id == request.GroupId);
 
-            _dbContext.Groups.Attach(groupStub);
-            _dbContext.Users.Attach(studentStub);
+            if (group == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.GroupNotFound,
+                    ErrorMessage = "Group not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
 
-            var studentBelongToGroup = await _dbContext.Groups
-                .Where(g =>
-                    g.Id == request.GroupId
-                    && g.Students.Contains(studentStub)
-                    && g.TeacherId == request.TeacherId)
-                .AnyAsync();
+            var student = group.Students.FirstOrDefault(s => s.Id == request.StudentId);
 
-            if (!studentBelongToGroup)
+            if (student == null)
             {
                 return new OperationResult()
                 {
                     ErrorCode = ErrorCodeConstants.StudentNotBelongToGroup,
-                    ErrorMessage = "Specified student do not belond to specified group",
+                    ErrorMessage = "Student does not belong to this group",
                     HttpStatusCode = HttpStatusCode.BadRequest
                 };
             }
 
-            groupStub.Students.Remove(studentStub);
+            group.Students.Remove(student);
             await _dbContext.SaveChangesAsync();
 
             return new OperationResult();
         }
-
         public async Task<OperationResult<GroupDetailsResponseModel>> GetGroupById(GetGroupByIdModel request)
         {
-            return new OperationResult<GroupDetailsResponseModel>();
+            var group = await _dbContext.Groups
+                .Where(g => g.Id == request.GroupId && !g.IsDeleted)
+                .Select(g => new
+                {
+                    g.Id,
+                    g.Name,
+                    g.SubjectId,
+                    SubjectName = g.Subject.Name,
+                    g.TeacherId,
+                    TeacherName = g.Teacher.Username,
+                    Students = g.Students
+                        .Where(s => !s.IsDeleted)
+                        .Select(s => new UserProfilePreviewWithAvatarIdModel
+                        {
+                            UserId = s.Id,
+                            Username = s.Username,
+                            AvatarId = s.AvatarImageId
+                        })
+                        .ToList(),
+                    CreatedAt = g.CreatedAt
+                })
+                .FirstOrDefaultAsync();
+
+            if (group == null)
+            {
+                return new OperationResult<GroupDetailsResponseModel>()
+                {
+                    ErrorCode = ErrorCodeConstants.GroupNotFound,
+                    ErrorMessage = "Group not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            if (group.TeacherId != request.TeacherId)
+            {
+                return new OperationResult<GroupDetailsResponseModel>()
+                {
+                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                    ErrorMessage = "You can only view your own groups",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            var studentsWithAvatars = await Task.WhenAll(group.Students.Select(async student => new UserProfilePreviewModel
+            {
+                UserId = student.UserId,
+                Username = student.Username,
+                AvatarUrl = student.AvatarId == null ? null : await _fileStorageService.GetDownloadUrl(student.AvatarId.Value)
+            }));
+
+            var response = new GroupDetailsResponseModel
+            {
+                GroupId = group.Id,
+                Name = group.Name,
+                SubjectId = group.SubjectId,
+                SubjectName = group.SubjectName,
+                TeacherId = group.TeacherId,
+                TeacherName = group.TeacherName,
+                Students = studentsWithAvatars.ToList(),
+                CreatedAt = group.CreatedAt
+            };
+
+            return new OperationResult<GroupDetailsResponseModel>(response);
         }
     }
 }

@@ -23,9 +23,6 @@ public class CreateProblemRequestDto
     [JsonPropertyName("topicId")]
     public long TopicId { get; set; }
 
-    [JsonPropertyName("authorId")]
-    public long AuthorId { get; set; }
-
     [JsonPropertyName("isPublished")]
     public bool IsPublished { get; set; }
 

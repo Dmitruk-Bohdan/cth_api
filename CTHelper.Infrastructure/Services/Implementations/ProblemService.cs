@@ -202,10 +202,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 problemsQuery = problemsQuery.Where(p => p.AuthorId == requestModel.UserId);
             }
 
-            if (requestModel.SubjectId > 0)
-            {
-                problemsQuery = problemsQuery.Where(p => p.Topic.Section.SubjectId == requestModel.SubjectId);
-            }
+            problemsQuery = problemsQuery.Where(p => p.Topic.Section.SubjectId == requestModel.SubjectId);
 
             if (requestModel.TopicId.HasValue)
             {
@@ -258,7 +255,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     TopicName = p.Topic.Name,
                     StatementFragment = p.Versions
                         .Where(v => v.IsActive)
-                        .Select(v => v.Statement.Length > 100 ? v.Statement.Substring(0, 100) : v.Statement)
+                        .Select(v => v.Statement)
                         .FirstOrDefault() ?? string.Empty,
                     ProblemType = p.Versions
                         .Where(v => v.IsActive)
@@ -289,7 +286,8 @@ namespace CTHelper.Infrastructure.Services.Implementations
         public async Task<OperationResult<Problem>> UpdateProblem(UpdateProblemRequestModel requestModel)
         {
             var problem = await _dbContext.Problems
-                .Where(p => p.Id == requestModel.AuthorId)
+                .Where(p => p.Id == requestModel.ProblemId
+                && p.Id == requestModel.AuthorId)
                 .FirstOrDefaultAsync();
 
             if (problem == null)
@@ -318,7 +316,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             var activeVersion = await _dbContext.ProblemVersions
                 .Where(v =>
-                    v.ProblemId == requestModel.AuthorId
+                    v.ProblemId == requestModel.ProblemId
                     && v.IsActive)
                 .FirstOrDefaultAsync();
 

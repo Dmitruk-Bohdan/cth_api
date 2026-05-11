@@ -91,7 +91,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            var existingRelationship = await _dbContext.TeacherStudents.FirstOrDefaultAsync(ts => ts.TeacherId == dbCodeEntity.TeacherId && ts.StudentId == studentId);
+            var existingRelationship = await _dbContext.TeacherStudents.FirstOrDefaultAsync(ts => ts.TeacherId == dbCodeEntity.TeacherId && ts.StudentId == studentId && ts.IsDeleted == false);
 
             if(existingRelationship != null)
             {
@@ -127,9 +127,11 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
         public async Task<OperationResult> AcceptStudentByInvitationCode(long teacherId, long bindingRequestId)
         {
-            var bindingRequest = await _dbContext.BindingRequests.FirstOrDefaultAsync(br => br.Id == bindingRequestId);
+            var bindingRequest = await _dbContext.BindingRequests
+                .Include(br => br.Code)
+                .FirstOrDefaultAsync(br => br.Id == bindingRequestId);
 
-            if(bindingRequest == null)
+            if (bindingRequest == null)
             {
                 return new OperationResult()
                 {
@@ -139,15 +141,23 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            var invitationCodeTeacherId = await _dbContext.BindingRequests.Select(br => br.Code.TeacherId).FirstOrDefaultAsync();
-
-            if(invitationCodeTeacherId != teacherId)
+            if (bindingRequest.Code.TeacherId != teacherId)
             {
                 return new OperationResult()
                 {
                     ErrorCode = ErrorCodeConstants.OwnershipRequired,
                     ErrorMessage = "You can only modify your own data. This record belongs to someone else",
                     HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            if (bindingRequest.IsAccepted)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.BindingRequestAlreadyAccepted,
+                    ErrorMessage = "This binding request has already been accepted",
+                    HttpStatusCode = HttpStatusCode.BadRequest
                 };
             }
 
@@ -158,15 +168,16 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 Status = TeacherStudentStatusEnum.Active,
             };
 
+            bindingRequest.IsAccepted = true;
+
             await _dbContext.AddAsync(newTeacherStudentRelation);
             await _dbContext.SaveChangesAsync();
 
             return new OperationResult();
         }
-
-        public async Task<OperationResult> RemoveBindingWithTeacher(long studentId, long bindingId)
+        public async Task<OperationResult> RemoveBindingWithTeacher(long studentId, long teacherId)
         {
-            var binding = _dbContext.TeacherStudents.FirstOrDefault(ts => ts.Id == bindingId && !ts.IsDeleted);
+            var binding = _dbContext.TeacherStudents.FirstOrDefault(ts => ts.TeacherId == teacherId && ts.StudentId == studentId && !ts.IsDeleted);
             if(binding == null)
             {
                 return new OperationResult()
@@ -193,9 +204,11 @@ namespace CTHelper.Infrastructure.Services.Implementations
             return new OperationResult();
         }
 
-        public async Task<OperationResult> RemoveBindingWithStudent(long teacherId, long bindingId)
+        public async Task<OperationResult> RemoveBindingWithStudent(long teacherId, long studentId)
         {
-            var binding = _dbContext.TeacherStudents.FirstOrDefault(ts => ts.Id == bindingId && !ts.IsDeleted);
+            var binding = _dbContext.TeacherStudents.FirstOrDefault(ts => ts.TeacherId == teacherId
+            && ts.StudentId == studentId
+            && !ts.IsDeleted);
             if (binding == null)
             {
                 return new OperationResult()
@@ -233,6 +246,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
             if (binding != null)
             {
                 binding.Status = TeacherStudentStatusEnum.Blocked;
+
             }
             else
             {
@@ -251,9 +265,11 @@ namespace CTHelper.Infrastructure.Services.Implementations
             return new OperationResult();
         }
 
-        public async Task<OperationResult> UnblockStudent(long teacherId, long bindingId)
+        public async Task<OperationResult> UnblockStudent(long teacherId, long studentId)
         {
-            var binding = _dbContext.TeacherStudents.FirstOrDefault(ts => ts.Id == bindingId && !ts.IsDeleted && ts.Status == TeacherStudentStatusEnum.Blocked);
+            var binding = _dbContext.TeacherStudents.FirstOrDefault(ts => ts.StudentId == studentId
+            && ts.TeacherId == teacherId
+            && !ts.IsDeleted && ts.Status == TeacherStudentStatusEnum.Blocked);
             if (binding == null)
             {
                 return new OperationResult()
@@ -408,6 +424,27 @@ namespace CTHelper.Infrastructure.Services.Implementations
             return new OperationResult<List<UserProfilePreviewModel>>()
             {
                 Payload = response
+            };
+        }
+
+        public async Task<OperationResult<List<BindingRequestResponseModel>>> GetPendingBindingRequests(long teacherId)
+        {
+            var bindingRequests = await _dbContext.BindingRequests
+                .Where(br => br.Code.TeacherId == teacherId && !br.IsAccepted)
+                .Select(br => new BindingRequestResponseModel
+                {
+                    BindingRequestId = br.Id,
+                    StudentId = br.StudentId,
+                    StudentUsername = br.Student.Username,
+                    StudentAvatarId = br.Student.AvatarImageId,
+                    CreatedAt = br.CreatedAt
+                })
+                .OrderByDescending(br => br.CreatedAt)
+                .ToListAsync();
+
+            return new OperationResult<List<BindingRequestResponseModel>>()
+            {
+                Payload = bindingRequests
             };
         }
     }

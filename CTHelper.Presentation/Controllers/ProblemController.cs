@@ -142,10 +142,10 @@ public class ProblemsController : BaseController
         throw new NotImplementedException();
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{problemId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> UpdateAsync(long id, [FromBody] UpdateProblemRequestDto request)
+    public async Task<IActionResult> UpdateAsync([FromRoute] long problemId, [FromBody] UpdateProblemRequestDto request)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -155,6 +155,7 @@ public class ProblemsController : BaseController
 
         var requestModel = new UpdateProblemRequestModel
         {
+            ProblemId = problemId,
             AuthorId = userId,
             Difficulty = request.Difficulty,
             Statement = request.Statement,

@@ -14,9 +14,10 @@ namespace CTHelper.Application.Services.Interfaces
         Task<OperationResult<List<UserProfilePreviewModel>>> GetMyStudentsList(long teacherId);
         Task<OperationResult<UserProfileResponseModel>> GetMyTeacherInfoById(long teacherId, long studentId);
         Task<OperationResult<List<UserProfilePreviewModel>>> GetMyTeachersList(long studentId);
-        Task<OperationResult> RemoveBindingWithStudent(long teacherId, long bindingId);
-        Task<OperationResult> RemoveBindingWithTeacher(long studentId, long bindingId);
+        Task<OperationResult> RemoveBindingWithStudent(long teacherId, long studentId);
+        Task<OperationResult> RemoveBindingWithTeacher(long studentId, long teacherId);
         Task<OperationResult> RequestBindingWithTeacherByCode(long studentId, string code);
-        Task<OperationResult> UnblockStudent(long teacherId, long bindingId);
+        Task<OperationResult> UnblockStudent(long teacherId, long studentId);
+        Task<OperationResult<List<BindingRequestResponseModel>>> GetPendingBindingRequests(long teacherId);
     }
 }

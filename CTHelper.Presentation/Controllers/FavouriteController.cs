@@ -28,7 +28,7 @@ public class FavouritesController : ControllerBase
     [HttpGet("problems")]
     [Authorize]
     [ProducesResponseType(typeof(PaginatedListResponseModel<ProblemListItemModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetFavouriteProblemListAsync([FromQuery] long subjectId, [FromQuery] string searchTerm, [FromQuery] int pageSize, [FromQuery] int pageNumber)
+    public async Task<IActionResult> GetFavouriteProblemListAsync([FromQuery] long subjectId, [FromQuery] string? searchTerm, [FromQuery] int pageSize = 10, [FromQuery] int pageNumber = 1)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -92,7 +92,7 @@ public class FavouritesController : ControllerBase
         }
     }
 
-    [HttpDelete("/problems/{problemId}")]
+    [HttpDelete("problems/{problemId}")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RemoveProblemFromFavouriteAsync([FromRoute] long problemId)
@@ -127,7 +127,7 @@ public class FavouritesController : ControllerBase
     [HttpGet("tests")]
     [Authorize]
     [ProducesResponseType(typeof(PaginatedListResponseModel<TestPreviewModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetTestFavouritesAsync([FromQuery] long subjectId, [FromQuery] string searchTerm, [FromQuery] int pageSize, [FromQuery] int pageNumber)
+    public async Task<IActionResult> GetTestFavouritesAsync([FromQuery] long subjectId, [FromQuery] string? searchTerm, [FromQuery] int pageSize = 10, [FromQuery] int pageNumber = 1)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -208,7 +208,7 @@ public class FavouritesController : ControllerBase
             TestId = testId
         };
 
-        OperationResult result = await _favouriteService.RemoveTestFromFromFavourite(requestModel);
+        OperationResult result = await _favouriteService.RemoveTestFromFavourite(requestModel);
 
         if (result.IsSuccess)
         {

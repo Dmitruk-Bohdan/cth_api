@@ -118,10 +118,10 @@ public class TeacherStudentController : ControllerBase
     // BINDING MANAGEMENT
     // =======================
 
-    [HttpDelete("binding/remove-teacher/{bindingId:long}")]
+    [HttpDelete("binding/remove-teacher/{teacherId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> RemoveBindingWithTeacher(long bindingId)
+    public async Task<IActionResult> RemoveBindingWithTeacher(long teacherId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -129,7 +129,7 @@ public class TeacherStudentController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _teacherStudentService.RemoveBindingWithTeacher(userId, bindingId);
+        var result = await _teacherStudentService.RemoveBindingWithTeacher(userId, teacherId);
 
         if (result.ErrorCode == null)
         {
@@ -144,10 +144,10 @@ public class TeacherStudentController : ControllerBase
         }
     }
 
-    [HttpDelete("binding/remove-student/{bindingId:long}")]
+    [HttpDelete("binding/remove-student/{studentId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> RemoveBindingWithStudent(long bindingId)
+    public async Task<IActionResult> RemoveBindingWithStudent(long studentId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -155,7 +155,7 @@ public class TeacherStudentController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _teacherStudentService.RemoveBindingWithStudent(userId, bindingId);
+        var result = await _teacherStudentService.RemoveBindingWithStudent(userId, studentId);
 
         if (result.ErrorCode == null)
         {
@@ -200,10 +200,10 @@ public class TeacherStudentController : ControllerBase
         }
     }
 
-    [HttpPost("binding/{bindingId:long}/unblock")]
+    [HttpPost("binding/{studentId:long}/unblock")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> UnblockStudentAsync(long bindingId)
+    public async Task<IActionResult> UnblockStudentAsync(long studentId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -211,7 +211,7 @@ public class TeacherStudentController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _teacherStudentService.UnblockStudent(userId, bindingId);
+        var result = await _teacherStudentService.UnblockStudent(userId, studentId);
 
         if (result.ErrorCode == null)
         {
@@ -323,7 +323,7 @@ public class TeacherStudentController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _teacherStudentService.GetMyTeacherInfoById(userId, teacherId);
+        var result = await _teacherStudentService.GetMyTeacherInfoById(teacherId, userId);
 
         if (result.ErrorCode == null)
         {
@@ -354,6 +354,32 @@ public class TeacherStudentController : ControllerBase
         if (result.ErrorCode == null)
         {
             return Ok(new ListResponseDto<UserProfilePreviewModel>(result.Payload));
+        }
+        else
+        {
+            var errorDto = _mapper.Map<ErrorResponseDto>(result);
+            return StatusCode(
+                result.HttpStatusCode.ToInt(),
+                errorDto);
+        }
+    }
+
+    [HttpGet("binding/requests")]
+    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [ProducesResponseType(typeof(List<BindingRequestResponseModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPendingBindingRequestsAsync()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _teacherStudentService.GetPendingBindingRequests(userId);
+
+        if (result.ErrorCode == null)
+        {
+            return Ok(new ListResponseDto<BindingRequestResponseModel>(result.Payload));
         }
         else
         {

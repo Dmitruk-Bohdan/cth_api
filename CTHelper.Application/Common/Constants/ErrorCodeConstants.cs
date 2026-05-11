@@ -34,10 +34,13 @@
         public const string BindingRequestNotFound = "00050004";
         public const string ForeignBindingConfirmationRequested = "00050005";
         public const string BindingNotFound = "00050006";
+        public const string BindingRequestAlreadyAccepted = "00050007";
+
 
         //Student Group codes
         public const string GroupNotFound = "00060000";
         public const string StudentNotBelongToGroup = "00060001";
+        public const string StudentAlreadyInGroup = "00060002";
 
         //Favourite codes
         public const string ProblemNotInFavourites = "00070002";

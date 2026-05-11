@@ -13,6 +13,6 @@ namespace CTHelper.Application.Services.Interfaces
         Task<OperationResult> RemoveProblemFromFavourite(RemoveProblemFromFavouriteRequestModel requestModel);
         Task<OperationResult<PaginatedListResponseModel<TestPreviewModel>>> GetMyFavouriteTestList(MyFavouriteTestListRequestModel requestModel);
         Task<OperationResult> AddTestToFavourite(AddTestToFavouriteRequestModel requestModel);
-        Task<OperationResult> RemoveTestFromFromFavourite(RemoveTestFromFavouriteRequestModel requestModel);
+        Task<OperationResult> RemoveTestFromFavourite(RemoveTestFromFavouriteRequestModel requestModel);
     }
 }
