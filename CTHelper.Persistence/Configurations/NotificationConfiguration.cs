@@ -34,6 +34,10 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnName("is_seen")
                 .HasDefaultValue(false);
 
+            builder.Property(n => n.IsDeleted)
+                .HasColumnName("is_deleted")
+                .HasDefaultValue(false);
+
             builder.Property(n => n.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("timestamptz")

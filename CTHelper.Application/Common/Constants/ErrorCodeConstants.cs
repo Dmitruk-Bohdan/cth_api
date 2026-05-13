@@ -48,6 +48,7 @@
 
         //Notification codes
         public const string NotificationNotFound = "00080000";
+        public const string NotificationIdsListIsEmpty = "00080001";
 
         //Problem codes
         public const string ProblemNotFound = "00090000";

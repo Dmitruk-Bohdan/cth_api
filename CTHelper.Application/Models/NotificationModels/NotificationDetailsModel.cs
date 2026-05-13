@@ -4,6 +4,7 @@ namespace CTHelper.Application.Models.Problem
 {
     public class NotificationDetailsModel
     {
+        public long NotificationId { get; set; }
         public NotificationPriorityLevelTypeEnum PriorityLevel { get; set; }
         public string Payload { get; set; } = default!;
         public DateTimeOffset CreatedAt { get; set; }

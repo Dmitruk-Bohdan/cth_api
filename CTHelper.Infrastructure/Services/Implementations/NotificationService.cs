@@ -19,33 +19,39 @@ namespace CTHelper.Infrastructure.Services.Implementations
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<PaginatedListResponseModel<NotificationListItemModel>>> GetMyNotificationList(long userId)
+        public async Task<OperationResult<PaginatedListResponseModel<NotificationListItemModel>>> GetMyNotificationList(long userId, int pageSize = 10, int pageNumber = 1)
         {
             var notificationsQuery = _dbContext.Notifications
-                .Where(n => n.RecipientId == userId)
+                .Where(n => n.RecipientId == userId && !n.IsDeleted)
                 .AsNoTracking();
 
             var notificationsCount = await notificationsQuery.CountAsync();
+            var pagesCount = (int)Math.Ceiling((double)notificationsCount / pageSize);
 
             var notificationList = await notificationsQuery
+                .OrderBy(n => n.IsSeen)
+                .ThenBy(n => n.PriorityLevel)
+                .ThenByDescending(n => n.CreatedAt) 
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(n => new NotificationListItemModel()
                 {
+                    NotificationId = n.Id,
                     PriorityLevel = n.PriorityLevel,
                     PayloadPreview = n.Payload.Length > 100 ? n.Payload.Substring(0, 100) : n.Payload,
                     IsSeen = n.IsSeen,
                     CreatedAt = n.CreatedAt
                 })
-                .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
 
             var paginatedList = new PaginatedListResponseModel<NotificationListItemModel>()
             {
                 Items = notificationList,
-                TotalPagesCount = 1,
-                Page = 1,
-                PageSize = notificationsCount,
-                HasPreviousPage = false,
-                HasNextPage = false
+                TotalPagesCount = pagesCount,
+                Page = pageNumber,
+                PageSize = pageSize,
+                HasPreviousPage = pageNumber > 1,
+                HasNextPage = pageNumber < pagesCount
             };
 
             return new OperationResult<PaginatedListResponseModel<NotificationListItemModel>>(paginatedList);
@@ -54,17 +60,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
         public async Task<OperationResult<NotificationDetailsModel>> GetNotificationDetails(NotificationDetailsRequestModel requestModel)
         {
             var notification = await _dbContext.Notifications
-                .Where(n =>
-                    n.Id == requestModel.NotificationId
-                    && n.RecipientId == requestModel.UserId)
-                .AsNoTracking()
-                .Select(n => new NotificationDetailsModel()
-                {
-                    PriorityLevel = n.PriorityLevel,
-                    Payload = n.Payload,
-                    CreatedAt = n.CreatedAt
-                })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(n => n.Id == requestModel.NotificationId && !n.IsDeleted);
 
             if (notification == null)
             {
@@ -76,40 +72,83 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            return new OperationResult<NotificationDetailsModel>(notification);
-        }
-
-        public async Task<OperationResult> MarkAsRead(ReadNotificationRequestModel requestModel)
-        {
-            var notification = await _dbContext.Notifications
-                .Where(n =>
-                    n.Id == requestModel.NotificationId
-                    && n.RecipientId == requestModel.UserId)
-                .FirstOrDefaultAsync();
-
-            if (notification == null)
+            if (notification.RecipientId != requestModel.UserId)
             {
-                return new OperationResult()
+                return new OperationResult<NotificationDetailsModel>()
                 {
-                    ErrorCode = ErrorCodeConstants.NotificationNotFound,
-                    ErrorMessage = "Notification not found",
-                    HttpStatusCode = HttpStatusCode.NotFound
+                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                    ErrorMessage = "You can only read and modify your own notifications",
+                    HttpStatusCode = HttpStatusCode.Forbidden
                 };
             }
+
+            var notificationDetails = new NotificationDetailsModel()
+            {
+                NotificationId = notification.Id,
+                PriorityLevel = notification.PriorityLevel,
+                Payload = notification.Payload,
+                CreatedAt = notification.CreatedAt
+            };
 
             notification.IsSeen = true;
             await _dbContext.SaveChangesAsync();
 
-            return new OperationResult();
+            return new OperationResult<NotificationDetailsModel>(notificationDetails);
         }
 
-        public async Task<OperationResult> ReadAllNotification(ReadAllNotificationRequestModel requestModel)
+        public async Task<OperationResult> MarkAsRead(ReadNotificationRequestModel requestModel)
         {
+            if (requestModel.NotificationIds == null || !requestModel.NotificationIds.Any())
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.NotificationIdsListIsEmpty,
+                    ErrorMessage = "Notification ids list is empty",
+                    HttpStatusCode = HttpStatusCode.BadRequest
+                };
+            }
+
+            var user = await _dbContext.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == requestModel.UserId);
+
+            if (user == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.UserNotFound,
+                    ErrorMessage = "User not found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
             var notifications = await _dbContext.Notifications
-                .Where(n =>
-                    n.RecipientId == requestModel.UserId
-                    && !n.IsSeen)
+                .Where(n => requestModel.NotificationIds.Contains(n.Id) && !n.IsDeleted)
                 .ToListAsync();
+
+            if (!notifications.Any())
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.NotificationNotFound,
+                    ErrorMessage = "No notifications found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            var foreignNotifications = notifications
+                .Where(n => n.RecipientId != requestModel.UserId)
+                .ToList();
+
+            if (foreignNotifications.Any())
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                    ErrorMessage = "You can only read and modify your own notifications",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
 
             foreach (var notification in notifications)
             {
@@ -121,37 +160,65 @@ namespace CTHelper.Infrastructure.Services.Implementations
             return new OperationResult();
         }
 
-        public async Task<OperationResult> RemoveAllNotification(RemoveAllNotificationRequestModel requestModel)
+        public async Task<OperationResult> RemoveNotifications(RemoveNotificationRequestModel requestModel)
         {
-            var notifications = await _dbContext.Notifications
-                .Where(n => n.RecipientId == requestModel.UserId)
-                .ToListAsync();
-
-            _dbContext.Notifications.RemoveRange(notifications);
-            await _dbContext.SaveChangesAsync();
-
-            return new OperationResult();
-        }
-
-        public async Task<OperationResult> RemoveNotification(RemoveNotificationRequestModel requestModel)
-        {
-            var notification = await _dbContext.Notifications
-                .Where(n =>
-                    n.Id == requestModel.NotificationId
-                    && n.RecipientId == requestModel.UserId)
-                .FirstOrDefaultAsync();
-
-            if (notification == null)
+            if (requestModel.NotificationIds == null || !requestModel.NotificationIds.Any())
             {
                 return new OperationResult()
                 {
-                    ErrorCode = ErrorCodeConstants.NotificationNotFound,
-                    ErrorMessage = "Notification not found",
+                    ErrorCode = ErrorCodeConstants.NotificationIdsListIsEmpty,
+                    ErrorMessage = "Notification ids list is empty",
+                    HttpStatusCode = HttpStatusCode.BadRequest
+                };
+            }
+
+            var user = await _dbContext.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == requestModel.UserId);
+
+            if (user == null)
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.UserNotFound,
+                    ErrorMessage = "User not found",
                     HttpStatusCode = HttpStatusCode.NotFound
                 };
             }
 
-            _dbContext.Notifications.Remove(notification);
+            var notifications = await _dbContext.Notifications
+                .Where(n => requestModel.NotificationIds.Contains(n.Id) && !n.IsDeleted)
+                .ToListAsync();
+
+            if (!notifications.Any())
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.NotificationNotFound,
+                    ErrorMessage = "No notifications found",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
+            var foreignNotifications = notifications
+                .Where(n => n.RecipientId != requestModel.UserId)
+                .ToList();
+
+            if (foreignNotifications.Any())
+            {
+                return new OperationResult()
+                {
+                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                    ErrorMessage = "You can only read and modify your own notifications",
+                    HttpStatusCode = HttpStatusCode.Forbidden
+                };
+            }
+
+            foreach (var notification in notifications)
+            {
+                notification.IsDeleted = true;
+            }
+
             await _dbContext.SaveChangesAsync();
 
             return new OperationResult();

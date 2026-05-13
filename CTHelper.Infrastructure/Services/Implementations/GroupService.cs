@@ -17,9 +17,10 @@ namespace CTHelper.Infrastructure.Services.Implementations
         private readonly AppDbContext _dbContext;
         private readonly IFileStorageService _fileStorageService;
 
-        public GroupService(AppDbContext dbContext)
+        public GroupService(AppDbContext dbContext, IFileStorageService fileStorageService)
         {
             _dbContext = dbContext;
+            _fileStorageService = fileStorageService;
         }
         public async Task<OperationResult<PaginatedListResponseModel<GroupListItemModel>>> GetMyGroupList(MyGroupListRequestModel request)
         {

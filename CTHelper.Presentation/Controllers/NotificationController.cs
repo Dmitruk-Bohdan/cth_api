@@ -4,6 +4,7 @@ using CTHelper.Application.Models.Problem;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Domain.Common.Extensions;
 using CTHelper.Presentation.Dtos;
+using CTHelper.Presentation.Dtos.NotificationDtos;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,10 +25,10 @@ public class NotificationsController : ControllerBase
         _mapper = mapper;
     }
 
-    [HttpGet]
+    [HttpGet("list")]
     [Authorize]
     [ProducesResponseType(typeof(PaginatedListResponseModel<NotificationListItemModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetListAsync()
+    public async Task<IActionResult> GetListAsync([FromQuery] int pageSize = 10, [FromQuery] int pageNumber = 1)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -35,7 +36,7 @@ public class NotificationsController : ControllerBase
             return Unauthorized();
         }
 
-        OperationResult<PaginatedListResponseModel<NotificationListItemModel>> result = await _notificationService.GetMyNotificationList(userId);
+        OperationResult<PaginatedListResponseModel<NotificationListItemModel>> result = await _notificationService.GetMyNotificationList(userId, pageSize, pageNumber);
 
         if (result.IsSuccess)
         {
@@ -82,10 +83,10 @@ public class NotificationsController : ControllerBase
         }
     }
 
-    [HttpDelete("remove/{notificationId:long}")]
+    [HttpDelete("remove")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> RemoveAsync(long notificationId)
+    public async Task<IActionResult> RemoveAsync([FromBody] RemoveNotificationRequestDto requestDto)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -96,10 +97,10 @@ public class NotificationsController : ControllerBase
         var requestModel = new RemoveNotificationRequestModel()
         {
             UserId = userId,
-            NotificationId = notificationId
+            NotificationIds = requestDto.NotificationIds
         };
 
-        OperationResult result = await _notificationService.RemoveNotification(requestModel);
+        OperationResult result = await _notificationService.RemoveNotifications(requestModel);
 
         if (result.IsSuccess)
         {
@@ -114,41 +115,10 @@ public class NotificationsController : ControllerBase
         }
     }
 
-    [HttpDelete("remove-all")]
+    [HttpPatch("read")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> RemoveAllAsync()
-    {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
-        {
-            return Unauthorized();
-        }
-
-        var requestModel = new RemoveAllNotificationRequestModel()
-        {
-            UserId = userId
-        };
-
-        OperationResult result = await _notificationService.RemoveAllNotification(requestModel);
-
-        if (result.IsSuccess)
-        {
-            return Ok();
-        }
-        else
-        {
-            var errorDto = _mapper.Map<ErrorResponseDto>(result);
-            return StatusCode(
-                result.HttpStatusCode.ToInt(),
-                errorDto);
-        }
-    }
-
-    [HttpDelete("read/{notificationId:long}")]
-    [Authorize]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> MarkAsReadAsync(long notificationId)
+    public async Task<IActionResult> MarkAsReadAsync([FromBody] ReadNotificationRequestDto requestDto)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -159,41 +129,10 @@ public class NotificationsController : ControllerBase
         var requestModel = new ReadNotificationRequestModel()
         {
             UserId = userId,
-            NotificationId = notificationId
+            NotificationIds = requestDto.NotificationIds
         };
 
         OperationResult result = await _notificationService.MarkAsRead(requestModel);
-
-        if (result.IsSuccess)
-        {
-            return Ok();
-        }
-        else
-        {
-            var errorDto = _mapper.Map<ErrorResponseDto>(result);
-            return StatusCode(
-                result.HttpStatusCode.ToInt(),
-                errorDto);
-        }
-    }
-
-    [HttpPatch("read-all")]
-    [Authorize]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> MarkAllAsReadAsync()
-    {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
-        {
-            return Unauthorized();
-        }
-
-        var requestModel = new ReadAllNotificationRequestModel()
-        {
-            UserId = userId
-        };
-
-        OperationResult result = await _notificationService.ReadAllNotification(requestModel);
 
         if (result.IsSuccess)
         {
