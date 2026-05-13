@@ -105,6 +105,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                         .Where(v => v.IsActive)
                         .Select(v => new
                         {
+                            v.Id,
                             v.Type,
                             v.Difficulty,
                             v.Statement,
@@ -126,39 +127,27 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            bool hasAccess = problem.AuthorId == requestModel.UserId
-                || problem.IsPublic;
-
-            if (!hasAccess)
+            if (problem.AuthorId != requestModel.UserId && !problem.IsPublic)
             {
-                var assignedTestIds = await _dbContext.StudentAssignments
-                    .Where(sa => sa.StudentId == requestModel.UserId)
-                    .Select(sa => sa.TestId)
-                    .Distinct()
-                    .ToListAsync();
+                var hasAccessViaAssignment = await _dbContext.StudentAssignments
+                    .AnyAsync(sa => sa.StudentId == requestModel.UserId
+                        && sa.Test.TestProblems.Any(tp => tp.ProblemId == requestModel.ProblemId));
 
-                var isInAssignedTest = await _dbContext.TestProblems
-                    .Where(tp =>
-                        tp.ProblemId == requestModel.ProblemId
-                        && assignedTestIds.Contains(tp.TestId))
-                    .AnyAsync();
-
-                hasAccess = isInAssignedTest;
-            }
-
-            if (!hasAccess)
-            {
-                return new OperationResult<ProblemDetailsModel>()
+                if (!hasAccessViaAssignment)
                 {
-                    ErrorCode = ErrorCodeConstants.OwnershipRequired,
-                    ErrorMessage = "You do not have access to this problem",
-                    HttpStatusCode = HttpStatusCode.Forbidden
-                };
+                    return new OperationResult<ProblemDetailsModel>()
+                    {
+                        ErrorCode = ErrorCodeConstants.OwnershipRequired,
+                        ErrorMessage = "You can only access your own problems, public problems, or problems from assigned tests",
+                        HttpStatusCode = HttpStatusCode.Forbidden
+                    };
+                }
             }
 
             var details = new ProblemDetailsModel()
             {
-                ProblemVersionId = problem.Id,
+                ProblemId = problem.Id,
+                ProblemVersionId = problem.ActiveVersion.Id,
                 TopicId = problem.TopicId,
                 AuthorId = problem.AuthorId,
                 IsDeleted = problem.IsDeleted,
@@ -286,8 +275,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
         public async Task<OperationResult<Problem>> UpdateProblem(UpdateProblemRequestModel requestModel)
         {
             var problem = await _dbContext.Problems
-                .Where(p => p.Id == requestModel.ProblemId
-                && p.Id == requestModel.AuthorId)
+                .Where(p => p.Id == requestModel.ProblemId)
                 .FirstOrDefaultAsync();
 
             if (problem == null)
@@ -310,7 +298,6 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            problem.TopicId = requestModel.TopicId;
             problem.IsPublished = requestModel.IsPublished;
             problem.IsPublic = requestModel.IsPublic;
 

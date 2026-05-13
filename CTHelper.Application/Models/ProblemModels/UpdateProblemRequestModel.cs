@@ -10,7 +10,6 @@ namespace CTHelper.Application.Models.Problem
         public string Statement { get; set; } = default!;
         public string correctAnswer { get; set; } = default!;
         public string Explanation { get; set; } = default!;
-        public long TopicId { get; set; }
         public bool IsPublished { get; set; }
         public bool IsPublic { get; set; }
     }

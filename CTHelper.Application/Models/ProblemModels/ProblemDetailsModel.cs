@@ -4,6 +4,7 @@ namespace CTHelper.Application.Models.Problem
 {
     public class ProblemDetailsModel
     {
+        public long ProblemId { get; set; }
         public long ProblemVersionId { get; set; }
         public long TopicId { get; set; }
         public long AuthorId { get; set; }

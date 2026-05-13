@@ -161,7 +161,6 @@ public class ProblemsController : BaseController
             Statement = request.Statement,
             correctAnswer = request.correctAnswer,
             Explanation = request.Explanation,
-            TopicId = request.TopicId,
             IsPublished = request.IsPublished,
             IsPublic = request.IsPublic
         };

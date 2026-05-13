@@ -5,8 +5,6 @@ namespace CTHelper.Presentation.Dtos.ProblemDtos;
 
 public class UpdateProblemRequestDto
 {
-    [JsonPropertyName("authorId")]
-    public long AuthorId { get; set; }
 
     [JsonPropertyName("difficulty")]
     public ProblemDifficultEnum Difficulty { get; set; }
@@ -19,9 +17,6 @@ public class UpdateProblemRequestDto
 
     [JsonPropertyName("explanation")]
     public string Explanation { get; set; } = default!;
-
-    [JsonPropertyName("topicId")]
-    public long TopicId { get; set; }
 
     [JsonPropertyName("isPublished")]
     public bool IsPublished { get; set; }
