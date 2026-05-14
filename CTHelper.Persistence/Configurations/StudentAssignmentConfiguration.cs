@@ -41,6 +41,10 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnType("bigint")
                 .IsRequired();
 
+            builder.Property(t => t.IsDeleted)
+                .HasColumnName("is_deleted")
+                .HasDefaultValue(false);
+
             builder.Property(a => a.ExpiredAt)
                 .HasColumnName("expired_at")
                 .HasColumnType("timestamptz")

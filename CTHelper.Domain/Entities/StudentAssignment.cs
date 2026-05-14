@@ -8,6 +8,7 @@ namespace CTHelper.Domain.Entities
         public long TestId { get; set; }
         public DateTimeOffset ExpiredAt { get; set; }
         public short? AttemptsLeft { get; set; }
+        public bool IsDeleted {  get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset LastUpdateAt { get; set; }
         public User Teacher { get; set; } = default!;

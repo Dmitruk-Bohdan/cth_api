@@ -41,6 +41,10 @@ namespace CTHelper.Persistence.Configurations
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+            builder.Property(t => t.IsDeleted)
+                .HasColumnName("is_deleted")
+                .HasDefaultValue(false);
+
             builder.Property(a => a.DefaultAttemptsAllowed)
                 .HasColumnName("default_attempts_allowed")
                 .HasColumnType("smallint");
