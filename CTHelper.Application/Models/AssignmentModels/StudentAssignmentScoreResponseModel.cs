@@ -3,7 +3,7 @@
     public class StudentScoreByAssignmentResponseModel
     {
         public List<StudentScoreByAssignmentItemResponseDto> Attempts { get; set; } = new();
-        public bool? AttemptsLeft { get; set; }
+        public short? AttemptsLeft { get; set; }
         public short? AveragePercentageScore { get; set; }
         public short? BestPercentageScore { get; set; }
     }

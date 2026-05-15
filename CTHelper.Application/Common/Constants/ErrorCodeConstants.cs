@@ -55,6 +55,7 @@
 
         //Test codes
         public const string TestNotFound = "00100000";
+        public const string TestNotPublished = "00100001";
 
         //Attempt codes
         public const string AttemptNotFound = "00110000";
@@ -62,5 +63,10 @@
         public const string AttemptAlreadyActive = "00110002";
         public const string AttemptIsExaminative = "00110003";
 
+        //Assignment codes
+        public const string AssignmentNotFound = "00120000";
+        public const string AssignmentAlreadyExists = "00120001";
+        public const string StudentAssignmentNotFound = "00120002";
+        public const string GroupAssignmentNotFound = "00120003";
     }
 }

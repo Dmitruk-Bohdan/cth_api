@@ -1,3 +1,4 @@
+using CTHelper.Application.Models;
 using CTHelper.Application.Models.TeacherStudent;
 using CTHelper.Application.Models.UserModels;
 using CTHelper.Application.Services.Interfaces;
@@ -258,8 +259,8 @@ public class TeacherStudentController : ControllerBase
 
     [HttpGet("students")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    [ProducesResponseType(typeof(List<UserProfilePreviewModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetMyStudentsListAsync()
+    [ProducesResponseType(typeof(PaginatedListResponseModel<UserProfilePreviewModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMyStudentsListAsync([FromQuery] int pageSize = 20, [FromQuery] int pageNumber = 1)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -267,11 +268,18 @@ public class TeacherStudentController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _teacherStudentService.GetMyStudentsList(userId);
-
-        if (result.ErrorCode == null)
+        var requestModel = new MyStudentsListRequestModel()
         {
-            return Ok(new ListResponseDto<UserProfilePreviewModel>(result.Payload));
+            TeacherId = userId,
+            PageSize = pageSize,
+            PageNumber = pageNumber
+        };
+
+        OperationResult<PaginatedListResponseModel<UserProfilePreviewModel>> result = await _teacherStudentService.GetMyStudentsList(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
         }
         else
         {
@@ -284,8 +292,8 @@ public class TeacherStudentController : ControllerBase
 
     [HttpGet("students/blocked")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    [ProducesResponseType(typeof(List<UserProfilePreviewModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetBlockedStudentListAsync()
+    [ProducesResponseType(typeof(PaginatedListResponseModel<UserProfilePreviewModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetBlockedStudentListAsync([FromQuery] int pageSize = 20, [FromQuery] int pageNumber = 1)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -293,11 +301,18 @@ public class TeacherStudentController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _teacherStudentService.GetBlockedStudentList(userId);
-
-        if (result.ErrorCode == null)
+        var requestModel = new MyBlockedStudentListRequestModel()
         {
-            return Ok(new ListResponseDto<UserProfilePreviewModel>(result.Payload));
+            TeacherId = userId,
+            PageSize = pageSize,
+            PageNumber = pageNumber
+        };
+
+        OperationResult<PaginatedListResponseModel<UserProfilePreviewModel>> result = await _teacherStudentService.GetBlockedStudentList(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
         }
         else
         {
@@ -340,8 +355,8 @@ public class TeacherStudentController : ControllerBase
 
     [HttpGet("teachers")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
-    [ProducesResponseType(typeof(List<UserProfilePreviewModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetMyTeachersListAsync()
+    [ProducesResponseType(typeof(PaginatedListResponseModel<UserProfilePreviewModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMyTeachersListAsync([FromQuery] int pageSize = 20, [FromQuery] int pageNumber = 1)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -349,11 +364,18 @@ public class TeacherStudentController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _teacherStudentService.GetMyTeachersList(userId);
-
-        if (result.ErrorCode == null)
+        var requestModel = new MyTeachersListRequestModel()
         {
-            return Ok(new ListResponseDto<UserProfilePreviewModel>(result.Payload));
+            StudentId = userId,
+            PageSize = pageSize,
+            PageNumber = pageNumber
+        };
+
+        OperationResult<PaginatedListResponseModel<UserProfilePreviewModel>> result = await _teacherStudentService.GetMyTeachersList(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
         }
         else
         {
@@ -366,8 +388,8 @@ public class TeacherStudentController : ControllerBase
 
     [HttpGet("binding/requests")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    [ProducesResponseType(typeof(List<BindingRequestResponseModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetPendingBindingRequestsAsync()
+    [ProducesResponseType(typeof(PaginatedListResponseModel<BindingRequestResponseModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPendingBindingRequestsAsync([FromQuery] int pageSize = 20, [FromQuery] int pageNumber = 1)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -375,11 +397,18 @@ public class TeacherStudentController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _teacherStudentService.GetPendingBindingRequests(userId);
-
-        if (result.ErrorCode == null)
+        var requestModel = new MyPendingBindingRequestsRequestModel()
         {
-            return Ok(new ListResponseDto<BindingRequestResponseModel>(result.Payload));
+            TeacherId = userId,
+            PageSize = pageSize,
+            PageNumber = pageNumber
+        };
+
+        OperationResult<PaginatedListResponseModel<BindingRequestResponseModel>> result = await _teacherStudentService.GetPendingBindingRequests(requestModel);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Payload);
         }
         else
         {

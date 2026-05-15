@@ -2,7 +2,8 @@
 {
     public class GetAssignmentDetailsModel
     {
-        public long TeacherId { get; set; }
+        public long? StudentId { get; set; }
+        public long? TeacherId { get; set; }
         public long AssignmentId { get; set; }
     }
 }

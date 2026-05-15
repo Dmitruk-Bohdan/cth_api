@@ -9,6 +9,7 @@ using CTHelper.Domain.Abstractions;
 using CTHelper.Domain.Common.Enums;
 using CTHelper.Domain.Entities;
 using CTHelper.Persistence.Context;
+using CTHelper.Presentation.Dtos;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
@@ -338,19 +339,26 @@ namespace CTHelper.Infrastructure.Services.Implementations
             else return await _userManagmentService.GetUserInfoById(teacherId);
         }
 
-        public async Task<OperationResult<List<UserProfilePreviewModel>>> GetMyTeachersList(long studentId)
+        public async Task<OperationResult<PaginatedListResponseModel<UserProfilePreviewModel>>> GetMyTeachersList(MyTeachersListRequestModel requestModel)
         {
-            var teacherPreviewList = await _dbContext.TeacherStudents
-                .Where(ts => 
-                    ts.StudentId == studentId
+            var countQuery = _dbContext.TeacherStudents
+                .Where(ts =>
+                    ts.StudentId == requestModel.StudentId
                     && ts.Status == TeacherStudentStatusEnum.Active
-                    && ts.IsDeleted == false)
+                    && ts.IsDeleted == false);
+
+            var teachersCount = await countQuery.CountAsync();
+            var pagesCount = (int)Math.Ceiling((double)teachersCount / requestModel.PageSize);
+
+            var teacherPreviewList = await countQuery
                 .Select(ts => new UserProfilePreviewWithAvatarIdModel()
                 {
                     UserId = ts.TeacherId,
                     Username = ts.Teacher.Username,
                     AvatarId = ts.Teacher.AvatarImageId
                 })
+                .Skip((requestModel.PageNumber - 1) * requestModel.PageSize)
+                .Take(requestModel.PageSize)
                 .ToListAsync();
 
             var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewModel()
@@ -362,25 +370,39 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             var response = (await Task.WhenAll(previewTaskList)).ToList();
 
-            return new OperationResult<List<UserProfilePreviewModel>>()
+            var paginatedList = new PaginatedListResponseModel<UserProfilePreviewModel>()
             {
-                Payload = response
+                Items = response,
+                TotalPagesCount = pagesCount,
+                Page = requestModel.PageNumber,
+                PageSize = requestModel.PageSize,
+                HasPreviousPage = requestModel.PageNumber > 1,
+                HasNextPage = requestModel.PageNumber < pagesCount
             };
+
+            return new OperationResult<PaginatedListResponseModel<UserProfilePreviewModel>>(paginatedList);
         }
 
-        public async Task<OperationResult<List<UserProfilePreviewModel>>> GetMyStudentsList(long teacherId)
+        public async Task<OperationResult<PaginatedListResponseModel<UserProfilePreviewModel>>> GetMyStudentsList(MyStudentsListRequestModel requestModel)
         {
-            var teacherPreviewList = await _dbContext.TeacherStudents
+            var countQuery = _dbContext.TeacherStudents
                 .Where(ts =>
-                    ts.TeacherId == teacherId
+                    ts.TeacherId == requestModel.TeacherId
                     && ts.Status == TeacherStudentStatusEnum.Active
-                    && ts.IsDeleted == false)
+                    && ts.IsDeleted == false);
+
+            var studentsCount = await countQuery.CountAsync();
+            var pagesCount = (int)Math.Ceiling((double)studentsCount / requestModel.PageSize);
+
+            var teacherPreviewList = await countQuery
                 .Select(ts => new UserProfilePreviewWithAvatarIdModel()
                 {
                     UserId = ts.StudentId,
                     Username = ts.Student.Username,
                     AvatarId = ts.Student.AvatarImageId
                 })
+                .Skip((requestModel.PageNumber - 1) * requestModel.PageSize)
+                .Take(requestModel.PageSize)
                 .ToListAsync();
 
             var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewModel()
@@ -392,24 +414,39 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             var response = (await Task.WhenAll(previewTaskList)).ToList();
 
-            return new OperationResult<List<UserProfilePreviewModel>>()
+            var paginatedList = new PaginatedListResponseModel<UserProfilePreviewModel>()
             {
-                Payload = response
+                Items = response,
+                TotalPagesCount = pagesCount,
+                Page = requestModel.PageNumber,
+                PageSize = requestModel.PageSize,
+                HasPreviousPage = requestModel.PageNumber > 1,
+                HasNextPage = requestModel.PageNumber < pagesCount
             };
+
+            return new OperationResult<PaginatedListResponseModel<UserProfilePreviewModel>>(paginatedList);
         }
-        public async Task<OperationResult<List<UserProfilePreviewModel>>> GetBlockedStudentList(long teacherId)
+
+        public async Task<OperationResult<PaginatedListResponseModel<UserProfilePreviewModel>>> GetBlockedStudentList(MyBlockedStudentListRequestModel requestModel)
         {
-            var teacherPreviewList = await _dbContext.TeacherStudents
+            var countQuery = _dbContext.TeacherStudents
                 .Where(ts =>
-                    ts.TeacherId == teacherId
+                    ts.TeacherId == requestModel.TeacherId
                     && ts.Status == TeacherStudentStatusEnum.Blocked
-                    && ts.IsDeleted == false)
+                    && ts.IsDeleted == false);
+
+            var studentsCount = await countQuery.CountAsync();
+            var pagesCount = (int)Math.Ceiling((double)studentsCount / requestModel.PageSize);
+
+            var teacherPreviewList = await countQuery
                 .Select(ts => new UserProfilePreviewWithAvatarIdModel()
                 {
                     UserId = ts.StudentId,
                     Username = ts.Student.Username,
                     AvatarId = ts.Student.AvatarImageId
                 })
+                .Skip((requestModel.PageNumber - 1) * requestModel.PageSize)
+                .Take(requestModel.PageSize)
                 .ToListAsync();
 
             var previewTaskList = teacherPreviewList.Select(async (tp) => new UserProfilePreviewModel()
@@ -421,16 +458,28 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
             var response = (await Task.WhenAll(previewTaskList)).ToList();
 
-            return new OperationResult<List<UserProfilePreviewModel>>()
+            var paginatedList = new PaginatedListResponseModel<UserProfilePreviewModel>()
             {
-                Payload = response
+                Items = response,
+                TotalPagesCount = pagesCount,
+                Page = requestModel.PageNumber,
+                PageSize = requestModel.PageSize,
+                HasPreviousPage = requestModel.PageNumber > 1,
+                HasNextPage = requestModel.PageNumber < pagesCount
             };
+
+            return new OperationResult<PaginatedListResponseModel<UserProfilePreviewModel>>(paginatedList);
         }
 
-        public async Task<OperationResult<List<BindingRequestResponseModel>>> GetPendingBindingRequests(long teacherId)
+        public async Task<OperationResult<PaginatedListResponseModel<BindingRequestResponseModel>>> GetPendingBindingRequests(MyPendingBindingRequestsRequestModel requestModel)
         {
-            var bindingRequests = await _dbContext.BindingRequests
-                .Where(br => br.Code.TeacherId == teacherId && !br.IsAccepted)
+            var countQuery = _dbContext.BindingRequests
+                .Where(br => br.Code.TeacherId == requestModel.TeacherId && !br.IsAccepted);
+
+            var requestsCount = await countQuery.CountAsync();
+            var pagesCount = (int)Math.Ceiling((double)requestsCount / requestModel.PageSize);
+
+            var bindingRequests = await countQuery
                 .Select(br => new BindingRequestResponseModel
                 {
                     BindingRequestId = br.Id,
@@ -440,12 +489,21 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     CreatedAt = br.CreatedAt
                 })
                 .OrderByDescending(br => br.CreatedAt)
+                .Skip((requestModel.PageNumber - 1) * requestModel.PageSize)
+                .Take(requestModel.PageSize)
                 .ToListAsync();
 
-            return new OperationResult<List<BindingRequestResponseModel>>()
+            var paginatedList = new PaginatedListResponseModel<BindingRequestResponseModel>()
             {
-                Payload = bindingRequests
+                Items = bindingRequests,
+                TotalPagesCount = pagesCount,
+                Page = requestModel.PageNumber,
+                PageSize = requestModel.PageSize,
+                HasPreviousPage = requestModel.PageNumber > 1,
+                HasNextPage = requestModel.PageNumber < pagesCount
             };
+
+            return new OperationResult<PaginatedListResponseModel<BindingRequestResponseModel>>(paginatedList);
         }
     }
 }

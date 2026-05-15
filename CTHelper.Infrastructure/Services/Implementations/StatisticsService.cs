@@ -2,6 +2,8 @@
 using CTHelper.Application.Models;
 using CTHelper.Application.Models.Statistics;
 using CTHelper.Application.Services.Interfaces;
+using CTHelper.Domain.Entities;
+using CTHelper.Infrastructure.Extensions;
 using CTHelper.Persistence.Context;
 using CTHelper.Presentation.Controllers;
 using Microsoft.EntityFrameworkCore;
@@ -20,68 +22,8 @@ namespace CTHelper.Infrastructure.Services.Implementations
 
         public async Task<OperationResult<StudentStatisticsModel>> GetMyStatisticsBySubject(MyStatisticsBySubjectRequestModel requestModel)
         {
-            var dateFrom = requestModel.DateFrom ?? DateTimeOffset.MinValue;
-            var dateTo = requestModel.DateTo ?? DateTimeOffset.MaxValue;
-
-            var answers = await _dbContext.UserAnswers
-                .Where(ua => ua.TestAttempt.StudentId == requestModel.UserId)
-                .Where(ua => ua.TestAttempt.CreatedAt >= dateFrom && ua.TestAttempt.CreatedAt <= dateTo)
-                .Where(ua => ua.TestAttempt.Test.SubjectId == requestModel.SubjectId)
-                .AsNoTracking()
-                .Select(ua => new
-                {
-                    ua.IsCorrect,
-                    TopicId = ua.ProblemVersion.Problem.TopicId,
-                    TopicName = ua.ProblemVersion.Problem.Topic.Name,
-                    Difficulty = ua.ProblemVersion.Difficulty
-                })
-                .ToListAsync();
-
-            var totalAttempts = answers.Count;
-            var correctAttempts = answers.Count(a => a.IsCorrect);
-            var commonRate = totalAttempts > 0 ? (int)((double)correctAttempts / totalAttempts * 100) : 0;
-
-            var topicGroups = answers
-                .GroupBy(a => new { a.TopicId, a.TopicName })
-                .Select(g => new TopicStatisticsModel
-                {
-                    TopicId = g.Key.TopicId,
-                    TopicName = g.Key.TopicName,
-                    AverageSuccessRate = g.Any() ? (int)((double)g.Count(x => x.IsCorrect) / g.Count() * 100) : 0,
-                    SuccessRateByDifficultList = g.GroupBy(x => x.Difficulty)
-                        .Select(dg => new SuccessByDifficultModel
-                        {
-                            Difficult = dg.Key,
-                            SuccessRate = dg.Any() ? (int)((double)dg.Count(x => x.IsCorrect) / dg.Count() * 100) : 0
-                        }).ToList()
-                }).ToList();
-
-            var allTopicIds = topicGroups.Select(t => t.TopicId).ToList();
-            var pendingTopics = await _dbContext.Topics
-                .Where(t => t.Section.SubjectId == requestModel.SubjectId && !allTopicIds.Contains(t.Id))
-                .AsNoTracking()
-                .Select(t => new TopicModel { TopicId = t.Id, TopicName = t.Name })
-                .ToListAsync();
-
-            var avgRate = topicGroups.Any() ? topicGroups.Average(t => t.AverageSuccessRate) : 0;
-            var topicsToReview = topicGroups
-                .Where(t => t.AverageSuccessRate < avgRate)
-                .Select(t => new TopicModel { TopicId = t.TopicId, TopicName = t.TopicName })
-                .ToList();
-
-            var result = new StudentStatisticsModel
-            {
-                FromDate = dateFrom,
-                ToDate = dateTo,
-                CommonRate = commonRate,
-                TotalAttempts = totalAttempts,
-                CorrectAttempts = correctAttempts,
-                StatisticsByTopicList = topicGroups,
-                PendingTopicList = pendingTopics,
-                TopicToReviewList = topicsToReview
-            };
-
-            return new OperationResult<StudentStatisticsModel>(result);
+            var statistics = await BuildStudentStatistics(requestModel.UserId, requestModel.SubjectId, requestModel.DateFrom, requestModel.DateTo);
+            return new OperationResult<StudentStatisticsModel>(statistics);
         }
 
         public async Task<OperationResult<StudentStatisticsModel>> GetStudentStatisticsBySubject(StudentStatisticsBySubjectRequestModel requestModel)
@@ -100,68 +42,8 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            var dateFrom = requestModel.DateFrom ?? DateTimeOffset.MinValue;
-            var dateTo = requestModel.DateTo ?? DateTimeOffset.MaxValue;
-
-            var answers = await _dbContext.UserAnswers
-                .Where(ua => ua.TestAttempt.StudentId == requestModel.StudentId)
-                .Where(ua => ua.TestAttempt.CreatedAt >= dateFrom && ua.TestAttempt.CreatedAt <= dateTo)
-                .Where(ua => ua.TestAttempt.Test.SubjectId == requestModel.SubjectId)
-                .AsNoTracking()
-                .Select(ua => new
-                {
-                    ua.IsCorrect,
-                    TopicId = ua.ProblemVersion.Problem.TopicId,
-                    TopicName = ua.ProblemVersion.Problem.Topic.Name,
-                    Difficulty = ua.ProblemVersion.Difficulty
-                })
-                .ToListAsync();
-
-            var totalAttempts = answers.Count;
-            var correctAttempts = answers.Count(a => a.IsCorrect);
-            var commonRate = totalAttempts > 0 ? (int)((double)correctAttempts / totalAttempts * 100) : 0;
-
-            var topicGroups = answers
-                .GroupBy(a => new { a.TopicId, a.TopicName })
-                .Select(g => new TopicStatisticsModel
-                {
-                    TopicId = g.Key.TopicId,
-                    TopicName = g.Key.TopicName,
-                    AverageSuccessRate = g.Any() ? (int)((double)g.Count(x => x.IsCorrect) / g.Count() * 100) : 0,
-                    SuccessRateByDifficultList = g.GroupBy(x => x.Difficulty)
-                        .Select(dg => new SuccessByDifficultModel
-                        {
-                            Difficult = dg.Key,
-                            SuccessRate = dg.Any() ? (int)((double)dg.Count(x => x.IsCorrect) / dg.Count() * 100) : 0
-                        }).ToList()
-                }).ToList();
-
-            var allTopicIds = topicGroups.Select(t => t.TopicId).ToList();
-            var pendingTopics = await _dbContext.Topics
-                .Where(t => t.Section.SubjectId == requestModel.SubjectId && !allTopicIds.Contains(t.Id))
-                .AsNoTracking()
-                .Select(t => new TopicModel { TopicId = t.Id, TopicName = t.Name })
-                .ToListAsync();
-
-            var avgRate = topicGroups.Any() ? topicGroups.Average(t => t.AverageSuccessRate) : 0;
-            var topicsToReview = topicGroups
-                .Where(t => t.AverageSuccessRate < avgRate)
-                .Select(t => new TopicModel { TopicId = t.TopicId, TopicName = t.TopicName })
-                .ToList();
-
-            var result = new StudentStatisticsModel
-            {
-                FromDate = dateFrom,
-                ToDate = dateTo,
-                CommonRate = commonRate,
-                TotalAttempts = totalAttempts,
-                CorrectAttempts = correctAttempts,
-                StatisticsByTopicList = topicGroups,
-                PendingTopicList = pendingTopics,
-                TopicToReviewList = topicsToReview
-            };
-
-            return new OperationResult<StudentStatisticsModel>(result);
+            var statistics = await BuildStudentStatistics(requestModel.StudentId, requestModel.SubjectId, requestModel.DateFrom, requestModel.DateTo);
+            return new OperationResult<StudentStatisticsModel>(statistics);
         }
 
         public async Task<OperationResult<GroupStatisticsModel>> GetGroupStatisticsBySubject(GroupStatisticsBySubjectRequestModel requestModel)
@@ -180,9 +62,6 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            var dateFrom = requestModel.DateFrom ?? DateTimeOffset.MinValue;
-            var dateTo = requestModel.DateTo ?? DateTimeOffset.MaxValue;
-
             var studentIds = await _dbContext.Groups
                 .Where(g => g.Id == requestModel.GroupId)
                 .SelectMany(g => g.Students.Select(s => s.Id))
@@ -198,67 +77,46 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
-            var studentNames = await _dbContext.Users
-                .Where(u => studentIds.Contains(u.Id))
-                .AsNoTracking()
-                .ToDictionaryAsync(u => u.Id, u => u.Username);
-
-            var answers = await _dbContext.UserAnswers
+            var answersWithNames = await _dbContext.UserAnswers
                 .Where(ua => studentIds.Contains(ua.TestAttempt.StudentId))
-                .Where(ua => ua.TestAttempt.CreatedAt >= dateFrom && ua.TestAttempt.CreatedAt <= dateTo)
+                .ApplyDateFilter(requestModel.DateFrom, requestModel.DateTo)
                 .Where(ua => ua.TestAttempt.Test.SubjectId == requestModel.SubjectId)
                 .AsNoTracking()
                 .Select(ua => new
                 {
                     ua.IsCorrect,
                     StudentId = ua.TestAttempt.StudentId,
+                    StudentName = ua.TestAttempt.Student.Username,
                     TopicId = ua.ProblemVersion.Problem.TopicId,
                     TopicName = ua.ProblemVersion.Problem.Topic.Name,
                     Difficulty = ua.ProblemVersion.Difficulty
                 })
                 .ToListAsync();
 
-            var studentStats = studentIds.Select(sid => new
-            {
-                StudentId = sid,
-                Answers = answers.Where(a => a.StudentId == sid).ToList()
-            }).Select(s => new
-            {
-                s.StudentId,
-                Total = s.Answers.Count,
-                Correct = s.Answers.Count(a => a.IsCorrect),
-                Rate = s.Answers.Any() ? (int)((double)s.Answers.Count(a => a.IsCorrect) / s.Answers.Count * 100) : 0
-            }).ToList();
+            var studentStats = answersWithNames
+                .GroupBy(a => new { a.StudentId, a.StudentName })
+                .Select(g => new
+                {
+                    g.Key.StudentId,
+                    g.Key.StudentName,
+                    Total = g.Count(),
+                    Correct = g.Count(a => a.IsCorrect),
+                    Rate = g.Any() ? (int)((double)g.Count(a => a.IsCorrect) / g.Count() * 100) : 0
+                })
+                .OrderByDescending(s => s.Rate)
+                .ToList();
 
             var members = studentStats
-                .Select(s => new GroupMemberStatisticItem
+                .Select((s, index) => new GroupMemberStatisticItem
                 {
                     StudentId = s.StudentId,
-                    StudentName = studentNames.GetValueOrDefault(s.StudentId) ?? string.Empty,
+                    StudentName = s.StudentName,
                     StudentRate = s.Rate,
-                    StudentGroupRating = 0
-                }).ToList();
+                    StudentGroupRating = index + 1
+                })
+                .ToList();
 
-            var ordered = members.OrderByDescending(m => m.StudentRate).ToList();
-            for (int i = 0; i < ordered.Count; i++)
-            {
-                ordered[i].StudentGroupRating = i + 1;
-            }
-
-            var topicGroups = answers
-                .GroupBy(a => new { a.TopicId, a.TopicName })
-                .Select(g => new TopicStatisticsModel
-                {
-                    TopicId = g.Key.TopicId,
-                    TopicName = g.Key.TopicName,
-                    AverageSuccessRate = g.Any() ? (int)((double)g.Count(x => x.IsCorrect) / g.Count() * 100) : 0,
-                    SuccessRateByDifficultList = g.GroupBy(x => x.Difficulty)
-                        .Select(dg => new SuccessByDifficultModel
-                        {
-                            Difficult = dg.Key,
-                            SuccessRate = dg.Any() ? (int)((double)dg.Count(x => x.IsCorrect) / dg.Count() * 100) : 0
-                        }).ToList()
-                }).ToList();
+            var topicGroups = BuildTopicStatistics(answersWithNames);
 
             var allTopicIds = topicGroups.Select(t => t.TopicId).ToList();
             var pendingTopics = await _dbContext.Topics
@@ -267,16 +125,16 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 .Select(t => new TopicModel { TopicId = t.Id, TopicName = t.Name })
                 .ToListAsync();
 
-            var avgRate = topicGroups.Any() ? topicGroups.Average(t => t.AverageSuccessRate) : 0;
+            var medianRate = CalculateMedian(topicGroups.Select(t => t.AverageSuccessRate).ToList());
             var topicsToReview = topicGroups
-                .Where(t => t.AverageSuccessRate < avgRate)
+                .Where(t => t.AverageSuccessRate < medianRate)
                 .Select(t => new TopicModel { TopicId = t.TopicId, TopicName = t.TopicName })
                 .ToList();
 
             var result = new GroupStatisticsModel
             {
-                FromDate = dateFrom,
-                ToDate = dateTo,
+                FromDate = requestModel.DateFrom,
+                ToDate = requestModel.DateTo,
                 Members = members,
                 StatisticsByTopicList = topicGroups,
                 PendingTopicList = pendingTopics,
@@ -284,6 +142,137 @@ namespace CTHelper.Infrastructure.Services.Implementations
             };
 
             return new OperationResult<GroupStatisticsModel>(result);
+        }
+
+        private async Task<StudentStatisticsModel> BuildStudentStatistics(
+            long studentId,
+            long subjectId,
+            DateTimeOffset? dateFrom,
+            DateTimeOffset? dateTo)
+        {
+            var answers = await _dbContext.UserAnswers
+                .Where(ua => ua.TestAttempt.StudentId == studentId)
+                .ApplyDateFilter(dateFrom, dateTo)
+                .Where(ua => ua.TestAttempt.Test.SubjectId == subjectId)
+                .AsNoTracking()
+                .Select(ua => new
+                {
+                    ua.IsCorrect,
+                    TopicId = ua.ProblemVersion.Problem.TopicId,
+                    TopicName = ua.ProblemVersion.Problem.Topic.Name,
+                    Difficulty = ua.ProblemVersion.Difficulty
+                })
+                .ToListAsync();
+
+            var attempts = await _dbContext.TestAttempts
+                .Where(ta => ta.StudentId == studentId)
+                .ApplyDateFilter(dateFrom, dateTo)
+                .Where(ta => ta.Test.SubjectId == subjectId)
+                .AsNoTracking()
+                .CountAsync();
+
+            var totalAnswers = answers.Count;
+            var correctAnswers = answers.Count(a => a.IsCorrect);
+            var commonRate = totalAnswers > 0 ? (int)((double)correctAnswers / totalAnswers * 100) : 0;
+
+            var topicGroups = BuildTopicStatistics(answers);
+
+            var topicRates = topicGroups.Select(t => t.AverageSuccessRate).OrderBy(r => r).ToList();
+            var medianRate = CalculateMedian(topicRates);
+
+            var allTopicIds = topicGroups.Select(t => t.TopicId).ToList();
+            var pendingTopics = await _dbContext.Topics
+                .Where(t => t.Section.SubjectId == subjectId && !allTopicIds.Contains(t.Id))
+                .AsNoTracking()
+                .Select(t => new TopicModel { TopicId = t.Id, TopicName = t.Name })
+                .ToListAsync();
+
+            var topicsToReview = topicGroups
+                .Where(t => t.AverageSuccessRate < medianRate)
+                .Select(t => new TopicModel { TopicId = t.TopicId, TopicName = t.TopicName })
+                .ToList();
+
+            var result = new StudentStatisticsModel
+            {
+                FromDate = dateFrom,
+                ToDate = dateTo,
+                CommonRate = commonRate,
+                MedianRate = medianRate,
+                TotalAnswers = totalAnswers,
+                CorrectAnswers = correctAnswers,
+                TotalAttempts = attempts,
+                StatisticsByTopicList = topicGroups,
+                PendingTopicList = pendingTopics,
+                TopicToReviewList = topicsToReview
+            };
+
+            return result;
+        }
+
+        private List<TopicStatisticsModel> BuildTopicStatistics(IEnumerable<dynamic> answers)
+        {
+            return answers
+                .GroupBy(a => new { a.TopicId, a.TopicName })
+                .Select(g =>
+                {
+                    var correctCount = g.Count(x => x.IsCorrect);
+                    var totalCount = g.Count();
+                    var avgRate = totalCount > 0 ? (int)((double)correctCount / totalCount * 100) : 0;
+
+                    var difficultyRates = g.GroupBy(x => (int)x.Difficulty)
+                        .Select(dg => new { Rate = dg.Any() ? (double)dg.Count(x => x.IsCorrect) / dg.Count() * 100 : 0 })
+                        .OrderBy(r => r.Rate)
+                        .Select(r => r.Rate)
+                        .ToList();
+
+                    var medianRate = CalculateMedian(difficultyRates);
+
+                    return new TopicStatisticsModel
+                    {
+                        TopicId = g.Key.TopicId,
+                        TopicName = g.Key.TopicName,
+                        AverageSuccessRate = avgRate,
+                        MedianSuccessRate = medianRate,
+                        SuccessRateByDifficultList = g.GroupBy(x => (int)x.Difficulty)
+                            .Select(dg =>
+                            {
+                                var correctInDifficulty = dg.Count(x => x.IsCorrect);
+                                var totalInDifficulty = dg.Count();
+                                var diffSuccessRate = totalInDifficulty > 0 ? (int)((double)correctInDifficulty / totalInDifficulty * 100) : 0;
+
+                                return new SuccessByDifficultModel
+                                {
+                                    Difficult = dg.Key,
+                                    SuccessRate = diffSuccessRate,
+                                    MedianSuccessRate = diffSuccessRate
+                                };
+                            }).ToList()
+                    };
+                }).ToList();
+        }
+
+        private int CalculateMedian(List<int> sortedValues)
+        {
+            if (!sortedValues.Any())
+                return 0;
+
+            var count = sortedValues.Count;
+            if (count % 2 == 0)
+                return (int)((sortedValues[count / 2 - 1] + sortedValues[count / 2]) / 2.0);
+            else
+                return sortedValues[count / 2];
+        }
+
+        private int CalculateMedian(List<double> sortedValues)
+        {
+            if (!sortedValues.Any())
+                return 0;
+
+            var count = sortedValues.Count;
+            if (count % 2 == 0)
+                return (int)((sortedValues[count / 2 - 1] + sortedValues[count / 2]) / 2.0);
+            else
+                return (int)sortedValues[count / 2];
         }
     }
 }

@@ -1,6 +1,12 @@
-﻿namespace CTHelper.Application.Models.Assignment
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CTHelper.Application.Models.AssignmentModels
 {
-    public class AssignmentPreviewModel
+    public class StudentAssignmentPreviewModel
     {
         public long AssignmentId { get; set; }
         public string TeacherName { get; set; } = default!;

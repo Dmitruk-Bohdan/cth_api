@@ -1,4 +1,6 @@
+using CTHelper.Application.Models;
 using CTHelper.Application.Models.Assignment;
+using CTHelper.Application.Models.AssignmentModels;
 using CTHelper.Application.Services.Interfaces;
 using CTHelper.Domain.Common.Extensions;
 using CTHelper.Presentation.Common.Constants;
@@ -55,8 +57,6 @@ public class AssignmentsController : BaseController
                 result.HttpStatusCode.ToInt(),
                 errorDto);
         }
-
-        throw new NotImplementedException();
     }
 
     [HttpPost("groups")]
@@ -92,14 +92,12 @@ public class AssignmentsController : BaseController
                 result.HttpStatusCode.ToInt(),
                 errorDto);
         }
-
-        throw new NotImplementedException();
     }
 
     [HttpPatch("")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> PatchAssignment ([FromBody] PatchAssignmentRequestDto dto)
+    public async Task<IActionResult> PatchAssignment([FromBody] PatchAssignmentRequestDto dto)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -164,8 +162,8 @@ public class AssignmentsController : BaseController
 
     [HttpGet("teacher/me")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    [ProducesResponseType(typeof(PaginatedListResponseModel<AssignmentPreviewModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetIAssignedList()
+    [ProducesResponseType(typeof(PaginatedListResponseModel<TeacherAssignmentPreviewModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetIAssignedList([FromQuery] int pageSize = 10, [FromQuery] int pageNumber = 1)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -173,7 +171,14 @@ public class AssignmentsController : BaseController
             return Unauthorized();
         }
 
-        var result = await _assignmentService.GetIAssignedList(userId);
+        var requestModel = new GetIAssignedRequestModel()
+        {
+            UserId = userId,
+            PageSize = pageSize,
+            PageNumber = pageNumber
+        };
+
+        var result = await _assignmentService.GetIAssignedList(requestModel);
 
         if (result.IsSuccess)
         {
@@ -190,8 +195,8 @@ public class AssignmentsController : BaseController
 
     [HttpGet("student/me")]
     [Authorize(Policy = PoliciesNamesConstants.StudentOnlyPolicy)]
-    [ProducesResponseType(typeof(PaginatedListResponseModel<AssignmentPreviewModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAssignedToMeList()
+    [ProducesResponseType(typeof(PaginatedListResponseModel<StudentAssignmentPreviewModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAssignedToMeList([FromQuery] int pageSize = 10, [FromQuery] int pageNumber = 1)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -199,7 +204,14 @@ public class AssignmentsController : BaseController
             return Unauthorized();
         }
 
-        var result = await _assignmentService.GetAssignedToMeList(userId);
+        var requestModel = new GetAssignedToMeRequestModel()
+        {
+            UserId = userId,
+            PageSize = pageSize,
+            PageNumber = pageNumber
+        };
+
+        var result = await _assignmentService.GetAssignedToMeList(requestModel);
 
         if (result.IsSuccess)
         {
@@ -214,7 +226,6 @@ public class AssignmentsController : BaseController
         }
     }
 
-
     [HttpGet("student/details/{assignmentId:long}")]
     [Authorize]
     [ProducesResponseType(typeof(StudentAssignmentDetailsModel), StatusCodes.Status200OK)]
@@ -226,10 +237,14 @@ public class AssignmentsController : BaseController
             return Unauthorized();
         }
 
+        var isStudent = User.IsInRole("Student");
+        var isTeacher = User.IsInRole("Teacher");
+
         var requestModel = new GetAssignmentDetailsModel()
         {
             AssignmentId = assignmentId,
-            TeacherId = userId
+            StudentId = isStudent ? userId : null,
+            TeacherId = isTeacher ? userId : null
         };
 
         var result = await _assignmentService.GetStudentAssignmentDetails(requestModel);
@@ -249,8 +264,8 @@ public class AssignmentsController : BaseController
 
     [HttpGet("student/{studentId:long}/list")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    [ProducesResponseType(typeof(PaginatedListResponseModel<AssignmentPreviewModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetStudentAssignments([FromRoute] long studentId)
+    [ProducesResponseType(typeof(PaginatedListResponseModel<StudentAssignmentPreviewModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetStudentAssignments([FromRoute] long studentId, [FromQuery] int pageSize = 10, [FromQuery] int pageNumber = 1)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -261,7 +276,9 @@ public class AssignmentsController : BaseController
         var requestModel = new GetAssignedToStudentListModel()
         {
             StudentId = studentId,
-            TeacherId = userId
+            TeacherId = userId,
+            PageSize = pageSize,
+            PageNumber = pageNumber
         };
 
         var result = await _assignmentService.GetAssignedToStudentList(requestModel);
@@ -278,7 +295,6 @@ public class AssignmentsController : BaseController
                 errorDto);
         }
     }
-
     [HttpGet("group/details/{assignmentId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     [ProducesResponseType(typeof(GroupAssignmentDetailsModel), StatusCodes.Status200OK)]
@@ -313,8 +329,8 @@ public class AssignmentsController : BaseController
 
     [HttpGet("group/{groupId:long}/list")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
-    [ProducesResponseType(typeof(PaginatedListResponseModel<AssignmentPreviewModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetGroupAssignmentDetailsById([FromRoute] long groupId)
+    [ProducesResponseType(typeof(PaginatedListResponseModel<StudentAssignmentPreviewModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetGroupAssignmentList([FromRoute] long groupId, [FromQuery] int pageSize = 10, [FromQuery] int pageNumber = 1)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -325,7 +341,9 @@ public class AssignmentsController : BaseController
         var requestModel = new GetAssignedToGroupListModel()
         {
             GroupId = groupId,
-            TeacherId = userId
+            TeacherId = userId,
+            PageSize = pageSize,
+            PageNumber = pageNumber
         };
 
         var result = await _assignmentService.GetAssignedToGroupList(requestModel);
@@ -343,12 +361,10 @@ public class AssignmentsController : BaseController
         }
     }
 
-
-
-    [HttpGet("group-score/{assignmentId}")]
+    [HttpGet("group-score/{assignmentId:long}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     [ProducesResponseType(typeof(GroupScoreByAssignmentResponseModel), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetGroupAssignmentScore(long assignmentId)
+    public async Task<IActionResult> GetGroupAssignmentScore([FromRoute] long assignmentId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -377,11 +393,10 @@ public class AssignmentsController : BaseController
         }
     }
 
-
     [HttpGet("student-score/{assignmentId:long}")]
-    [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
+    [Authorize]
     [ProducesResponseType(typeof(StudentScoreByAssignmentResponseModel), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetStudentAssignmentScore(long assignmentId)
+    public async Task<IActionResult> GetStudentAssignmentScore([FromRoute] long assignmentId)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !long.TryParse(userIdClaim, out var userId))
@@ -389,10 +404,14 @@ public class AssignmentsController : BaseController
             return Unauthorized();
         }
 
+        var isStudent = User.IsInRole("Student");
+        var isTeacher = User.IsInRole("Teacher");
+
         var requestModel = new GetStudentAssignmentScoreModel()
         {
             AssignmentId = assignmentId,
-            TeacherId = userId
+            StudentId = isStudent ? userId : null,
+            TeacherId = isTeacher ? userId : null
         };
 
         var result = await _assignmentService.GetStudentAssignmentScore(requestModel);

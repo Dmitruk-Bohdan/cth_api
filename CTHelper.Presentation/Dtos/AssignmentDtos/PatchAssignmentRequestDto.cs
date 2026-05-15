@@ -4,7 +4,7 @@ namespace CTHelper.Presentation.Dtos.AssignmentDtos;
 
 public class PatchAssignmentRequestDto
 {
-    [JsonPropertyName("deadline")]
+    [JsonPropertyName("assignmentId")]
     public long AssignmentId { get; set; }
 
     [JsonPropertyName("deadline")]

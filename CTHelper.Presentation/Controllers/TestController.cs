@@ -167,7 +167,7 @@ public class TestController : BaseController
 
     [HttpPost("init-mixed")]
     [Authorize]
-    [ProducesResponseType(typeof(Test), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(TestPassingResponseModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> InitMixedTestAsync([FromBody] CreateMixedTestRequestDto request)
     {
         if (!TryGetUserId(out long userId))

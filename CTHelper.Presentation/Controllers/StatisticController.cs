@@ -62,7 +62,7 @@ public class StatisticsController : ControllerBase
         }
     }
 
-    [HttpGet("students/{id}")]
+    [HttpGet("students/{studentId}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     [ProducesResponseType(typeof(StudentStatisticsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStudentStatisticsAsync([FromRoute] long studentId, [FromQuery] long subjectId, [FromQuery] DateTimeOffset? dateFrom, [FromQuery] DateTimeOffset? dateTo)
@@ -97,7 +97,7 @@ public class StatisticsController : ControllerBase
         }
     }
 
-    [HttpGet("groups/{id}")]
+    [HttpGet("groups/{groupId}")]
     [Authorize(Policy = PoliciesNamesConstants.TeacherOnlyPolicy)]
     [ProducesResponseType(typeof(GroupStatisticsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetGroupStatisticsAsync([FromRoute] long groupId, [FromQuery] long subjectId, [FromQuery] DateTimeOffset? dateFrom, [FromQuery] DateTimeOffset? dateTo)

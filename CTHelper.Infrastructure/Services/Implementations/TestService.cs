@@ -265,6 +265,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                     TestId = t.Id,
                     TestName = t.Title,
                     AuthorName = t.Author.Username,
+                    IsPublished = t.IsPublished,
                     ProblemCount = t.TestProblems.Count,
                     AvgDifficult = (ProblemDifficultEnum)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty)
                 })
@@ -329,6 +330,7 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 {
                     TestId = t.Id,
                     TestName = t.Title,
+                    IsPublished = t.IsPublished,
                     AuthorName = t.Author.Username,
                     ProblemCount = t.TestProblems.Count,
                     AvgDifficult = (ProblemDifficultEnum)t.TestProblems.Average(tp => (int)tp.Problem.Versions.First(v => v.IsActive).Difficulty)
