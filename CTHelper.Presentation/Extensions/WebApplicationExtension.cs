@@ -4,6 +4,8 @@
     {
         public static void ConfigureMiddleware(this WebApplication app)
         {
+            app.ApplyMigrations();
+
             app.UseGlobalExceptionHandling();
 
             app.UseHttpsRedirection();

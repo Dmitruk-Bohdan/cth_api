@@ -22,6 +22,7 @@ public class Program
 
         app.ConfigureMiddleware();
 
+
         app.Run();
     }
 }
