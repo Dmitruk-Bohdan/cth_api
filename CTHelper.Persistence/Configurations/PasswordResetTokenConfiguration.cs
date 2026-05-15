@@ -27,7 +27,7 @@ namespace CTHelper.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(e => e.AttemptsLeft)
-                .HasColumnName("attempt_left")
+                .HasColumnName("attempts_left")
                 .HasColumnType("smallint")
                 .HasDefaultValue(5)
                 .IsRequired();

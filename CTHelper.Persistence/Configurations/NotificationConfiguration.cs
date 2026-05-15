@@ -45,7 +45,7 @@ namespace CTHelper.Persistence.Configurations
                 .IsRequired();
 
             builder.HasOne(n => n.Recipient)
-                .WithMany()
+                .WithMany(u => u.Notifications)
                 .HasForeignKey(n => n.RecipientId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasPrincipalKey(u => u.Id);

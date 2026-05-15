@@ -3,6 +3,7 @@ using System;
 using CTHelper.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -12,9 +13,11 @@ using NpgsqlTypes;
 namespace CTHelper.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260515193437_TypoFix")]
+    partial class TypoFix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -375,9 +378,14 @@ namespace CTHelper.Persistence.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("recipient_id");
 
+                    b.Property<long?>("UserId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("RecipientId");
+
+                    b.HasIndex("UserId");
 
                     b.HasIndex("RecipientId", "IsSeen");
 
@@ -397,7 +405,7 @@ namespace CTHelper.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("smallint")
                         .HasDefaultValue((short)5)
-                        .HasColumnName("attempts_left");
+                        .HasColumnName("attempt_left");
 
                     b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamptz")
@@ -1399,10 +1407,14 @@ namespace CTHelper.Persistence.Migrations
             modelBuilder.Entity("CTHelper.Domain.Entities.Notification", b =>
                 {
                     b.HasOne("CTHelper.Domain.Entities.User", "Recipient")
-                        .WithMany("Notifications")
+                        .WithMany()
                         .HasForeignKey("RecipientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("CTHelper.Domain.Entities.User", null)
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Recipient");
                 });
