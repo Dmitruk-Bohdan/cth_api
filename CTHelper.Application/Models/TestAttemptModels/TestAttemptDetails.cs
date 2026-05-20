@@ -26,6 +26,7 @@ namespace CTHelper.Application.Models.TestAttemptModels
         public bool IsCorrect { get; set; }
         public string CorrectAnswer { get; set; } = default!;
         public string? Explanation { get; set; } = default!;
+        public string ProblemCode { get; set; } = default!;
         public ProblemTypeEnum Type { get; set; }
         public ProblemDifficultEnum Difficulty { get; set; }
         public string TopicName { get; set; } = default!;

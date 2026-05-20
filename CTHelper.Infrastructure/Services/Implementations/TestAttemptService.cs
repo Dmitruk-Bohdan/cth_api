@@ -175,6 +175,10 @@ namespace CTHelper.Infrastructure.Services.Implementations
                         Statement = ua.ProblemVersion.Statement,
                         Answer = ua.Answer,
                         IsCorrect = ua.IsCorrect,
+                        ProblemCode = ua.ProblemVersion.Problem.TestProblems
+                            .Where(tp => tp.TestId == ta.TestId)
+                            .Select(tp => tp.Code)
+                            .FirstOrDefault() ?? string.Empty,
                         CorrectAnswer = ua.ProblemVersion.CorrectAnswer,
                         Explanation = ua.ProblemVersion.Explanation,
                         Type = ua.ProblemVersion.Type,
@@ -280,6 +284,10 @@ namespace CTHelper.Infrastructure.Services.Implementations
                         IsCorrect = ua.IsCorrect,
                         CorrectAnswer = ua.ProblemVersion.CorrectAnswer,
                         Explanation = ua.ProblemVersion.Explanation,
+                        ProblemCode = ua.ProblemVersion.Problem.TestProblems
+                            .Where(tp => tp.TestId == ta.TestId)
+                            .Select(tp => tp.Code)
+                            .FirstOrDefault() ?? string.Empty,
                         Type = ua.ProblemVersion.Type,
                         Difficulty = ua.ProblemVersion.Difficulty,
                         TopicName = ua.ProblemVersion.Problem.Topic.Name
