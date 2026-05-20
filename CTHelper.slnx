@@ -10,7 +10,6 @@
     <Project Path="CTHelper.Presentation/CTHelper.Presentation.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="CTHelper.IntegrationTests/CTHelper.IntegrationTests.csproj" />
     <Project Path="CTHelper.UnitTests/CTHelper.UnitTests.csproj" />
   </Folder>
 </Solution>

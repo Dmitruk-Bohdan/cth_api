@@ -51,6 +51,5 @@ namespace CTHelper.Domain.Entities
         public ICollection<Test> FavoriteTests { get; set; } = new List<Test>();
 
         public ICollection<Problem> FavoriteProblems { get; set; } = new List<Problem>();
-
     }
 }
