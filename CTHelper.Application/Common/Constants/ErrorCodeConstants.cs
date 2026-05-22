@@ -56,6 +56,7 @@
         //Test codes
         public const string TestNotFound = "00100000";
         public const string TestNotPublished = "00100001";
+        public const string TestIsCurrentlyInUse = "00100002";
 
         //Attempt codes
         public const string AttemptNotFound = "00110000";

@@ -505,6 +505,21 @@ namespace CTHelper.Infrastructure.Services.Implementations
                 };
             }
 
+            var hasActiveTestTakers = await _dbContext.TestAttempts
+                .AnyAsync(ta => ta.TestId == requestModel.TestId
+                             && (ta.Status == TestAttemptStatusTypeEnum.InProgress
+                                || ta.Status == TestAttemptStatusTypeEnum.Paused));
+
+            if (hasActiveTestTakers)
+            {
+                return new OperationResult
+                {
+                    ErrorCode = ErrorCodeConstants.TestIsCurrentlyInUse,
+                    ErrorMessage = "Test is currently in use by students",
+                    HttpStatusCode = HttpStatusCode.NotFound
+                };
+            }
+
             test.Title = requestModel.Title;
             test.IsTraning = requestModel.IsTraning;
             test.IsPublished = requestModel.IsPublished;
